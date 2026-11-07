@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import replace
 from hashlib import sha256
+from typing import cast
 from uuid import UUID
 
 from modkit_events.persistence import bindings as common
@@ -36,7 +37,7 @@ from .observations import (
 )
 
 
-def _request(request: common.FrozenRequest, key: str) -> dict:
+def _request(request: object, key: str) -> dict:
     # Neutral factory/scalar helpers are not descriptor execution authority.
     if type(request) is not common.FrozenRequest or request.statement is not get_statement(key):
         raise ValueError
@@ -295,7 +296,7 @@ def decode_acquire(
             raise ValueError
         fence = Fence(
             work_id=work.work_id,
-            token=work.token,
+            token=cast(UUID, work.token),
             ownership_revision=work.ownership_revision,
             cycle=work.cycle,
             expected_attempt=work.attempt_count,

@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from types import MappingProxyType
+from typing import cast
 from uuid import UUID
 
 from modkit_events.persistence import bindings as common
@@ -53,7 +54,9 @@ def _logical_json(value: object, depth: int = 0, active: set[int] | None = None)
                 result[key] = _logical_json(item, depth + 1, active)
             return MappingProxyType(result)
         if type(value) in (list, tuple):
-            return tuple(_logical_json(item, depth + 1, active) for item in value)
+            return tuple(
+                _logical_json(item, depth + 1, active) for item in cast(Iterable[object], value)
+            )
         raise ValueError
     finally:
         active.remove(id(value))
