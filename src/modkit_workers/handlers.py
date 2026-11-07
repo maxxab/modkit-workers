@@ -6,6 +6,7 @@ import inspect
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from enum import Enum
+from functools import partial
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Protocol
 
@@ -83,7 +84,12 @@ class HandlerRegistration:
             raise InvalidWorkerConfiguration("Invalid handler registration")
         # Inspect direct and instance entrypoints without invoking application code.
         # Descriptor failures propagate; they are programmer errors, not invalid results.
-        entrypoints = (self.handler, getattr(type(self.handler), "__call__", None))
+        entrypoint = self.handler
+        # Built-in partial only binds arguments; inspect the callable it preserves.
+        # Do not unwrap arbitrary decorators or subclasses with custom behavior.
+        while type(entrypoint) is partial:
+            entrypoint = entrypoint.func
+        entrypoints = (entrypoint, getattr(type(entrypoint), "__call__", None))
         if any(
             inspect.isgeneratorfunction(entry) or inspect.isasyncgenfunction(entry)
             for entry in entrypoints
