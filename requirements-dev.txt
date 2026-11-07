@@ -1,0 +1,13 @@
+pytest==9.2.0
+pytest-asyncio==1.4.1
+ruff==0.17.3
+build==1.6.1
+twine==7.0.0
+mypy==1.20.2
+SQLAlchemy[asyncio]==2.1.6
+aiosqlite==0.22.1
+redis==8.1.0
+
+# Preserved baseline development pins; no installation or resolution performed.
+# New psycopg/asyncpg/Pydantic exact development pins await authorized resolution.
+# This file alone is not a complete PostgreSQL/Pydantic qualification environment.
