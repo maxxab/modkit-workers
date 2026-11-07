@@ -28,3 +28,8 @@ until that separate gate closes; test-only in-memory fixtures are not packaged r
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
 No build/install/release, real PostgreSQL84/Redis or full regression evidence is claimed.
+
+## Resume checkpoint
+
+See [the 2026-11-07 shutdown checkpoint](docs/shutdown-checkpoint-20261107.md)
+for the reviewed branch, fresh bounded test evidence, publication blockers and safe restart steps.
