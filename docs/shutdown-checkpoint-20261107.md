@@ -1,5 +1,26 @@
 # Workers shutdown checkpoint: 2026-11-07
 
+
+## Resume update: 2026-11-07
+
+The original shutdown record below is historical. Subsequent reviewed source commits:
+
+- `936c25352bd469d402e23a1352b8c5da18a8177a`: bound partial-backed handler inspection. Native async/generator shapes behind partial-backed `__call__` now validate correctly. Partial-function and callable-entrypoint cycles fail closed; traversal has a finite 64-object bound. Regression failures were observed before the fix, including isolated timeout-guarded cycle cases.
+- `c35f20f68d7076846d0e1b2587997e4491126327`: clear all 88 baseline Ruff findings. Import compatibility and the intentional SQL package initialization are preserved. Independent review confirmed identical non-import ASTs throughout this cleanup.
+
+Fresh checks on this source: **129 tests passed, 96 subtests passed**, full `ruff check src tests` passed, and `git diff --check` passed. Use the same bounded pytest command below. Ruff 0.17.3 is available through `/home/faris/modkit-local-20261106/.venv/bin/python -m ruff`.
+
+Offline artifact checks now pass for the source at `c35f20f`: direct wheel and sdist builds, wheel rebuilt from that sdist, and exact equality of all 21 wheel member payloads. An isolated `python -I -S` zipimport smoke check against the real wheel verified pure handler/root import without Events. The real archive resource loader raises the expected `FileNotFoundError` for the deliberately absent production manifest. This is a narrow archive smoke check, not a complete installed distribution or platform matrix qualification.
+
+Temporary build evidence is in `/tmp/modkit-workers-qualification-20261107` and may not survive cleanup/reboot. SHA256:
+
+- Original and rebuilt `modkit_workers-0.1.0-py3-none-any.whl`: `d6e941e997a8cfb0d8dfee2d6ae52686b92fe6348b2d875f7c252d13fa1e9188`.
+- `modkit_workers-0.1.0.tar.gz`: `2c48838e0fac4f12f33bdd52e4f3c4de005018106033779893c39449cac8434a`.
+
+A real offline, no-index, dry-run install of the local Workers wheel and the reviewed Events wheel **failed dependency resolution without installing anything**. Workers requires `modkit-events>=0.2,<0.3`; sibling Events at `e5165c2` still builds version `0.1.0`. Do not bypass this by silently changing package versions, lowering requirements, or installing with ignored dependencies into ERP. The intended compatible release closure must be established first.
+
+Production SQL/manifest resources, runtime execution/shutdown drain, real PostgreSQL/Redis/driver/transaction qualification, ERP integration and the cross-platform Python matrix remain open. No remote is configured, no push/publication occurred, and no ERP installation or deployment was attempted. The live unborn `/home/faris/modkit-workers` checkout remains unchanged. Continue only in this reviewed isolated branch unless an integration plan is explicitly reviewed.
+
 ## Resume target and preserved work
 
 - Resume in `/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers` on `wip/reviewed-standalone-20261107`.
