@@ -1,0 +1,25 @@
+Source: /root/resume_workers_package/review_w01_reconciliation inline final report.
+Author-preserved report, with ASCII punctuation normalized; not a reviewer-authored file.
+
+Source-only reconciliation evidence accepted, not compatibility or runtime qualification.
+
+Verification:
+- All 189 current hashes in input-comparison.json matched fresh reads.
+- All 190 entries in observed-inputs.json matched fresh size/SHA reads.
+- All eight changed-input diffs reproduced exactly from the hash-matching originals/current sources.
+- native_codec.py's added-file diff reproduced exactly.
+- Recovered seven Python originals match frozen packet hashes; SQL original is the exact hash-matching prefix.
+- No references to native_codec were found in Events production source, Workers production source or W01 fixture text. It is discovered inventory, not demonstrated W01 import reachability. Dynamic loading beyond this inspected source remains unproven.
+
+Specific compatibility checks still needed:
+1. Public Event/freeze and Scope contracts: immutable snapshots, depth/nonfinite rejection, UTF-8 and whitespace/length boundaries, canonical scope bytes. Shared private validators changed implementation paths.
+2. JobInput -> submit -> _admission -> public ReturnContext/freeze_request: compare exact statement metadata, parameter tuple, canonical intent/replay/evidence bytes and protected-binding expansion across every W01 fixture variant.
+3. Confirm W01 retains its nonempty AdmissionInput context. New _return_context_raw only permits empty contexts, and _freeze_request_raw is documented for selected E14/E28 graphs. Substituting either into W01 would be incompatible; current inspected W01 calls remain public.
+4. Verify W01 parameter/context coupling, jobs namespace/job kind constraints, protected sidecar/reference/codec/expiry/cleanup/projection consistency and rejection behavior for mismatches.
+5. Workers decode_submit and common row-helper dependencies: exact cardinality, column/wire types, nullable fields, request revalidation and response/admission coupling. Compare valid records plus malformed/mismatched rows.
+6. Private _ValidationReject versus public boundary errors: intentional rejection translation must not leak private exceptions or swallow unexpected failures. Raw/draft object construction is not evidence of semantic equivalence.
+
+Target gate:
+The reported current Events target is not the frozen runner target. Container-local 127.0.0.1/modkit_qualification cannot be treated as authorization or compatibility evidence for 172.26.0.3/modkit_native_qualification. I did not inspect or probe the target. Any prospective run requires separately reviewed target-specific runner/setup/disposal, identity/prestate scope and fresh exact-packet authorization.
+
+Preserve frozen v3. Keep runtime, imports, source checks, SQL, leases and target probes held. Evidence supports the documented drift and next-check list only.

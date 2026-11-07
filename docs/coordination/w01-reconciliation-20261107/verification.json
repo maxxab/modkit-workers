@@ -1,0 +1,12 @@
+{
+  "status": "PASS_SOURCE_ONLY_STABILITY",
+  "observed_at": "2026-11-07T20:37:01.086349+00:00",
+  "observed_inputs_checked": 190,
+  "drift": [],
+  "frozen_packet_sha256": "897fccd0a1bcc34756ad77b9cb9d0e61dccea3c683576e63ca00bb278b77563d",
+  "target_artifacts_checked_against_manifest": [
+    "catalog.json",
+    "container.stdout"
+  ],
+  "runtime_executed": false
+}

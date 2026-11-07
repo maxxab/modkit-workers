@@ -9,6 +9,12 @@
 
 The authoritative remaining SQL order is W01 real fixture qualification, followed by integration/qualification of the retained W02/W04 drafts. W03 still requires the Events E30 physical access contract; W05 requires the Events E04 lifecycle contract. Common runtime work remains downstream of A/B/C and the selected ownership/materialization/resource/drain contracts. This continuation does not bypass those dependencies, execute SQL, import/install candidates, change release versions, or edit the live WIP/Events/ERP checkouts. See the scoped continuation plan for retained evidence.
 
+### W01 source-only reconciliation
+
+`docs/coordination/w01-reconciliation-20261107/README.md` records independently accepted source evidence, not runtime compatibility or a replacement packet. Of 189 frozen inputs, 181 still match and eight Events inputs changed; all Workers, fixture/runner and pinned driver files match. Seven changed Python originals were recovered by exact hash, and all nine diffs (including new, not proven reachable `native_codec.py`) were reproduced independently. The old SQL prefix remains exact. All 190 current observed pins were stable at the final recorded source-only check.
+
+Do not blindly refresh the frozen fixture-v3 hashes. W01 preparation, nonempty admission context, canonical bytes, protected bindings and result decoding require reviewed compatibility checks against the changed Events public paths. The new private raw context helpers are not substitutes for W01. The frozen runner also targets a different host/database than the captured Events v58 container. Any future native run needs target-specific reviewed identity/prestate, setup/disposal scope and exact authorization. No fixture/package/driver import, test suite, source-check script, SQL execution, target probe, lease or attempt marker occurred in this reconciliation; previous pure-suite results remain historical.
+
 ### Shared SQL freshness correction
 
 Do not reuse the old statement that E04 has no implementation. Current live Events SQL is 290,583 bytes, SHA256 `6cf0c7d1fb6baaccf98b5aaf0e3ed15c55c12941c4e73d45d083d948ec9a5534`, and defines E04. The Events handoff records bounded independently accepted owner-mode first-claim and later boundary/pagination work; this is not complete lifecycle/driver/resource qualification. E30 remains absent from this exact source.

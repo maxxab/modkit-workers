@@ -1,0 +1,25 @@
+{
+  "format": "UTF-8 unified diff preserved as JSON lines with line endings",
+  "raw_size": 499,
+  "raw_sha256": "337c123aa5504c76e10cce2f7d1646390f555cbeae839d8b0ccc0bb8c3837984",
+  "unified_diff_lines": [
+    "--- frozen/src/modkit_events/persistence/errors.py\n",
+    "+++ current/src/modkit_events/persistence/errors.py\n",
+    "@@ -1,6 +1,15 @@\n",
+    " \"\"\"Code-only errors with immediate-exit exception-chain detachment.\"\"\"\n",
+    " from enum import Enum\n",
+    " from functools import wraps\n",
+    "+from typing import NoReturn\n",
+    "+\n",
+    "+\n",
+    "+class _ValidationReject(Exception):\n",
+    "+    \"\"\"An intentional private validation rejection, never an unexpected primary.\"\"\"\n",
+    "+\n",
+    "+\n",
+    "+def _reject_validation() -> NoReturn:\n",
+    "+    raise _ValidationReject\n",
+    " \n",
+    " \n",
+    " class ErrorCode(Enum):\n"
+  ]
+}

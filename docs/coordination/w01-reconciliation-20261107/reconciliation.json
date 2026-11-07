@@ -1,0 +1,340 @@
+{
+  "status": "SOURCE_RECONCILIATION_ONLY_NOT_A_REPIN_OR_RUNTIME_RELEASE",
+  "observed_at": "2026-11-07T20:31:11.466271+00:00",
+  "packet_path": "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/packet.json",
+  "packet_sha256": "897fccd0a1bcc34756ad77b9cb9d0e61dccea3c683576e63ca00bb278b77563d",
+  "packet_status": "PROPOSED_NOT_RUN_NO_LEASE_E10_AND_NAMESPACE_BEHAVIOR_QA_PENDING",
+  "counts": {
+    "unchanged": 181,
+    "changed": 8
+  },
+  "changed_inputs": [
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/models.py",
+      "expected": {
+        "size": 1901,
+        "sha256": "6a309a182be71cc9fd8b902a71f6a132194d9a11e7b47a34455ed2c1baf0084e"
+      },
+      "current": {
+        "size": 3186,
+        "sha256": "d8f614039c36bc15c2119e53b4f9f3237f8529b89329786ea45cfc242e032b26"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/models.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_EventDraft",
+          "_event_from_fields",
+          "_freeze",
+          "_reject_event",
+          "_validate_event_fields"
+        ],
+        "removed": [],
+        "changed": [
+          "Event",
+          "freeze"
+        ]
+      },
+      "diff_file": "src__modkit_events__models.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/bindings.py",
+      "expected": {
+        "size": 30449,
+        "sha256": "240c3afc7877462ed00a04ba72642ef23d5549195df99417c39a90dabae6cbff"
+      },
+      "current": {
+        "size": 46608,
+        "sha256": "244a05131f2851e7ef2ca0b5c49bd6a31bb9d11b697c4a090fb194b18c83788a"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/bindings.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_ReturnContextDraft",
+          "_bytes_raw",
+          "_canonical_event_core",
+          "_canonical_event_raw",
+          "_canonical_json_core",
+          "_canonical_json_raw",
+          "_constraint_raw",
+          "_decimal_raw",
+          "_decode_mapping_replay_core",
+          "_decode_mapping_replay_raw",
+          "_decode_utf8",
+          "_event_raw",
+          "_freeze_request_raw",
+          "_identifier_raw",
+          "_integer_raw",
+          "_json_number_raw",
+          "_parse_canonical_json_core",
+          "_parse_canonical_json_raw",
+          "_read_decimal_raw",
+          "_read_float_hex",
+          "_read_float_hex_raw",
+          "_reader_raw",
+          "_record_raw",
+          "_reject_scalar",
+          "_replay_raw",
+          "_return_context_raw",
+          "_scalar_core",
+          "_scalar_raw",
+          "_statement_shape_raw",
+          "_validate_empty_context_fields",
+          "_validate_event_replay_core",
+          "_validate_event_replay_raw",
+          "_validate_return_context",
+          "_version_from_decimal_core",
+          "_version_from_decimal_raw",
+          "_version_to_decimal_core",
+          "_version_to_decimal_raw"
+        ],
+        "removed": [],
+        "changed": [
+          "ReturnContext",
+          "_Budget",
+          "_JSONReader",
+          "_Reader",
+          "_bytes",
+          "_constraint",
+          "_decimal",
+          "_freeze_parameters",
+          "_instant",
+          "_integer",
+          "_j",
+          "_json_number",
+          "_parse_j",
+          "_read_decimal",
+          "_record",
+          "_replay",
+          "_scalar",
+          "_snapshot_sequence",
+          "_utf8",
+          "canonical_event",
+          "canonical_json",
+          "decode_mapping_replay",
+          "parse_canonical_json",
+          "validate_event_replay",
+          "version_from_decimal",
+          "version_to_decimal"
+        ]
+      },
+      "diff_file": "src__modkit_events__persistence__bindings.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/catalog.py",
+      "expected": {
+        "size": 18045,
+        "sha256": "49f1ffec8bcfcc972d3ae1f7c0c33e5ad8b053056a140abd1d58e697480a1696"
+      },
+      "current": {
+        "size": 18997,
+        "sha256": "bbf5788537bb3f920549f8dac6b9a556074c51c79cf44f0fe848dbce2aebb11b"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/catalog.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_metadata_reject",
+          "_validate_column_spec",
+          "_validate_parameter_spec",
+          "_validate_result_spec",
+          "_validate_statement_spec"
+        ],
+        "removed": [],
+        "changed": [
+          "ColumnSpec",
+          "ParameterSpec",
+          "ResultSpec",
+          "StatementSpec",
+          "_name",
+          "_tuple"
+        ]
+      },
+      "diff_file": "src__modkit_events__persistence__catalog.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/errors.py",
+      "expected": {
+        "size": 2882,
+        "sha256": "0fab56954a15b3b871b8ab88c40dcbf424cc00baa93fef2c5458f1003249bf0a"
+      },
+      "current": {
+        "size": 3100,
+        "sha256": "d40ca1c76fd4ce8ecbb7dca0fa2a1a8f99e33786c2374fb89a06fdf798d15bd8"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/errors.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_ValidationReject",
+          "_reject_validation"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "diff_file": "src__modkit_events__persistence__errors.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/models.py",
+      "expected": {
+        "size": 8129,
+        "sha256": "4e7a2c65ff106e87e2c7ac16ed7bc5ae353a87bea34ef5dd713301ada0d3a685"
+      },
+      "current": {
+        "size": 9005,
+        "sha256": "8ad9298204b67046e7a1a85fb3be34399566b4ec705ce9986ff804772876da82"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/models.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_CanonicalEvidenceDraft",
+          "_canonical_evidence_raw",
+          "_validate_canonical_evidence"
+        ],
+        "removed": [],
+        "changed": [
+          "CanonicalEvidence"
+        ]
+      },
+      "diff_file": "src__modkit_events__persistence__models.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/rows.py",
+      "expected": {
+        "size": 19375,
+        "sha256": "2a735ce5e8729bbbeeda67b4495534cce71e2ec4a987d38685bb0cb136eeea40"
+      },
+      "current": {
+        "size": 26532,
+        "sha256": "e76e5ec76c3f8d4bc6345721847102bc18e22fd377cf0ef2e062cfc09ef9ade7"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/rows.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_OutboxDraft",
+          "_bounded_rows_core",
+          "_couple_event_id",
+          "_decode_columns_core",
+          "_decode_columns_raw",
+          "_decode_event_rows_raw",
+          "_decode_outbox_raw",
+          "_fetch_core",
+          "_finish_event_rows",
+          "_request_core",
+          "_request_raw",
+          "_scalar_record",
+          "_validate_outbox_fields",
+          "_validate_record_common",
+          "_wire_scalar_core",
+          "_wire_scalar_raw"
+        ],
+        "removed": [],
+        "changed": [
+          "_bounded_rows",
+          "_couple",
+          "_decode_columns",
+          "_decode_event_rows_core",
+          "_fetch",
+          "_record",
+          "_request",
+          "_validate_record",
+          "_wire_scalar"
+        ]
+      },
+      "diff_file": "src__modkit_events__persistence__rows.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/scope.py",
+      "expected": {
+        "size": 5398,
+        "sha256": "b80b56b50239a712e967ea805c5d2036423aa87acb4283169c38311e0b6a8efa"
+      },
+      "current": {
+        "size": 5878,
+        "sha256": "c10b14941dd5533c6fcccd48eb983624104f0361c227220021a83da32c4ff4a0"
+      },
+      "status": "changed",
+      "original_source": "/home/faris/modkit-local-20261106/checkpoints/2026-11-07-events-direct-review-safe-stop-v2/workspace-files/src/modkit_events/persistence/scope.py",
+      "top_level_definition_delta": {
+        "added": [
+          "_reject_field"
+        ],
+        "removed": [],
+        "changed": [
+          "_encode_field"
+        ]
+      },
+      "diff_file": "src__modkit_events__persistence__scope.py.diff.json"
+    },
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "expected": {
+        "size": 241339,
+        "sha256": "5042eb8a0ce5715a573f0e5260b8761d8c7fbfbd0da13d412b51217582585d42"
+      },
+      "current": {
+        "size": 290583,
+        "sha256": "6cf0c7d1fb6baaccf98b5aaf0e3ed15c55c12941c4e73d45d083d948ec9a5534"
+      },
+      "status": "changed",
+      "original_source": "Exact current prefix, independently verified against frozen hash",
+      "prefix_preserved": true,
+      "suffix": {
+        "size": 49244,
+        "sha256": "db20866e1f27140884499f6671e4b423321459b895665c6af3115fcac63e4587"
+      },
+      "appended_create_functions": [
+        "modkit_events.e04",
+        "modkit_events.e05",
+        "modkit_events.e06",
+        "modkit_events.e07"
+      ],
+      "appended_revoke_lines": [
+        "REVOKE ALL ON FUNCTION modkit_events.e04(pg_catalog.bytea,pg_catalog.text,pg_catalog.bytea[],pg_catalog.int4[],pg_catalog.int4,pg_catalog.float8,pg_catalog.uuid,pg_catalog.int4) FROM PUBLIC;",
+        "REVOKE ALL ON FUNCTION modkit_events.e05(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.float8) FROM PUBLIC;",
+        "REVOKE ALL ON FUNCTION modkit_events.e06(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.uuid,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;",
+        "REVOKE ALL ON FUNCTION modkit_events.e07(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.timestamptz) FROM PUBLIC;"
+      ],
+      "diff_file": "src__modkit_events__persistence__sql__0001_initial.sql.diff.json"
+    }
+  ],
+  "new_unpinned_source": [
+    {
+      "path": "/home/faris/modkit-events/src/modkit_events/persistence/native_codec.py",
+      "size": 9146,
+      "sha256": "c2c374f3ad3fac1cad96dd906a6674eb0dd57fdac123521ff733b559a4c860eb",
+      "top_level_definitions": [
+        "_SqlDescriptor",
+        "_TransportColumn",
+        "_decode_binary_transport_row",
+        "_selected_sql_descriptor"
+      ]
+    }
+  ],
+  "frozen_execution_proposal": {
+    "argv": [
+      "/home/faris/modkit-native-v2-venv/bin/python",
+      "-I",
+      "-B",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/run_proposed.py",
+      "<separately granted Events lease JSON>"
+    ],
+    "cwd": "/home/faris/modkit-workers",
+    "timeout_seconds": 180,
+    "max_concurrent_connections": 4,
+    "max_total_connection_attempts": 37,
+    "target_id": "5d58dd666eeec045c79f3e8732e015c8d3ba77278229e52f7c1897e07150a274",
+    "native_driver_version": "3.3.8"
+  },
+  "limits": [
+    "No target probe or SQL parsing/execution",
+    "No fixture, package, or driver imports",
+    "No lease or attempt marker created",
+    "Frozen packet and live source remain unchanged",
+    "AST and byte diffs do not prove runtime compatibility"
+  ],
+  "diff_storage": "JSON-encoded UTF-8 line arrays preserve exact original unified-diff bytes while satisfying repository whitespace checks."
+}

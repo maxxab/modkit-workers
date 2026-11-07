@@ -1,0 +1,72 @@
+{
+  "status": "FROZEN_CAPTURE_REFERENCE_ONLY_NOT_CURRENT_PROBE_OR_AUTHORIZATION",
+  "manifest_path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v58-ephemeral-target-recovery/artifact-pins.json",
+  "manifest_sha256": "46ba9facfc49471b8b57116596bd854a04b590f5f25d0237eeca36b4df27a7f3",
+  "catalog_pin": {
+    "bytes": 59979,
+    "sha256": "78fc0cf4bb4f2c4b47f4f22d4749b3147e1ee5210ae289e7a350c416ebc40357"
+  },
+  "container_pin": {
+    "bytes": 865,
+    "sha256": "c6e81bcd521bf5af66a885944f7f880fa9b5c885369ae2171017020098b2b000"
+  },
+  "catalog_selected": {
+    "database": "modkit_qualification",
+    "server_address": "127.0.0.1",
+    "server_port": 5432,
+    "control_system": {
+      "system_identifier": 7705523520844832822,
+      "catalog_version_no": 202506291,
+      "pg_control_version": 1800,
+      "pg_control_last_modified": "2026-11-07T20:06:44+00:00"
+    },
+    "postmaster_started_at": "2026-11-07T20:06:44.138392+00:00",
+    "server_version": "18.1 (Debian 18.1-1.pgdg13+2)",
+    "current_user": "postgres"
+  },
+  "container_selected": {
+    "Id": "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3",
+    "Image": "sha256:1090bc3a8ccfb0b55f78a494d76f8d603434f7e4553543d6e807bc7bd6bbd17f",
+    "running": true,
+    "HostConfig": {
+      "NetworkMode": "none",
+      "Binds": null,
+      "PortBindings": {},
+      "Tmpfs": {
+        "/var/lib/postgresql": "rw,nosuid,nodev,size=256m"
+      },
+      "Memory": 402653184,
+      "NanoCpus": 500000000,
+      "PidsLimit": 128
+    },
+    "Mounts": [],
+    "networks": {
+      "none": {
+        "Aliases": null,
+        "DNSNames": null,
+        "DriverOpts": null,
+        "EndpointID": "0828434f1a1032d699144f64085f50afa3ffe70cd974ad9e31ab4572e5ab6372",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "GwPriority": 0,
+        "IPAMConfig": null,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "Links": null,
+        "MacAddress": "",
+        "NetworkID": "a4c00069a537a9eabc4aeeea8a47d970dd32874f8c2edfb8d8b35bd8f44d5f81"
+      }
+    }
+  },
+  "reported_review_path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-queued-terminal-run-v59/v58-review-reported.json",
+  "reported_review_sha256": "cac428da9ba38e5e605e53d85600039aeeebe0d7a62d25f3101e753e12c2b9cd",
+  "frozen_runner_target": {
+    "host": "172.26.0.3",
+    "port": 5432,
+    "database": "modkit_native_qualification",
+    "user": "postgres",
+    "target_id": "5d58dd666eeec045c79f3e8732e015c8d3ba77278229e52f7c1897e07150a274"
+  }
+}
