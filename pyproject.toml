@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "modkit-workers"
+version = "0.1.0"
+description = "Application-owned work contracts and explicit persistence resources"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = ["Programming Language :: Python :: 3", "Typing :: Typed"]
+dependencies = ["modkit-events>=0.2,<0.3"]
+
+# Candidate ranges only; interpreter/driver/artifact qualification is pending.
+[project.optional-dependencies]
+redis = ["redis>=8.1,<9", "modkit-events[redis]>=0.2,<0.3"]
+sqlalchemy = ["SQLAlchemy[asyncio]>=2.1.6,<3", "modkit-events[sqlalchemy]>=0.2,<0.3"]
+native = ["psycopg>=3.2,<4", "modkit-events[native]>=0.2,<0.3"]
+postgresql-psycopg = ["SQLAlchemy[asyncio]>=2.1.6,<3", "psycopg>=3.2,<4", "modkit-events[postgresql-psycopg]>=0.2,<0.3"]
+postgresql-asyncpg = ["SQLAlchemy[asyncio]>=2.1.6,<3", "asyncpg>=0.30,<1", "modkit-events[postgresql-asyncpg]>=0.2,<0.3"]
+pydantic = ["pydantic>=2.10,<3", "modkit-events[pydantic]>=0.2,<0.3"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/modkit_workers"]
+artifacts = ["src/modkit_workers/py.typed", "src/modkit_workers/persistence/sql/manifest.json", "src/modkit_workers/persistence/sql/*.sql"]
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "docs", "pyproject.toml", "README.md", "LICENSE", "CHANGELOG.md", "requirements-dev.txt"]
+exclude = ["/docs/handoffs/**", "/docs/coordination/**", "/docs/plans/**"]

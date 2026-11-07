@@ -1,0 +1,53 @@
+# Built-in job persistence
+
+The built-in store participates in an application's existing PostgreSQL transaction. These pure models, parameter builders and row decoders do not connect, begin, commit, roll back, dispatch a handler, resolve a credential or run a worker. This development source has not been qualified against PostgreSQL or Redis. Application-owned job stores need not create duplicate built-in records.
+
+## Logical input and storage profile
+
+JobInput takes work_id, command_type, schema_version, scope and payload, with keyword-only original_available_at and protected. Optional keyword arguments are deadline, idempotency_key, replay_policy (disabled by default) and max_attempts (one by default). The supported signature is documented here; legacy positional datetime and protected_binding keyword signatures are not supported.
+
+Supply a canonical lowercase hyphenated UUID string for work_id, an application Scope, a strict JSON mapping payload, and an explicit ProtectedBindingInput even when no protected material is needed. Original availability and deadline are different: original_available_at is immutable admission identity; a retry's mutable available_at cannot change it. All timestamps must be aware. Logical positive Python schema versions are retained without narrowing to int4; managed admission separately limits their decimal representation to4096 digits, and only an actually supported positive int4 version is runnable. A wide well-formed version is not silently truncated or called a malformed logical input.
+
+Payload is copied into immutable mappings/tuples. Managed projection uses shared codecs: canonical typed JSON distinguishes int1 from float1.0 and positive/negative floating zero, ignores object insertion order, and preserves array order. Replay is strict UTF8 without BOM; UTF16/32 replay is not accepted by this new managed profile. Legacy Event/JsonCodec behavior is unchanged. Complete replay, canonical evidence and enclosing intent each have their own1MiB bound; separate field bounds do not grant an additive unlimited envelope. Managed depth is32, whereas logical input construction allows depth64. No interpreter-global integer settings are modified.
+
+Scope remains logical Scope(application,tenant=None,owner=None). Its sole shared encoder preserves exact UTF8 bytes including NUL and normalization distinctions. Each present field is1..256 bytes/nonblank under the fixed scope contract; None is distinct from empty. NEW MKSC1 encoding is10..781 bytes. It does not reproduce unavailable historical framing/hashes, and cannot relabel previously stored identity evidence.
+
+## Preparation, statement snapshots and collisions
+
+submit, read_job, acquire and list_jobs produce shared immutable FrozenRequest values using schema-owned catalog descriptors and the one shared freeze_request implementation. find_jobs produces PreparedJobFind with a W04 lookup and a comparison-only frozen W01 expected submission. NEVER execute expected_submission as part of a find. Only its complete immutable admission/material evidence is used to compare returned candidates. Builders freeze every buffer, capability pair, bound and cursor before a driver gate/await; decoders use that exact request, never the caller's mutable original.
+
+Job identity includes kind job, namespace jobs, command/version, exact scope, optional scoped key and all immutable semantic/binding/policy/scheduling fields. Proposed work ID is the direct-ID collision index, excluded from canonical intent so an identical scoped-key request can return an existing original ID. Changed key/scope/input/protected bytes or split direct/key winners conflict; digest equality alone never proves identity. W01's ID/inserted result is STAGED, not a commit acknowledgement or complete reconciliation evidence.
+
+W02 read, W03 list, W04 find and W05 acquire return complete joined work/provenance/job evidence in a single statement snapshot. A second later read cannot repair the snapshot of a missing half. Work-only/job-only/mismatched halves must fail, not disappear through an inner join. W04 can legitimately return an inbox record occupying the requested direct ID: absent job half then means identity conflict, not corruption. Actual job kind with missing half, or a job half attached to nonjob, is corruption. Every repeated ID/scope/binding/semantic field is checked.
+
+JobDetails preserves its five logical fields: work_id, application, tenant, owner, protected_binding. Richer JobPayload and JobRecord are separate. These are protected internal records, not a public API status response. Application authorization and explicit allowlist projection remain mandatory. Never fall back to a protected record when a public projection is missing or has the wrong work ID/revision. Raw result bytes, scope, tokens, payloads, references and key metadata must not leak through automatic serialization.
+
+## Scan versus listing
+
+JobAcquireRequest explicitly supplies paired capabilities, limit1..256, finite lease seconds, scan_after UUID or None and discovery_budget1..4096>=limit. W05 returns ScanPage, including a mandatory first header, visited count, next cursor and pass_exhausted. Empty items with positive visited is progress across an ineligible/locked window, not proof the queue is empty. A limit-hit page is not exhausted. Caller scheduling determines the next invocation or later cursor reset; these pure APIs do not loop automatically.
+
+Claim pages validate every item and header before returning any claims. A bad last row cannot leak a usable prefix. Logical scan budget does not prove bounded physical IO or wall-clock execution; actual SQL indices/locking and caller timeouts require separate qualification. W03 listing uses a (created_at,work_id) cursor, no scan header. Neither pagination nor a point-read absence proves an uncertain mutation never committed. Concurrent commits can appear behind a passed page cursor.
+
+## Protected material and execution readiness
+
+Use the shared typed ProtectedBindingInput. ABSENT requires no storage/codec/key/expiry, retain cleanup, empty content binding and exact empty recovery sentinel; projection is still a canonical JSON object. PRESENT requires exactly one nonempty sidecar/reference, codec/key version, content binding and canonical recovery metadata; expiry is optional. Metadata bytes must already be canonical J object bytes; arbitrary opaque metadata is not silently JSON. Mapping convenience is canonicalized once by the shared codec.
+
+Conservative binding includes all original storage bytes and descriptors, including ciphertext/reference, cleanup and projection. Different ciphertext conflicts even if an application claims the same semantic secret. A shared decode_protected_binding recovers original binding fields; workers never implement a second MKPF parser. A reserved ERASED observation has NULL live material columns but retains original PRESENT binding and descriptors. It is NONEXECUTABLE even if original bytes remain in binding. Those retained bytes mean no true erasure or crypto-erasure guarantee; no current operation performs erasure/rotation. Future true deletion/rotation requires a separately versioned equality/key policy.
+
+Application-owned providers determine trusted material readiness, encryption, durable reference validity, key access, expiry and execution authorization. Neither a structurally valid protected row nor a matching hash authorizes a handler/provider call. JobClaimObservation represents ownership and immutable input, not execution readiness. The package does not decrypt, retrieve secrets or infer authority from tenant metadata.
+
+## Attempts, success and uncertainty
+
+Claimed work has NULL current dispatch_id and may have positive prior attempt_count from resolved attempts. Claim/renew/deferral do not consume an attempt. Normal dispatch returns prior+1 and a refreshed fence; stale counts must not enter finalization. Ordinary confirmed retry and proven-safe E31 retry clear only the current dispatch pointer, retain count/history/effect identity and release ownership. The next dispatch is new. Held/dispatched terminal work retains pointer. A safe-retry operation record retains its historical dispatch ID even after current work advances; do not compare historical operation evidence to an unrelated later state snapshot.
+
+Guarded business completion: arm before associated writes, enqueue within the same transaction, complete LAST, then caller owns commit. Reconciled external success uses distinct operation evidence, not a fabricated business guard/final-fence timestamp. Reconciliation records outcome/history/accounting; it does not certify arbitrary old or new local business writes. Job success, publication and downstream delivery remain separate outcomes.
+
+On business failure, caller first rolls back the FULL business root, then supplies a separate active root for fenced failure or uncertain hold. Savepoint rollback, ended session, new root or absent guard is not a historical rollback oracle. No adapter owns transactions or uses private APIs to manufacture such proof.
+
+Errors are fixed-code PersistenceError observations with detached cause/context at the immediate public boundary, including calls inside ambient except. This does not erase traceback locals or control caller logging. Cancellation/BaseException keeps its original identity. Invalid fetched results are unconfirmed; a valid next STAGED statement, savepoint cleanup or fresh connection cannot clear sticky uncertainty.
+
+There is no standalone mutation-operation reader in the39-key catalog. Repeating E27/E31/E32 with exact original operation ID and all typed arguments may perform the transition if no committed operation exists; it is NOT a read-only probe. Such a repeat never permits repeating provider/broker/handler I/O. Read-only reconciliation uses existing affirmative observations and leaves inconclusive outcomes unresolved. Unknown commit or absent lookup never grants automatic replay.
+
+## Qualification boundaries
+
+Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. PostgreSQL and Redis fixture execution is blocked and must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.
