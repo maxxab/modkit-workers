@@ -1,0 +1,20 @@
+{
+  "kind": "bounded_pure_comparison_receipt",
+  "run_number": 1,
+  "status": "FAILED_ORIGINAL_CHILD_HARNESS_ORACLE",
+  "candidate_pins": {
+    "pure_payload.py": "729cfdc1da6334de3e3ba1e2e13b4a9d92aeb84c9a0f15e0af148c0b4e9e7ca2",
+    "compare_pure.py": "920b66822afb711b1a943c57e603debccb3425c5c39aec97f53a436d33e3d42f",
+    "source-manifest.json": "07fb92807aadf83f6bcd04fb7208b4c5ed2ec60a250e7e587704062ee34fab96",
+    "README.md": "7709959dd44c197bdc8812860e0e94e0d04f1b4969577f07a3982d30d220dbaf"
+  },
+  "tool_result": {
+    "chunk_id": "c185cc",
+    "wall_time_seconds": 2.463059611,
+    "exit_code": 1,
+    "original_token_count": 297,
+    "output": "pure_payload.py: OK\ncompare_pure.py: OK\nsource-manifest.json: OK\nREADME.md: OK\nTraceback (most recent call last):\n  File \"/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-pure-compatibility-20261107/compare_pure.py\", line 205, in <module>\n    main()\n  File \"/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-pure-compatibility-20261107/compare_pure.py\", line 139, in main\n    assert completed.returncode == 0, (\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: original: child failed: Traceback (most recent call last):\n  File \"/tmp/w01-pure-reviewed-hro_oykp/original/pure_payload.py\", line 400, in <module>\n    badrow(\"row_reject_\" + name, lambda rows=rows: decode_submit(req, rows))\n  File \"/tmp/w01-pure-reviewed-hro_oykp/original/pure_payload.py\", line 176, in badrow\n    rejects(name, f, PersistenceError, ErrorCode.INVALID_OBSERVATION, True)\n  File \"/tmp/w01-pure-reviewed-hro_oykp/original/pure_payload.py\", line 168, in rejects\n    raise AssertionError(\"Expected rejection: \" + name)\nAssertionError: Expected rejection: row_reject_string_uuid\n\n"
+  },
+  "interpretation": "Original child rejected the harness expectation row_reject_string_uuid: public row decoder intentionally accepts canonical UUID strings. Current child not reached. This is not demonstrated product incompatibility.",
+  "native_target_fixture_SQL": "NOT_RUN"
+}

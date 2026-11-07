@@ -1,0 +1,34 @@
+{
+  "README.md": {
+    "size": 11674,
+    "sha256": "5aacab89e32becf3d236809e59d5b477ddcc13d3d492a6a4bd90be585c851fc1"
+  },
+  "compare_pure.py": {
+    "size": 8336,
+    "sha256": "920b66822afb711b1a943c57e603debccb3425c5c39aec97f53a436d33e3d42f"
+  },
+  "pure_payload.py": {
+    "size": 17521,
+    "sha256": "bc36d25100816153a016b5e327f5a95a9754bd3b9f10d2f48c9625875ec53ee2"
+  },
+  "review-summary.json": {
+    "size": 1091,
+    "sha256": "ba8379534b4775706afdc85b3040a623d859b57f6bfc4c87e0f765bf95a60738"
+  },
+  "run-01.json": {
+    "size": 2164,
+    "sha256": "63e2c63c36cb6889722e5b366b0deaf88fd1b47283f1ad1de8d6e5273f619d80"
+  },
+  "run-02.json": {
+    "size": 1320,
+    "sha256": "a16e0cba783aada474cd560785cf68b65d3997f0e7d8161f0d447259623d3405"
+  },
+  "source-manifest.json": {
+    "size": 6613,
+    "sha256": "2d60de305534f359f6a0f838f6e3709ca0402d04bd73e6b804ecacbb3c6a38cc"
+  },
+  "static-checks.json": {
+    "size": 227,
+    "sha256": "5a011f75e419eab01cb38f3858fc1d707f215c1633e1cd185f8aa3f63879eeb2"
+  }
+}

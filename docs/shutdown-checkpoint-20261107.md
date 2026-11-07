@@ -9,6 +9,12 @@
 
 The authoritative remaining SQL order is W01 real fixture qualification, followed by integration/qualification of the retained W02/W04 drafts. W03 still requires the Events E30 physical access contract; W05 requires the Events E04 lifecycle contract. Common runtime work remains downstream of A/B/C and the selected ownership/materialization/resource/drain contracts. This continuation does not bypass those dependencies, execute SQL, import/install candidates, change release versions, or edit the live WIP/Events/ERP checkouts. See the scoped continuation plan for retained evidence.
 
+### W01 bounded pure compatibility
+
+The independently reviewed offline harness in `docs/coordination/w01-pure-compatibility-20261107/` matched **84 required normalized records** between the frozen original and reconciled current Events Python sources, with identical packet-pinned live Workers source on both sides. Six comparator-only controls confirmed sensitivity to semantic/result, bool/int and mutable/immutable container differences. Post-run input pins and the original packet remained stable. Static Ruff lint/format checks passed. No production source was changed.
+
+The first run stopped on an incorrect harness oracle: the public decoder lawfully accepts canonical UUID strings. That expectation was corrected and independently reviewed before the successful rerun; malformed/braced spellings are rejected. This evidence covers the documented public preparation, canonical/protected bytes, snapshots and W01 submit-result decoding cases only. It does not establish exhaustive Python compatibility, real admission/SQL/transactions, target identity/setup/disposal, native/runtime readiness or ERP compatibility. Full-project suite results below remain historical; the existing frozen W01 packet is still not repinned or released.
+
 ### W01 source-only reconciliation
 
 `docs/coordination/w01-reconciliation-20261107/README.md` records independently accepted source evidence, not runtime compatibility or a replacement packet. Of 189 frozen inputs, 181 still match and eight Events inputs changed; all Workers, fixture/runner and pinned driver files match. Seven changed Python originals were recovered by exact hash, and all nine diffs (including new, not proven reachable `native_codec.py`) were reproduced independently. The old SQL prefix remains exact. All 190 current observed pins were stable at the final recorded source-only check.
