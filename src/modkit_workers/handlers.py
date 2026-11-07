@@ -64,6 +64,26 @@ def _version(value: object) -> bool:
     return type(value) is int and value >= 1
 
 
+def _handler_entrypoints(handler: object) -> tuple[object, ...]:
+    """Inspect exact partial chains at the callback and its call entrypoints."""
+    entrypoints: list[object] = []
+    visited: list[object] = []
+    for _ in range(64):
+        if any(handler is prior for prior in visited):
+            raise InvalidWorkerConfiguration("Unsupported handler entrypoint")
+        visited.append(handler)
+        if type(handler) is partial:
+            handler = handler.func
+            continue
+        entrypoints.append(handler)
+        call = getattr(type(handler), "__call__", None)
+        if type(call) is not partial:
+            return (*entrypoints, call)
+        handler = call
+    # A descriptor may keep producing fresh partial-backed instances indefinitely.
+    raise InvalidWorkerConfiguration("Unsupported handler entrypoint")
+
+
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
 class HandlerRegistration:
     command_type: str
@@ -84,12 +104,9 @@ class HandlerRegistration:
             raise InvalidWorkerConfiguration("Invalid handler registration")
         # Inspect direct and instance entrypoints without invoking application code.
         # Descriptor failures propagate; they are programmer errors, not invalid results.
-        entrypoint = self.handler
-        # Built-in partial only binds arguments; inspect the callable it preserves.
+        # Built-in partial only binds arguments, including on an instance __call__.
         # Do not unwrap arbitrary decorators or subclasses with custom behavior.
-        while type(entrypoint) is partial:
-            entrypoint = entrypoint.func
-        entrypoints = (entrypoint, getattr(type(entrypoint), "__call__", None))
+        entrypoints = _handler_entrypoints(self.handler)
         if any(
             inspect.isgeneratorfunction(entry) or inspect.isasyncgenfunction(entry)
             for entry in entrypoints
