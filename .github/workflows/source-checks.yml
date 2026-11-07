@@ -41,6 +41,8 @@ jobs:
           python -c "import importlib.util; assert importlib.util.find_spec('modkit_events') is None"
       - name: Lint all source and tests
         run: python -m ruff check --no-cache src tests
+      - name: Check formatting of all source and tests
+        run: python -m ruff format --check --no-cache src tests
       - name: Run dependency-independent tests only
         run: |
           python -m pytest -q -p no:cacheprovider \
@@ -55,8 +57,9 @@ jobs:
           cat <<'SUMMARY' >> "$GITHUB_STEP_SUMMARY"
           ## Dependency-independent source checks only
 
-          This job covers Ruff lint, the three explicitly selected source test files,
-          and the source-distribution privacy regression. See individual step outcomes.
+          This job covers Ruff lint and formatting over src/tests, the three explicitly
+          selected source test files, and the source-distribution privacy regression.
+          See individual step outcomes.
 
           **Full suite: BLOCKED** until compatible public Events contracts and
           persistence APIs are available. The inspected public Events 0.1.0 source
@@ -65,6 +68,6 @@ jobs:
 
           **NOT_READY for production or package release.** A green job does not
           qualify the complete suite, dependency resolution, installed wheel/sdist,
-          formatting, type checking, the planned interpreter/OS matrix, native
+          type checking, the planned interpreter/OS matrix, native
           drivers, production SQL resources, PostgreSQL/Redis, or a worker runtime.
           SUMMARY

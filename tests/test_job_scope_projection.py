@@ -1,4 +1,5 @@
 """Worker scope-consumer tests, not a rerun of standalone Scope qualification."""
+
 import unittest
 from datetime import UTC, datetime
 
@@ -23,12 +24,27 @@ class WorkerScopeConsumerTests(unittest.TestCase):
             ((" A\0\n", "é", "e\u0301"), (b" A\0\n", b"\xc3\xa9", b"e\xcc\x81")),
         ):
             with self.subTest(logical=logical):
-                material = ProtectedBindingInput(material_state=MaterialState.ABSENT,
-                    codec=None, key_version=None, expires_at=None,
-                    cleanup_policy=CleanupPolicy.RETAIN, sidecar=None, reference=None,
-                    content_binding=b"", recovery_metadata=b"", projection_metadata={})
-                request = JobInput(ID, "send", 1, Scope(*logical), {"value": 1},
-                                  original_available_at=NOW, protected=material)
+                material = ProtectedBindingInput(
+                    material_state=MaterialState.ABSENT,
+                    codec=None,
+                    key_version=None,
+                    expires_at=None,
+                    cleanup_policy=CleanupPolicy.RETAIN,
+                    sidecar=None,
+                    reference=None,
+                    content_binding=b"",
+                    recovery_metadata=b"",
+                    projection_metadata={},
+                )
+                request = JobInput(
+                    ID,
+                    "send",
+                    1,
+                    Scope(*logical),
+                    {"value": 1},
+                    original_available_at=NOW,
+                    protected=material,
+                )
                 prepared = submit(JobSubmitRequest(job=request))
                 self.assertEqual(prepared.parameters[9:12], raw)
                 self.assertEqual(prepared.parameters[5], request.scope_bytes)
@@ -37,14 +53,25 @@ class WorkerScopeConsumerTests(unittest.TestCase):
         from modkit_events.persistence.bindings import canonical_protected_binding
 
         from modkit_workers.persistence.observations import JobDetails
-        material = ProtectedBindingInput(material_state=MaterialState.ABSENT,
-            codec=None, key_version=None, expires_at=None,
-            cleanup_policy=CleanupPolicy.RETAIN, sidecar=None, reference=None,
-            content_binding=b"", recovery_metadata=b"", projection_metadata={})
-        details = JobDetails(ID, "a\0", None, "e\u0301",
-                             canonical_protected_binding(material).content)
-        self.assertEqual((details.application, details.tenant, details.owner),
-                         ("a\0", None, "e\u0301"))
+
+        material = ProtectedBindingInput(
+            material_state=MaterialState.ABSENT,
+            codec=None,
+            key_version=None,
+            expires_at=None,
+            cleanup_policy=CleanupPolicy.RETAIN,
+            sidecar=None,
+            reference=None,
+            content_binding=b"",
+            recovery_metadata=b"",
+            projection_metadata={},
+        )
+        details = JobDetails(
+            ID, "a\0", None, "e\u0301", canonical_protected_binding(material).content
+        )
+        self.assertEqual(
+            (details.application, details.tenant, details.owner), ("a\0", None, "e\u0301")
+        )
         for value in ("", " \t", "x" * 257, b"a\0"):
             with self.subTest(value_type=type(value)), self.assertRaises(PersistenceError):
                 JobDetails(ID, value, None, None, details.protected_binding)

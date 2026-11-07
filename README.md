@@ -37,6 +37,7 @@ tools from [.github/requirements-source-ci.txt](.github/requirements-source-ci.t
 not Workers or Events. Its exact checks are:
 
 - Ruff lint over all of `src` and `tests`.
+- Ruff formatting checks over all of `src` and `tests`.
 - `tests/test_package_exports.py`, `tests/test_migration_resources.py` and
   `tests/test_handler_partials.py`, using `PYTHONPATH=src` for source imports
   and child processes.
@@ -51,7 +52,7 @@ Workers suite fails collection against it. Full source qualification needs
 compatible public Events APIs; installed-package qualification also requires a
 released Events distribution satisfying the unchanged `>=0.2,<0.3` requirement.
 
-A green dependency-independent check is not a full-suite, formatting, type-checking,
+A green dependency-independent check is not a full-suite, type-checking,
 installed-package, runtime or release qualification. The planned Python/OS matrix,
 optional adapters, native drivers, production SQL and real PostgreSQL/Redis gates
 remain open. No service, deployment or release job is configured.

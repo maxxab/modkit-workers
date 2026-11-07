@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Normalize source and test formatting with Ruff 0.17.3 and enforce formatting in
+  dependency-independent source CI; full dependency and runtime gates remain open.
 - Add dependency-independent source CI for lint, selected tests and sdist privacy;
   full dependency and runtime qualification remain blocked.
 - Add typed worker contracts, pure persistence models and an inert migration resource reader.
