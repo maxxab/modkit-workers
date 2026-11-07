@@ -1,0 +1,116 @@
+{
+  "status": "SOURCE_ONLY_NOT_EXECUTED_REVIEW_REQUIRED",
+  "target_container_id": "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3",
+  "accepted_events_runtime_pins": {
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-running-held-runtime-v66/runtime-pins.json",
+    "sha256": "18a103aa6e9d67277a71bab61c1f511b8fd01405dad126190e0cfbbab532c52b"
+  },
+  "accepted_container_file": {
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v65-e12-running-held-execution/v65-e12-running-held-once/after/container.stdout",
+    "sha256": "c6e81bcd521bf5af66a885944f7f880fa9b5c885369ae2171017020098b2b000"
+  },
+  "accepted_catalog_file": {
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v65-e12-running-held-execution/v65-e12-running-held-once/after/catalog.json",
+    "sha256": "1a631ea1f92172857a64d3372401272c2f8146d0d1a6eff89a6221417a92252e"
+  },
+  "expected_container_profile": {
+    "Id": "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3",
+    "Image": "sha256:1090bc3a8ccfb0b55f78a494d76f8d603434f7e4553543d6e807bc7bd6bbd17f",
+    "running": true,
+    "Cmd": [
+      "-c",
+      "shared_buffers=16MB",
+      "-c",
+      "max_connections=12"
+    ],
+    "Entrypoint": [
+      "docker-entrypoint.sh"
+    ],
+    "HostConfig": {
+      "NetworkMode": "none",
+      "Binds": null,
+      "PortBindings": {},
+      "Tmpfs": {
+        "/var/lib/postgresql": "rw,nosuid,nodev,size=256m"
+      },
+      "Memory": 402653184,
+      "NanoCpus": 500000000,
+      "PidsLimit": 128
+    },
+    "Mounts": [],
+    "networks": {
+      "none": {
+        "Aliases": null,
+        "DNSNames": null,
+        "DriverOpts": null,
+        "EndpointID": "0828434f1a1032d699144f64085f50afa3ffe70cd974ad9e31ab4572e5ab6372",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "GwPriority": 0,
+        "IPAMConfig": null,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "Links": null,
+        "MacAddress": "",
+        "NetworkID": "a4c00069a537a9eabc4aeeea8a47d970dd32874f8c2edfb8d8b35bd8f44d5f81"
+      }
+    }
+  },
+  "commands_in_order": [
+    {
+      "name": "before-container",
+      "argv": [
+        "docker",
+        "inspect",
+        "--format",
+        "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"running\":{{json .State.Running}},\"Cmd\":{{json .Config.Cmd}},\"Entrypoint\":{{json .Config.Entrypoint}},\"HostConfig\":{\"NetworkMode\":{{json .HostConfig.NetworkMode}},\"Binds\":{{json .HostConfig.Binds}},\"PortBindings\":{{json .HostConfig.PortBindings}},\"Tmpfs\":{{json .HostConfig.Tmpfs}},\"Memory\":{{json .HostConfig.Memory}},\"NanoCpus\":{{json .HostConfig.NanoCpus}},\"PidsLimit\":{{json .HostConfig.PidsLimit}}},\"Mounts\":{{json .Mounts}},\"networks\":{{json .NetworkSettings.Networks}}}",
+        "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3"
+      ],
+      "timeout_seconds": 7,
+      "max_stdout_bytes": 4096,
+      "max_stderr_bytes": 4096
+    },
+    {
+      "name": "runtime-locations",
+      "argv": [
+        "docker",
+        "exec",
+        "--user",
+        "postgres",
+        "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3",
+        "/usr/bin/timeout",
+        "--signal=KILL",
+        "4s",
+        "/bin/sh",
+        "-c",
+        "set -eu\nPATH=/usr/local/bin:/usr/bin:/bin\nexport PATH\nfor name in python3 python pip3; do\n  resolved=$(command -v \"$name\" || :)\n  printf 'command|%s|%s\\n' \"$name\" \"$resolved\"\ndone\nfor path in /usr/bin/python3 /usr/local/bin/python3 /usr/bin/python /usr/local/bin/python /usr/lib/python3/dist-packages/psycopg /usr/lib/python3/dist-packages/psycopg_binary; do\n  exists=no; executable=no; directory=no\n  if [ -e \"$path\" ]; then exists=yes; fi\n  if [ -x \"$path\" ]; then executable=yes; fi\n  if [ -d \"$path\" ]; then directory=yes; fi\n  printf 'path|%s|%s|%s|%s\\n' \"$path\" \"$exists\" \"$executable\" \"$directory\"\ndone\nfor version in 3.11 3.12 3.13 3.14; do\n  for package in psycopg psycopg_binary; do\n    path=\"/usr/local/lib/python$version/site-packages/$package\"\n    directory=no\n    if [ -d \"$path\" ]; then directory=yes; fi\n    printf 'package-directory|%s|%s\\n' \"$path\" \"$directory\"\n  done\ndone\n"
+      ],
+      "timeout_seconds": 7,
+      "max_stdout_bytes": 4096,
+      "max_stderr_bytes": 4096
+    },
+    {
+      "name": "after-container",
+      "argv": [
+        "docker",
+        "inspect",
+        "--format",
+        "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"running\":{{json .State.Running}},\"Cmd\":{{json .Config.Cmd}},\"Entrypoint\":{{json .Config.Entrypoint}},\"HostConfig\":{\"NetworkMode\":{{json .HostConfig.NetworkMode}},\"Binds\":{{json .HostConfig.Binds}},\"PortBindings\":{{json .HostConfig.PortBindings}},\"Tmpfs\":{{json .HostConfig.Tmpfs}},\"Memory\":{{json .HostConfig.Memory}},\"NanoCpus\":{{json .HostConfig.NanoCpus}},\"PidsLimit\":{{json .HostConfig.PidsLimit}}},\"Mounts\":{{json .Mounts}},\"networks\":{{json .NetworkSettings.Networks}}}",
+        "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3"
+      ],
+      "timeout_seconds": 7,
+      "max_stdout_bytes": 4096,
+      "max_stderr_bytes": 4096
+    }
+  ],
+  "outer_wall_budget_seconds": 25,
+  "database_connections": 0,
+  "sql_statements": 0,
+  "python_or_driver_execution": false,
+  "copy_or_install": false,
+  "retry_allowed": false,
+  "requires_independent_scope_acceptance": true,
+  "requires_events_exclusive_window": true
+}

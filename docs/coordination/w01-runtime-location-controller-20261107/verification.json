@@ -1,0 +1,108 @@
+{
+  "status": "SOURCE_ONLY_OFFLINE_TESTS_PASS_INDEPENDENT_REVIEW_PENDING",
+  "verified_utc": "2026-11-07T22:16:35.922751+00:00",
+  "workers_head": "81136786d471e4217e8252ebd5cc7a61409c47c6",
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:../events/src /home/faris/modkit-local-20261106/.test-venv/bin/python -m pytest -q -p no:cacheprovider tests docs/coordination/w01-runtime-location-controller-20261107/test_controller.py",
+    "exit_code": 0,
+    "total_passed": 192,
+    "existing_package_tests": 132,
+    "controller_tests": 60,
+    "subtests_passed": 96,
+    "seconds": 2.04
+  },
+  "static": {
+    "ruff_check": "src tests docs/coordination/w01-runtime-location-controller-20261107",
+    "ruff_check_exit": 0,
+    "ruff_format_check_exit": 0,
+    "git_diff_check_exit": 0
+  },
+  "red_green_history": [
+    {
+      "phase": "initial missing implementation",
+      "result": "1 expected direct assertion failed: test_00_controller_exists",
+      "setup_assertion_also_observed": true
+    },
+    {
+      "phase": "first implementation",
+      "result": "52 passed"
+    },
+    {
+      "phase": "cancellation and metadata regression red",
+      "result": "3 failed, 54 passed",
+      "failed_tests": [
+        "test_directory_is_valid_metadata_not_an_interpreter_claim",
+        "test_uncertain_launch_requires_host_group_termination",
+        "test_completion_authority_needs_only_unexpired_current_window"
+      ]
+    },
+    {
+      "phase": "cancellation and metadata regression green",
+      "result": "57 passed"
+    },
+    {
+      "phase": "one-shot evidence preservation and unknown runner red",
+      "result": "2 failed, 58 passed",
+      "failed_tests": [
+        "test_runner_exception_keeps_host_cleanup_uncertain",
+        "test_existing_attempt_is_never_modified"
+      ]
+    },
+    {
+      "phase": "complete pure suite and controller green",
+      "result": "192 passed, 96 subtests passed"
+    }
+  ],
+  "original_packet": {
+    "sha256": "897fccd0a1bcc34756ad77b9cb9d0e61dccea3c683576e63ca00bb278b77563d",
+    "fixture_files_verified_against_accepted_source_inventory": [
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/disposal.sql",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/lease_gate.py",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/namespace-regression.NOT_RUN.sql",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/plan.md",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/run_proposed.py",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/setup.sql",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source-review.md",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source_checks.py",
+      "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/test_gate.py"
+    ],
+    "failure_evidence_preserved": {
+      "source-check.stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source-check.stdout": {
+        "bytes": 165,
+        "sha256": "d8a7166aa82339d6e64e6f4a527cf6a0e7840f551506c76c5ef0edbdc9ac315b"
+      },
+      "gate.stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gate.stderr": {
+        "bytes": 101,
+        "sha256": "3c5fa11e6e7fc4f1ad5e554cefe5b6ff88594cb596a66233b5fdf5f0ac874d48"
+      }
+    }
+  },
+  "proposal_manifest_sha256": "6f55397f3042bc333ad1d8354e2b42f772ecaa3bba875e327978ca7853fe1a61",
+  "not_performed": [
+    "target command",
+    "Docker invocation",
+    "database connection",
+    "SQL",
+    "target interpreter or driver execution",
+    "network change",
+    "install",
+    "service start",
+    "real host subprocess timing experiment",
+    "runtime reservation",
+    "grant or lease creation",
+    "attempt marker creation",
+    "commit",
+    "publication"
+  ],
+  "future_authority_paths_absent": true,
+  "independent_review": "PENDING",
+  "native_interpreter_driver_route": "UNRESOLVED"
+}

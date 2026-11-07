@@ -1,0 +1,36 @@
+{
+  "status": "SOURCE_ONLY_REVIEW_CANDIDATE_NOT_AUTHORIZATION",
+  "controller_arguments": [
+    "--execute-reviewed-once"
+  ],
+  "acceptance_file": "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-runtime-location-controller-acceptance-20261107.json",
+  "lease_file": "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-runtime-location-exclusive-window-20261107.json",
+  "evidence_directory": "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-runtime-location-once-20261107",
+  "linux_host_argv": [
+    "/usr/bin/timeout",
+    "--signal=KILL",
+    "25s",
+    "/home/faris/modkit-local-20261106/.test-venv/bin/python",
+    "-I",
+    "-S",
+    "-B",
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-runtime-location-controller-20261107/controller.py",
+    "--execute-reviewed-once"
+  ],
+  "windows_powershell_argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu-24.04",
+    "--",
+    "/usr/bin/timeout",
+    "--signal=KILL",
+    "25s",
+    "/home/faris/modkit-local-20261106/.test-venv/bin/python",
+    "-I",
+    "-S",
+    "-B",
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-runtime-location-controller-20261107/controller.py",
+    "--execute-reviewed-once"
+  ],
+  "powershell_login": false
+}
