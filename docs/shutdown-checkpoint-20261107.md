@@ -9,6 +9,14 @@
 
 The authoritative remaining SQL order is W01 real fixture qualification, followed by integration/qualification of the retained W02/W04 drafts. W03 still requires the Events E30 physical access contract; W05 requires the Events E04 lifecycle contract. Common runtime work remains downstream of A/B/C and the selected ownership/materialization/resource/drain contracts. This continuation does not bypass those dependencies, execute SQL, import/install candidates, change release versions, or edit the live WIP/Events/ERP checkouts. See the scoped continuation plan for retained evidence.
 
+### Shared SQL freshness correction
+
+Do not reuse the old statement that E04 has no implementation. Current live Events SQL is 290,583 bytes, SHA256 `6cf0c7d1fb6baaccf98b5aaf0e3ed15c55c12941c4e73d45d083d948ec9a5534`, and defines E04. The Events handoff records bounded independently accepted owner-mode first-claim and later boundary/pagination work; this is not complete lifecycle/driver/resource qualification. E30 remains absent from this exact source.
+
+The frozen Workers W01 fixture-v3 packet still pins the earlier 241,339-byte Events SQL `5042eb8a0ce5715a573f0e5260b8761d8c7fbfbd0da13d412b51217582585d42` and reports `PROPOSED_NOT_RUN_NO_LEASE_E10_AND_NAMESPACE_BEHAVIOR_QA_PENDING`. The current file preserves that entire pinned prefix exactly, but its whole-file hash differs. Reconcile and independently review a new packet rather than editing or running the frozen one.
+
+W05 still needs a reviewed complete Work/job-half capture boundary. Current E04 returns a 60-column header/retained-Work-postimage stream and intentionally does not call a STABLE reader after mutation. The Workers catalog requires the additional 15 job-half columns with its same-statement composition contract. Do not assume a later E15/raw-half read or an outer join to a volatile call supplies that contract; select and review the shared composition boundary with Events before implementing it. No shared source change or SQL experiment was performed here.
+
 ## Resume update: 2026-11-07
 
 The original shutdown record below is historical. Subsequent reviewed source commits:
