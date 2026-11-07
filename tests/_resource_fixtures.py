@@ -2,10 +2,10 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 import struct
 import tempfile
 import zlib
+from pathlib import Path
 
 
 def aggregate(items):

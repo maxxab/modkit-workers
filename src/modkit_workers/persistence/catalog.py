@@ -1,8 +1,18 @@
 """Built-in jobs' closed metadata; compose the actual neutral event catalog."""
 from types import MappingProxyType
+
 from modkit_events.persistence.catalog import (
-    CardinalityKind, ColumnSpec, ConstraintId, ParameterSpec, RecordKind,
-    ResultSpec, StatementSpec, WireType, get_statement as _event_statement,
+    CardinalityKind,
+    ColumnSpec,
+    ConstraintId,
+    ParameterSpec,
+    RecordKind,
+    ResultSpec,
+    StatementSpec,
+    WireType,
+)
+from modkit_events.persistence.catalog import (
+    get_statement as _event_statement,
 )
 
 

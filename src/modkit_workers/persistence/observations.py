@@ -9,9 +9,10 @@ from uuid import UUID
 
 from modkit_events.persistence import bindings as common
 from modkit_events.persistence import models as shared
-from modkit_events.persistence.observations import WorkObservation
 from modkit_events.persistence.errors import _observation_boundary
+from modkit_events.persistence.observations import WorkObservation
 from modkit_events.persistence.scope import Scope
+
 from .models import _work_id
 
 

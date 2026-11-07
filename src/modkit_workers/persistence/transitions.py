@@ -1,5 +1,6 @@
 """Internal built-in job scope over neutral SQL transition requirements."""
-from modkit_events.persistence.transitions import _WORK_RULES, _rule
+from modkit_events.persistence.transitions import _WORK_RULES as _WORK_RULES
+from modkit_events.persistence.transitions import _rule
 
 _ADMISSION_RULES = (
     _rule("submit_runnable", "W01", "new", "queued", "job_kind_full_identity_binding_material_atomic_halves_supported_int4", "null"),

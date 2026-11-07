@@ -2,10 +2,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+
 from modkit_events.persistence import bindings as common
 from modkit_events.persistence.errors import _boundary
-from .models import (JobInput, JobSubmitRequest, JobReadRequest, JobFindRequest,
-                     JobAcquireRequest, JobListRequest, _admission, _work_id)
+
+from .models import (
+    JobAcquireRequest,
+    JobFindRequest,
+    JobListRequest,
+    JobReadRequest,
+    JobSubmitRequest,
+    _admission,
+    _work_id,
+)
+from .models import JobInput as JobInput
 
 
 def _statement(key: str):

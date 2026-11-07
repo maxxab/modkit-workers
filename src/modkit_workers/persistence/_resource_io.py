@@ -4,15 +4,15 @@ from __future__ import annotations
 import errno
 import io
 import os
-from pathlib import Path
 import stat
 import struct
 import sys
-from importlib import resources
-from importlib.machinery import SourceFileLoader
 import zipfile
 import zipimport
 import zlib
+from importlib import resources
+from importlib.machinery import SourceFileLoader
+from pathlib import Path
 
 MANIFEST_LIMIT = 65536
 SQL_LIMIT = 16777216

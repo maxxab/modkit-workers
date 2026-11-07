@@ -1,10 +1,10 @@
 """Immutable worker requests; backend encoding is an explicit pure projection."""
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-import math
 from types import MappingProxyType
 from uuid import UUID
 

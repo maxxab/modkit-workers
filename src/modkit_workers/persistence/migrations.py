@@ -8,8 +8,9 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+
 from . import _resource_io as _io
-from . import sql as _sql_anchor  # Inert owned package; initializes standard origin metadata.
+from . import sql as _sql_anchor  # noqa: F401 - Initializes standard origin metadata.
 
 __all__ = ["MigrationDependency", "SQLResource", "Migration", "manifest", "read_sql"]
 _COMPONENT = "workers"

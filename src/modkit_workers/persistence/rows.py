@@ -10,15 +10,29 @@ from modkit_events.persistence import bindings as common
 from modkit_events.persistence import rows as common_rows
 from modkit_events.persistence.catalog import get_statement as event_statement
 from modkit_events.persistence.errors import _observation_boundary
-from modkit_events.persistence.models import Fence, MaterialState, CleanupPolicy
-from modkit_events.persistence.observations import WorkObservation, ScanPage
-from modkit_events.persistence.scope import Scope, canonical_scope, encode_scope_fields, decode_scope_fields
+from modkit_events.persistence.models import CleanupPolicy, Fence, MaterialState
+from modkit_events.persistence.observations import ScanPage, WorkObservation
+from modkit_events.persistence.scope import (
+    Scope,
+    canonical_scope,
+    decode_scope_fields,
+    encode_scope_fields,
+)
+
 from .bindings import PreparedJobFind
 from .catalog import get_statement
 from .models import _work_id
-from .observations import (JobDetails, JobPayload, JobRecord, JobCandidate,
-    JobAdmissionObservation, JobIdentityDecision, JobIdentityObservation,
-    JobClaimObservation, DispatchedJobObservation)
+from .observations import (
+    DispatchedJobObservation,
+    JobAdmissionObservation,
+    JobCandidate,
+    JobClaimObservation,
+    JobDetails,
+    JobIdentityDecision,
+    JobIdentityObservation,
+    JobPayload,
+    JobRecord,
+)
 
 
 def _request(request: common.FrozenRequest, key: str) -> dict:

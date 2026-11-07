@@ -1,11 +1,13 @@
 """Worker scope-consumer tests, not a rerun of standalone Scope qualification."""
-from datetime import UTC, datetime
 import unittest
-from modkit_events.persistence.models import CleanupPolicy, MaterialState, ProtectedBindingInput
+from datetime import UTC, datetime
+
 from modkit_events.persistence.errors import PersistenceError
+from modkit_events.persistence.models import CleanupPolicy, MaterialState, ProtectedBindingInput
 from modkit_events.persistence.scope import Scope
-from modkit_workers.persistence.models import JobInput, JobSubmitRequest
+
 from modkit_workers.persistence.bindings import submit
+from modkit_workers.persistence.models import JobInput, JobSubmitRequest
 
 ID = "11111111-1111-4111-8111-111111111111"
 NOW = datetime(2030, 1, 1, tzinfo=UTC)
@@ -32,8 +34,9 @@ class WorkerScopeConsumerTests(unittest.TestCase):
                 self.assertEqual(prepared.parameters[5], request.scope_bytes)
 
     def test_logical_details_keep_nul_and_nullable_fields_through_read(self):
-        from modkit_workers.persistence.observations import JobDetails
         from modkit_events.persistence.bindings import canonical_protected_binding
+
+        from modkit_workers.persistence.observations import JobDetails
         material = ProtectedBindingInput(material_state=MaterialState.ABSENT,
             codec=None, key_version=None, expires_at=None,
             cleanup_policy=CleanupPolicy.RETAIN, sidecar=None, reference=None,

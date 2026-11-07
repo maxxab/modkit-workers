@@ -1,5 +1,6 @@
 """Worker-only composition of real neutral catalog metadata."""
 from modkit_events.persistence import catalog as e
+
 from modkit_workers.persistence import catalog as w
 
 
@@ -39,6 +40,7 @@ def test_all_39_have_unique_columns_and_allowlisted_keys():
 
 def test_worker_transitions_compose_without_copying_neutral_rules():
     from modkit_events.persistence import transitions as e_t
+
     from modkit_workers.persistence import transitions as w_t
     assert w_t._WORK_RULES is e_t._WORK_RULES
     assert tuple(rule.rule_id for rule in w_t._ADMISSION_RULES) == ("submit_runnable", "submit_blocked")
