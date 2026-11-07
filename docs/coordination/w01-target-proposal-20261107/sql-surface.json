@@ -1,0 +1,1533 @@
+{
+  "declared_scope_note": "All source references are lexical; full pinned SQL bytes, constraints and triggers remain authoritative. No SQL executed.",
+  "fixture_definitions": [
+    {
+      "end_line": 42,
+      "line": 39,
+      "name": "statements"
+    },
+    {
+      "end_line": 54,
+      "line": 45,
+      "name": "material"
+    },
+    {
+      "end_line": 65,
+      "line": 57,
+      "name": "job"
+    },
+    {
+      "end_line": 71,
+      "line": 68,
+      "name": "prepared"
+    },
+    {
+      "end_line": 85,
+      "line": 74,
+      "name": "replay_variant"
+    },
+    {
+      "end_line": 90,
+      "line": 88,
+      "name": "parameters"
+    },
+    {
+      "end_line": 96,
+      "line": 93,
+      "name": "execute"
+    },
+    {
+      "end_line": 103,
+      "line": 99,
+      "name": "records"
+    },
+    {
+      "end_line": 112,
+      "line": 106,
+      "name": "normalized"
+    },
+    {
+      "end_line": 118,
+      "line": 116,
+      "name": "Footprint"
+    },
+    {
+      "end_line": 133,
+      "line": 121,
+      "name": "footprint"
+    },
+    {
+      "end_line": 137,
+      "line": 136,
+      "name": "no_write"
+    },
+    {
+      "end_line": 142,
+      "line": 140,
+      "name": "no_allocation"
+    },
+    {
+      "end_line": 149,
+      "line": 145,
+      "name": "rollback_rows"
+    },
+    {
+      "end_line": 222,
+      "line": 153,
+      "name": "Pool"
+    },
+    {
+      "end_line": 266,
+      "line": 225,
+      "name": "Pending"
+    },
+    {
+      "end_line": 270,
+      "line": 269,
+      "name": "pid"
+    },
+    {
+      "end_line": 283,
+      "line": 273,
+      "name": "barrier"
+    },
+    {
+      "end_line": 290,
+      "line": 286,
+      "name": "submit"
+    },
+    {
+      "end_line": 321,
+      "line": 293,
+      "name": "expected_error"
+    },
+    {
+      "end_line": 357,
+      "line": 324,
+      "name": "pair"
+    },
+    {
+      "end_line": 374,
+      "line": 360,
+      "name": "inserted_delta"
+    },
+    {
+      "end_line": 438,
+      "line": 377,
+      "name": "serial"
+    },
+    {
+      "end_line": 459,
+      "line": 441,
+      "name": "corruption"
+    },
+    {
+      "end_line": 515,
+      "line": 462,
+      "name": "race"
+    },
+    {
+      "end_line": 554,
+      "line": 520,
+      "name": "split_race"
+    },
+    {
+      "end_line": 586,
+      "line": 557,
+      "name": "deadlock"
+    },
+    {
+      "end_line": 604,
+      "line": 589,
+      "name": "scenario"
+    },
+    {
+      "end_line": 628,
+      "line": 607,
+      "name": "run_source_fixture"
+    }
+  ],
+  "fixture_imports": [
+    {
+      "line": 9,
+      "module": "__future__",
+      "names": [
+        "annotations"
+      ]
+    },
+    {
+      "line": 11,
+      "module": "collections",
+      "names": [
+        "Counter"
+      ]
+    },
+    {
+      "line": 12,
+      "module": "dataclasses",
+      "names": [
+        "dataclass",
+        "replace"
+      ]
+    },
+    {
+      "line": 13,
+      "module": "datetime",
+      "names": [
+        "UTC",
+        "datetime",
+        "timedelta"
+      ]
+    },
+    {
+      "line": 14,
+      "module": "pathlib",
+      "names": [
+        "Path"
+      ]
+    },
+    {
+      "line": 15,
+      "module": "threading",
+      "names": [
+        "Event",
+        "Thread"
+      ]
+    },
+    {
+      "line": 16,
+      "module": "time",
+      "names": [
+        "monotonic"
+      ]
+    },
+    {
+      "line": 17,
+      "module": "uuid",
+      "names": [
+        "uuid4"
+      ]
+    },
+    {
+      "line": 18,
+      "module": null,
+      "names": [
+        "re"
+      ]
+    },
+    {
+      "line": 46,
+      "module": "modkit_events.persistence.models",
+      "names": [
+        "ProtectedBindingInput",
+        "MaterialState",
+        "CleanupPolicy"
+      ]
+    },
+    {
+      "line": 58,
+      "module": "modkit_workers.persistence.models",
+      "names": [
+        "JobInput"
+      ]
+    },
+    {
+      "line": 59,
+      "module": "modkit_events.persistence.scope",
+      "names": [
+        "Scope"
+      ]
+    },
+    {
+      "line": 69,
+      "module": "modkit_workers.persistence.bindings",
+      "names": [
+        "submit"
+      ]
+    },
+    {
+      "line": 70,
+      "module": "modkit_workers.persistence.models",
+      "names": [
+        "JobSubmitRequest"
+      ]
+    },
+    {
+      "line": 76,
+      "module": "modkit_events.persistence",
+      "names": [
+        "bindings"
+      ]
+    },
+    {
+      "line": 77,
+      "module": "modkit_workers.persistence.models",
+      "names": [
+        "_admission"
+      ]
+    },
+    {
+      "line": 287,
+      "module": "modkit_workers.persistence.rows",
+      "names": [
+        "decode_submit"
+      ]
+    },
+    {
+      "line": 378,
+      "module": "modkit_events.persistence.scope",
+      "names": [
+        "Scope"
+      ]
+    },
+    {
+      "line": 379,
+      "module": "modkit_events.persistence.models",
+      "names": [
+        "ReplayPolicy"
+      ]
+    }
+  ],
+  "functions": {
+    "modkit_events._attempt_record_check": {
+      "line_end": 1464,
+      "line_start": 1433,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "a65587a5f98a3d61ed6981e84f23472acba479151f02261137e5d104f3cceb12"
+    },
+    "modkit_events._bounded_uint": {
+      "line_end": 149,
+      "line_start": 117,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "d00a0159611369fa83665db82aea4d1f0067d07fd3225f4f4424fe54d38d0696"
+    },
+    "modkit_events._decimal_float_hex": {
+      "line_end": 583,
+      "line_start": 454,
+      "qualified_references": [
+        "modkit_events._hex_fraction",
+        "modkit_events._integer_power"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "51b2fcda2f2d27fac3963a352471cd4ddd03ce05c330a4045e012caf17d29ab4"
+    },
+    "modkit_events._decimal_valid": {
+      "line_end": 279,
+      "line_start": 247,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "1fe96cc2eeae9d2af19bf8106f6933c9d2750905d1bc57b1815cce97cbff34d7"
+    },
+    "modkit_events._event_replay_frame": {
+      "line_end": 1005,
+      "line_start": 941,
+      "qualified_references": [
+        "modkit_events._decimal_valid",
+        "modkit_events._j_scalar_bytes",
+        "modkit_events._json_string",
+        "modkit_events._json_value",
+        "modkit_events._make_record",
+        "modkit_events._parse_result",
+        "modkit_events._skip_json_ws",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "881b494d8a5569409c69ced30ee5f0e6167c82e904de85ea9cf16a8999810f7d"
+    },
+    "modkit_events._float_hex_valid": {
+      "line_end": 335,
+      "line_start": 282,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "4f45079d32635807feaa945d01668139aacebdf675edd4ce063b9a0133fab6ab"
+    },
+    "modkit_events._guard_deferred_check": {
+      "line_end": 1275,
+      "line_start": 1264,
+      "qualified_references": [
+        "modkit_events.finalization_guards"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "95cf2e8a6e6632cce944339c8ed7c50ad693a1d62d1272085cadd2e017e8c308"
+    },
+    "modkit_events._guard_immutable": {
+      "line_end": 1259,
+      "line_start": 1244,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "5f828d0ec54ad1ac5b24947ce0d025a12e1edcce5c58c157be5dd065171bbced"
+    },
+    "modkit_events._hex4": {
+      "line_end": 614,
+      "line_start": 593,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "e84719a5807f69dddaaf1b2d910eaa893fb35135677e2a72df45049e1a6de729"
+    },
+    "modkit_events._hex_fraction": {
+      "line_end": 451,
+      "line_start": 432,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "a4729a51f62f68943128d4667aff84e84424e5e3a997b9193ddf95daab9ce41c"
+    },
+    "modkit_events._inbox_record_check": {
+      "line_end": 2013,
+      "line_start": 1952,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._intent_valid",
+        "modkit_events._protected_frame_valid",
+        "modkit_events._record_fields",
+        "modkit_events.job_payloads",
+        "modkit_events.subscriptions",
+        "modkit_events.work"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "d773ba779b62b5e3fbf0f83cc241b49a608c1908bee9e3419ea7e44e984ef16a"
+    },
+    "modkit_events._instant_bytes": {
+      "line_end": 1030,
+      "line_start": 1019,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "700d829b441089e8b01607d5fb998f0f1b2a4caa6851071aebc41f010082ddf7"
+    },
+    "modkit_events._integer_power": {
+      "line_end": 429,
+      "line_start": 410,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "5bf365aacb00ee1cf006a6fde94d9af6c2d7e13038bd921f5df5696d4acffaad"
+    },
+    "modkit_events._intent_valid": {
+      "line_end": 1131,
+      "line_start": 1079,
+      "qualified_references": [
+        "modkit_events._decimal_valid",
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._json_to_j",
+        "modkit_events._make_record",
+        "modkit_events._optional_bytes",
+        "modkit_events._record_fields",
+        "modkit_events._scope_valid",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "19fe677eec96f85f51f3d150cb25c9b25483927a924d67dd1cf3b1577acbbcc5"
+    },
+    "modkit_events._j_nodes": {
+      "line_end": 407,
+      "line_start": 338,
+      "qualified_references": [
+        "modkit_events._bounded_uint",
+        "modkit_events._decimal_valid",
+        "modkit_events._float_hex_valid",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "e6707125dab8328c349763ea148d664310a8b7cb454c6590f2e9cdedb0e11de2"
+    },
+    "modkit_events._j_scalar_bytes": {
+      "line_end": 938,
+      "line_start": 927,
+      "qualified_references": [
+        "modkit_events._bounded_uint"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "d83d14320e518ae1c7b34d8bc844e333609fd5ff6e0ee3e79651baa4bc0f72d3"
+    },
+    "modkit_events._job_payload_record_check": {
+      "line_end": 1947,
+      "line_start": 1899,
+      "qualified_references": [
+        "modkit_events._intent_valid",
+        "modkit_events._scope_valid",
+        "modkit_events.inbox",
+        "modkit_events.work"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "959087a899eb2a524f5f507a494f5ad568abb05d7499606bbb8358e3ca9a7185"
+    },
+    "modkit_events._json_children": {
+      "line_end": 806,
+      "line_start": 747,
+      "qualified_references": [
+        "modkit_events._json_string",
+        "modkit_events._json_value",
+        "modkit_events._parse_result",
+        "modkit_events._skip_json_ws"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "83c6eb865930e58602df4bdda1e07b15d359fd5fd7bf2b418e6beb492a67f911"
+    },
+    "modkit_events._json_string": {
+      "line_end": 726,
+      "line_start": 713,
+      "qualified_references": [
+        "modkit_events._json_string_chunks",
+        "modkit_events._parse_result",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "1920c4dd72f9a062a094385e3930f1e98be1937c7daa2b6c68e435e93875c35d"
+    },
+    "modkit_events._json_string_chunks": {
+      "line_end": 710,
+      "line_start": 642,
+      "qualified_references": [
+        "modkit_events._hex4",
+        "modkit_events._utf8_scalar"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "0e92cbb4feb457aea44757b43bf73cd4abcd037e39e7cee7dd494ea2cad36937"
+    },
+    "modkit_events._json_to_j": {
+      "line_end": 902,
+      "line_start": 887,
+      "qualified_references": [
+        "modkit_events._json_value",
+        "modkit_events._parse_result",
+        "modkit_events._skip_json_ws",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "46ad0679f99cf1434fe543325c7a6bc60c8d570719cd33ea8d6a3f13d3bad59d"
+    },
+    "modkit_events._json_value": {
+      "line_end": 884,
+      "line_start": 809,
+      "qualified_references": [
+        "modkit_events._decimal_float_hex",
+        "modkit_events._decimal_valid",
+        "modkit_events._json_children",
+        "modkit_events._json_string",
+        "modkit_events._parse_result"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "b0a5fa9d714192a930774f8910466350d6e98be0f94dcd9ef19c80fbaa3058cb"
+    },
+    "modkit_events._make_record": {
+      "line_end": 924,
+      "line_start": 905,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "560475841a38441a450059137e4c7ab41f5fc38692a6ae5e2e7d37501e790f5d"
+    },
+    "modkit_events._optional_bytes": {
+      "line_end": 1016,
+      "line_start": 1008,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "9893b99c5cbfaa5e5ca15c8df35143d3bdf15dae481f131bb336628f371a15da"
+    },
+    "modkit_events._protected_frame_valid": {
+      "line_end": 1849,
+      "line_start": 1751,
+      "qualified_references": [
+        "modkit_events._bounded_uint",
+        "modkit_events._instant_bytes",
+        "modkit_events._optional_bytes",
+        "modkit_events._protected_valid",
+        "modkit_events._record_fields",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "2e8eccf464c31912886a1a0c77b260b2d93cca2bee899ffa459021b0623a3c67"
+    },
+    "modkit_events._protected_valid": {
+      "line_end": 1076,
+      "line_start": 1033,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._j_nodes",
+        "modkit_events._optional_bytes",
+        "modkit_events._record_fields",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "62321900a1b3eea24569507112e9e1d1a05126766db167cff7c15b9e3cf4095d"
+    },
+    "modkit_events._record_fields": {
+      "line_end": 244,
+      "line_start": 205,
+      "qualified_references": [
+        "modkit_events._bounded_uint"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "e1ec9c660bc88d9dd4bacd37578ebf694a4b76a2fb38a61404b968cfcaf176b2"
+    },
+    "modkit_events._reject_record_mutation": {
+      "line_end": 1424,
+      "line_start": 1418,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "a5bfc6428bd97ae9bad159ac5f779d215fb19e099972020c04ae94894bd05efc"
+    },
+    "modkit_events._scope_valid": {
+      "line_end": 202,
+      "line_start": 152,
+      "qualified_references": [
+        "modkit_events._bounded_uint",
+        "modkit_events._utf8_valid"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "239ef557b3293c71747c0b66748c184fee1abae6557047ae144f68102ba28532"
+    },
+    "modkit_events._skip_json_ws": {
+      "line_end": 744,
+      "line_start": 729,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "1264c83271189cd053b677d2f0ca0ecb8f7ae2069a1559b5dcf40fe234f681b4"
+    },
+    "modkit_events._utf8_scalar": {
+      "line_end": 639,
+      "line_start": 617,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "7cf2803b893ad8550adc118f49e6cf2e7665b60d25f82e778512dda0493878d0"
+    },
+    "modkit_events._utf8_valid": {
+      "line_end": 114,
+      "line_start": 56,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "c90dddf6d1b15a6a6525af4e7035b69b7fa21d6d08f5623176e01476f1ba9c34"
+    },
+    "modkit_events._work_admission_immutable": {
+      "line_end": 2042,
+      "line_start": 2018,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "1df95e7163268bc28ba3116c03508e5ca7c896aaa69743e9bcc60941732c7852"
+    },
+    "modkit_events.e01": {
+      "line_end": 3374,
+      "line_start": 3319,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.subscriptions"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "d68c2e48eb552568088404ce1aab89b0853847efc56ce4cceae4675ad815fe0d"
+    },
+    "modkit_events.e02": {
+      "line_end": 3956,
+      "line_start": 3839,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._record_fields",
+        "modkit_events._utf8_valid",
+        "modkit_events.e28",
+        "modkit_events.outbox",
+        "modkit_events.publication_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "dc7a4f8518dbb29728f1aee7f2ec048f6255eb9b9ee7c7b2daaa95b54f9fff0a"
+    },
+    "modkit_events.e03": {
+      "line_end": 3729,
+      "line_start": 3382,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._intent_valid",
+        "modkit_events._protected_frame_valid",
+        "modkit_events._record_fields",
+        "modkit_events._utf8_valid",
+        "modkit_events.delivery_history",
+        "modkit_events.e15",
+        "modkit_events.inbox",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "a2883bf34cadc4cf0a31544bbe2d12333b5fab2cc1cc55ff75401610999ea05c"
+    },
+    "modkit_events.e04": {
+      "line_end": 4291,
+      "line_start": 3960,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "327bc5577880f2418a21eaadea21fbc0dbf188d53ef3d81ccff21ea5f95bca3d"
+    },
+    "modkit_events.e05": {
+      "line_end": 4499,
+      "line_start": 4295,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "58a98a02cbfec49e8c51f926eac4c35dda63afa4feeb5c01e7e8b4eab280ebcd"
+    },
+    "modkit_events.e06": {
+      "line_end": 4691,
+      "line_start": 4503,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.attempts",
+        "modkit_events.e15",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "0eb139a73a272a1ae9b285f8bbc56d8beebeea2a1abaa7c7904dc61df293a04a"
+    },
+    "modkit_events.e07": {
+      "line_end": 4866,
+      "line_start": 4695,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "8f76b01b2d0c06b6fa230c0453ad6a1f5ccf813db0217868f7a2859c0f1fbec2"
+    },
+    "modkit_events.e08": {
+      "line_end": 1746,
+      "line_start": 1602,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events.attempts",
+        "modkit_events.finalization_guards",
+        "modkit_events.work"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "d2b7c450cef4ea677db8e0de67d434788a842f6606bbd285936ee7c2b2b7638b"
+    },
+    "modkit_events.e09": {
+      "line_end": 1597,
+      "line_start": 1553,
+      "qualified_references": [
+        "modkit_events.finalization_guards"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "c4540a605d3732b483f7513b2f9e7ba0b4fead625d5f2bae1cba262fd7caab84"
+    },
+    "modkit_events.e10": {
+      "line_end": 2315,
+      "line_start": 2051,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._intent_valid",
+        "modkit_events._protected_frame_valid",
+        "modkit_events._protected_valid",
+        "modkit_events._record_fields",
+        "modkit_events._scope_valid",
+        "modkit_events._utf8_valid",
+        "modkit_events.attempts",
+        "modkit_events.finalization_guards",
+        "modkit_events.inbox",
+        "modkit_events.job_payloads",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "938921726a3ea1bd6ca5eb7e03b0507b84e4cee818ca9112af530181d094de51"
+    },
+    "modkit_events.e14": {
+      "line_end": 1548,
+      "line_start": 1538,
+      "qualified_references": [],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "af019de4812ad69654c43d4e889ec91db045cd4873748adcc40e8de430a0012d"
+    },
+    "modkit_events.e15": {
+      "line_end": 2654,
+      "line_start": 2320,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._intent_valid",
+        "modkit_events._protected_frame_valid",
+        "modkit_events._protected_valid",
+        "modkit_events._record_fields",
+        "modkit_events._scope_valid",
+        "modkit_events._utf8_valid",
+        "modkit_events.attempts",
+        "modkit_events.finalization_guards",
+        "modkit_events.inbox",
+        "modkit_events.job_payloads",
+        "modkit_events.mutation_operations",
+        "modkit_events.subscriptions",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "3534b83231a6a0f0473f1e689763d8ad88475bfb2b99c93ec928af75ab620b47"
+    },
+    "modkit_events.e16": {
+      "line_end": 2980,
+      "line_start": 2890,
+      "qualified_references": [
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.inbox"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "77db2f0473d611fef7ff3e833f2a621ed78792acd6dfb90c6972a88b847dbaa4"
+    },
+    "modkit_events.e17": {
+      "line_end": 2885,
+      "line_start": 2694,
+      "qualified_references": [
+        "modkit_events._bounded_uint",
+        "modkit_events._scope_valid",
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.work"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "625ba3baebb2bad5c0efe5ff015a62c066b4f55df25d46b7ea2410dd1cb6d404"
+    },
+    "modkit_events.e18": {
+      "line_end": 2691,
+      "line_start": 2659,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._utf8_valid",
+        "modkit_events.subscriptions"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "b74a90ffa470834e83a501879ea28b90bd85b744fc4cd0bf76b448db369b6297"
+    },
+    "modkit_events.e28": {
+      "line_end": 3833,
+      "line_start": 3733,
+      "qualified_references": [
+        "modkit_events._event_replay_frame",
+        "modkit_events._instant_bytes",
+        "modkit_events._record_fields",
+        "modkit_events._utf8_valid",
+        "modkit_events.outbox"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "076650d2e4ee1665060e2ad670633869a390955e4c36c921d18509e84e452daa"
+    },
+    "modkit_events.e34": {
+      "line_end": 3315,
+      "line_start": 2983,
+      "qualified_references": [
+        "modkit_events._bounded_uint",
+        "modkit_events._scope_valid",
+        "modkit_events._utf8_valid",
+        "modkit_events.e15",
+        "modkit_events.e17",
+        "modkit_events.inbox",
+        "modkit_events.work"
+      ],
+      "source": "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql",
+      "span_sha256": "39b8e05c45640729d03b88298f5a04eb70f3100b518cb1d91fbe174a5b24b68b"
+    },
+    "modkit_workers.w01": {
+      "line_end": 550,
+      "line_start": 246,
+      "qualified_references": [
+        "modkit_events._instant_bytes",
+        "modkit_events._intent_valid",
+        "modkit_events._protected_frame_valid",
+        "modkit_events._protected_valid",
+        "modkit_events.e15",
+        "modkit_events.job_payloads",
+        "modkit_events.work",
+        "modkit_events.work_history"
+      ],
+      "source": "/home/faris/modkit-workers/src/modkit_workers/persistence/sql/0001_initial.sql",
+      "span_sha256": "c40a804f88b1c5f1c757e056f6792688c0d9187b3ac8cdda221c2f26a3bf91cb"
+    }
+  },
+  "resources": {
+    "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql": {
+      "ddl_lines": [
+        {
+          "line": 53,
+          "text": "CREATE SCHEMA modkit_events;"
+        },
+        {
+          "line": 54,
+          "text": "REVOKE ALL ON SCHEMA modkit_events FROM PUBLIC;"
+        },
+        {
+          "line": 56,
+          "text": "CREATE FUNCTION modkit_events._utf8_valid("
+        },
+        {
+          "line": 115,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._utf8_valid(pg_catalog.bytea,pg_catalog.int4,pg_catalog.bool) FROM PUBLIC;"
+        },
+        {
+          "line": 117,
+          "text": "CREATE FUNCTION modkit_events._bounded_uint("
+        },
+        {
+          "line": 150,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._bounded_uint(pg_catalog.bytea,pg_catalog.int4,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 152,
+          "text": "CREATE FUNCTION modkit_events._scope_valid("
+        },
+        {
+          "line": 203,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._scope_valid(pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 205,
+          "text": "CREATE FUNCTION modkit_events._record_fields("
+        },
+        {
+          "line": 245,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._record_fields(pg_catalog.bytea,pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 247,
+          "text": "CREATE FUNCTION modkit_events._decimal_valid("
+        },
+        {
+          "line": 280,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._decimal_valid(pg_catalog.bytea,pg_catalog.bool) FROM PUBLIC;"
+        },
+        {
+          "line": 282,
+          "text": "CREATE FUNCTION modkit_events._float_hex_valid(p_raw pg_catalog.bytea)"
+        },
+        {
+          "line": 336,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._float_hex_valid(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 338,
+          "text": "CREATE FUNCTION modkit_events._j_nodes("
+        },
+        {
+          "line": 408,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._j_nodes(pg_catalog.bytea,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 410,
+          "text": "CREATE FUNCTION modkit_events._integer_power(p_base pg_catalog.int4,p_exponent pg_catalog.int4)"
+        },
+        {
+          "line": 430,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._integer_power(pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 432,
+          "text": "CREATE FUNCTION modkit_events._hex_fraction(p_fraction pg_catalog.numeric)"
+        },
+        {
+          "line": 452,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._hex_fraction(pg_catalog.numeric) FROM PUBLIC;"
+        },
+        {
+          "line": 454,
+          "text": "CREATE FUNCTION modkit_events._decimal_float_hex(p_raw pg_catalog.bytea)"
+        },
+        {
+          "line": 584,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._decimal_float_hex(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 586,
+          "text": "CREATE TYPE modkit_events._parse_result AS ("
+        },
+        {
+          "line": 591,
+          "text": "REVOKE ALL ON TYPE modkit_events._parse_result FROM PUBLIC;"
+        },
+        {
+          "line": 593,
+          "text": "CREATE FUNCTION modkit_events._hex4(p_raw pg_catalog.bytea,p_pos pg_catalog.int4)"
+        },
+        {
+          "line": 615,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._hex4(pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 617,
+          "text": "CREATE FUNCTION modkit_events._utf8_scalar(p_cp pg_catalog.int4)"
+        },
+        {
+          "line": 640,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._utf8_scalar(pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 642,
+          "text": "CREATE FUNCTION modkit_events._json_string_chunks(p_raw pg_catalog.bytea,p_offset pg_catalog.int4)"
+        },
+        {
+          "line": 711,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._json_string_chunks(pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 713,
+          "text": "CREATE FUNCTION modkit_events._json_string(p_raw pg_catalog.bytea,p_offset pg_catalog.int4)"
+        },
+        {
+          "line": 727,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._json_string(pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 729,
+          "text": "CREATE FUNCTION modkit_events._skip_json_ws(p_raw pg_catalog.bytea,p_offset pg_catalog.int4)"
+        },
+        {
+          "line": 745,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._skip_json_ws(pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 747,
+          "text": "CREATE FUNCTION modkit_events._json_children("
+        },
+        {
+          "line": 807,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._json_children(pg_catalog.bytea,pg_catalog.int4,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 809,
+          "text": "CREATE FUNCTION modkit_events._json_value("
+        },
+        {
+          "line": 885,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._json_value(pg_catalog.bytea,pg_catalog.int4,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 887,
+          "text": "CREATE FUNCTION modkit_events._json_to_j(p_raw pg_catalog.bytea)"
+        },
+        {
+          "line": 903,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._json_to_j(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 905,
+          "text": "CREATE FUNCTION modkit_events._make_record(p_tag pg_catalog.bytea,p_fields pg_catalog.bytea[])"
+        },
+        {
+          "line": 925,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._make_record(pg_catalog.bytea,pg_catalog.bytea[]) FROM PUBLIC;"
+        },
+        {
+          "line": 927,
+          "text": "CREATE FUNCTION modkit_events._j_scalar_bytes(p_raw pg_catalog.bytea,p_tag pg_catalog.int4)"
+        },
+        {
+          "line": 939,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._j_scalar_bytes(pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 941,
+          "text": "CREATE FUNCTION modkit_events._event_replay_frame(p_raw pg_catalog.bytea)"
+        },
+        {
+          "line": 1006,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._event_replay_frame(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 1008,
+          "text": "CREATE FUNCTION modkit_events._optional_bytes(p_value pg_catalog.bytea)"
+        },
+        {
+          "line": 1017,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._optional_bytes(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 1019,
+          "text": "CREATE FUNCTION modkit_events._instant_bytes(p_value pg_catalog.timestamptz)"
+        },
+        {
+          "line": 1031,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._instant_bytes(pg_catalog.timestamptz) FROM PUBLIC;"
+        },
+        {
+          "line": 1033,
+          "text": "CREATE FUNCTION modkit_events._protected_valid("
+        },
+        {
+          "line": 1077,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._protected_valid(pg_catalog.bytea,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.timestamptz,pg_catalog.bytea,pg_catalog.text,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 1079,
+          "text": "CREATE FUNCTION modkit_events._intent_valid("
+        },
+        {
+          "line": 1132,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._intent_valid(pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.int4,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.text,pg_catalog.int4,pg_catalog.timestamptz,pg_catalog.timestamptz) FROM PUBLIC;"
+        },
+        {
+          "line": 1134,
+          "text": "CREATE TABLE modkit_events.schema_versions ("
+        },
+        {
+          "line": 1143,
+          "text": "REVOKE ALL ON TABLE modkit_events.schema_versions FROM PUBLIC;"
+        },
+        {
+          "line": 1145,
+          "text": "CREATE TABLE modkit_events.subscriptions ("
+        },
+        {
+          "line": 1153,
+          "text": "REVOKE ALL ON TABLE modkit_events.subscriptions FROM PUBLIC;"
+        },
+        {
+          "line": 1155,
+          "text": "CREATE TABLE modkit_events.work ("
+        },
+        {
+          "line": 1215,
+          "text": "REVOKE ALL ON TABLE modkit_events.work FROM PUBLIC;"
+        },
+        {
+          "line": 1216,
+          "text": "CREATE UNIQUE INDEX work_key_identity ON modkit_events.work"
+        },
+        {
+          "line": 1219,
+          "text": "CREATE INDEX work_discovery_scan ON modkit_events.work (namespace,kind,work_id);"
+        },
+        {
+          "line": 1220,
+          "text": "CREATE INDEX work_ready_scan ON modkit_events.work (namespace,kind,work_id)"
+        },
+        {
+          "line": 1222,
+          "text": "CREATE INDEX work_recovery_scan ON modkit_events.work (namespace,kind,work_id)"
+        },
+        {
+          "line": 1225,
+          "text": "CREATE TABLE modkit_events.finalization_guards ("
+        },
+        {
+          "line": 1242,
+          "text": "REVOKE ALL ON TABLE modkit_events.finalization_guards FROM PUBLIC;"
+        },
+        {
+          "line": 1244,
+          "text": "CREATE FUNCTION modkit_events._guard_immutable()"
+        },
+        {
+          "line": 1260,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._guard_immutable() FROM PUBLIC;"
+        },
+        {
+          "line": 1261,
+          "text": "CREATE TRIGGER guard_immutable BEFORE UPDATE OR DELETE ON modkit_events.finalization_guards"
+        },
+        {
+          "line": 1264,
+          "text": "CREATE FUNCTION modkit_events._guard_deferred_check()"
+        },
+        {
+          "line": 1276,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._guard_deferred_check() FROM PUBLIC;"
+        },
+        {
+          "line": 1277,
+          "text": "CREATE CONSTRAINT TRIGGER guard_requires_certificate AFTER INSERT OR UPDATE ON modkit_events.finalization_guards"
+        },
+        {
+          "line": 1280,
+          "text": "CREATE TABLE modkit_events.inbox ("
+        },
+        {
+          "line": 1289,
+          "text": "REVOKE ALL ON TABLE modkit_events.inbox FROM PUBLIC;"
+        },
+        {
+          "line": 1291,
+          "text": "CREATE TABLE modkit_events.attempts ("
+        },
+        {
+          "line": 1305,
+          "text": "REVOKE ALL ON TABLE modkit_events.attempts FROM PUBLIC;"
+        },
+        {
+          "line": 1307,
+          "text": "CREATE TABLE modkit_events.work_history ("
+        },
+        {
+          "line": 1319,
+          "text": "REVOKE ALL ON TABLE modkit_events.work_history FROM PUBLIC;"
+        },
+        {
+          "line": 1320,
+          "text": "REVOKE ALL ON SEQUENCE modkit_events.work_history_history_id_seq FROM PUBLIC;"
+        },
+        {
+          "line": 1321,
+          "text": "CREATE INDEX work_history_page ON modkit_events.work_history(work_id,history_id);"
+        },
+        {
+          "line": 1323,
+          "text": "CREATE TABLE modkit_events.delivery_history ("
+        },
+        {
+          "line": 1330,
+          "text": "REVOKE ALL ON TABLE modkit_events.delivery_history FROM PUBLIC;"
+        },
+        {
+          "line": 1331,
+          "text": "REVOKE ALL ON SEQUENCE modkit_events.delivery_history_history_id_seq FROM PUBLIC;"
+        },
+        {
+          "line": 1332,
+          "text": "CREATE INDEX delivery_history_page ON modkit_events.delivery_history(work_id,history_id);"
+        },
+        {
+          "line": 1334,
+          "text": "CREATE TABLE modkit_events.outbox ("
+        },
+        {
+          "line": 1354,
+          "text": "REVOKE ALL ON TABLE modkit_events.outbox FROM PUBLIC;"
+        },
+        {
+          "line": 1355,
+          "text": "CREATE INDEX outbox_scan ON modkit_events.outbox(event_digest) WHERE state IN ('pending','claimed','publishing');"
+        },
+        {
+          "line": 1357,
+          "text": "CREATE TABLE modkit_events.publication_history ("
+        },
+        {
+          "line": 1369,
+          "text": "REVOKE ALL ON TABLE modkit_events.publication_history FROM PUBLIC;"
+        },
+        {
+          "line": 1370,
+          "text": "REVOKE ALL ON SEQUENCE modkit_events.publication_history_history_id_seq FROM PUBLIC;"
+        },
+        {
+          "line": 1371,
+          "text": "CREATE INDEX publication_history_page ON modkit_events.publication_history(event_digest,history_id);"
+        },
+        {
+          "line": 1374,
+          "text": "ALTER TABLE modkit_events.attempts"
+        },
+        {
+          "line": 1381,
+          "text": "ALTER TABLE modkit_events.work_history"
+        },
+        {
+          "line": 1405,
+          "text": "ALTER TABLE modkit_events.publication_history"
+        },
+        {
+          "line": 1418,
+          "text": "CREATE FUNCTION modkit_events._reject_record_mutation()"
+        },
+        {
+          "line": 1425,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._reject_record_mutation() FROM PUBLIC;"
+        },
+        {
+          "line": 1426,
+          "text": "CREATE TRIGGER work_history_immutable BEFORE UPDATE OR DELETE ON modkit_events.work_history"
+        },
+        {
+          "line": 1428,
+          "text": "CREATE TRIGGER delivery_history_immutable BEFORE UPDATE OR DELETE ON modkit_events.delivery_history"
+        },
+        {
+          "line": 1430,
+          "text": "CREATE TRIGGER publication_history_immutable BEFORE UPDATE OR DELETE ON modkit_events.publication_history"
+        },
+        {
+          "line": 1433,
+          "text": "CREATE FUNCTION modkit_events._attempt_record_check()"
+        },
+        {
+          "line": 1465,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._attempt_record_check() FROM PUBLIC;"
+        },
+        {
+          "line": 1466,
+          "text": "CREATE TRIGGER attempt_record_check BEFORE INSERT OR UPDATE OR DELETE ON modkit_events.attempts"
+        },
+        {
+          "line": 1471,
+          "text": "CREATE TABLE modkit_events.mutation_operations ("
+        },
+        {
+          "line": 1518,
+          "text": "REVOKE ALL ON TABLE modkit_events.mutation_operations FROM PUBLIC;"
+        },
+        {
+          "line": 1519,
+          "text": "CREATE TRIGGER mutation_operations_immutable BEFORE UPDATE OR DELETE ON modkit_events.mutation_operations"
+        },
+        {
+          "line": 1522,
+          "text": "ALTER TABLE modkit_events.attempts"
+        },
+        {
+          "line": 1525,
+          "text": "ALTER TABLE modkit_events.work_history"
+        },
+        {
+          "line": 1528,
+          "text": "ALTER TABLE modkit_events.delivery_history"
+        },
+        {
+          "line": 1531,
+          "text": "ALTER TABLE modkit_events.publication_history"
+        },
+        {
+          "line": 1538,
+          "text": "CREATE FUNCTION modkit_events.e14()"
+        },
+        {
+          "line": 1549,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e14() FROM PUBLIC;"
+        },
+        {
+          "line": 1553,
+          "text": "CREATE FUNCTION modkit_events.e09("
+        },
+        {
+          "line": 1598,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e09(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 1602,
+          "text": "CREATE FUNCTION modkit_events.e08("
+        },
+        {
+          "line": 1747,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e08(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 1751,
+          "text": "CREATE FUNCTION modkit_events._protected_frame_valid(p_binding pg_catalog.bytea)"
+        },
+        {
+          "line": 1850,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._protected_frame_valid(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 1852,
+          "text": "CREATE TABLE modkit_events.job_payloads ("
+        },
+        {
+          "line": 1897,
+          "text": "REVOKE ALL ON TABLE modkit_events.job_payloads FROM PUBLIC;"
+        },
+        {
+          "line": 1899,
+          "text": "CREATE FUNCTION modkit_events._job_payload_record_check()"
+        },
+        {
+          "line": 1948,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._job_payload_record_check() FROM PUBLIC;"
+        },
+        {
+          "line": 1949,
+          "text": "CREATE TRIGGER job_payload_record_check BEFORE INSERT OR UPDATE OR DELETE ON modkit_events.job_payloads"
+        },
+        {
+          "line": 1952,
+          "text": "CREATE FUNCTION modkit_events._inbox_record_check()"
+        },
+        {
+          "line": 2014,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._inbox_record_check() FROM PUBLIC;"
+        },
+        {
+          "line": 2015,
+          "text": "CREATE TRIGGER inbox_record_check BEFORE INSERT OR UPDATE OR DELETE ON modkit_events.inbox"
+        },
+        {
+          "line": 2018,
+          "text": "CREATE FUNCTION modkit_events._work_admission_immutable()"
+        },
+        {
+          "line": 2043,
+          "text": "REVOKE ALL ON FUNCTION modkit_events._work_admission_immutable() FROM PUBLIC;"
+        },
+        {
+          "line": 2044,
+          "text": "CREATE TRIGGER work_admission_immutable BEFORE UPDATE OR DELETE ON modkit_events.work"
+        },
+        {
+          "line": 2048,
+          "text": "CREATE INDEX work_history_complete_lookup ON modkit_events.work_history(work_id,cycle,attempt,history_id)"
+        },
+        {
+          "line": 2051,
+          "text": "CREATE FUNCTION modkit_events.e10("
+        },
+        {
+          "line": 2316,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e10(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.xid8,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 2320,
+          "text": "CREATE FUNCTION modkit_events.e15(p_work_id pg_catalog.uuid)"
+        },
+        {
+          "line": 2655,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e15(pg_catalog.uuid) FROM PUBLIC;"
+        },
+        {
+          "line": 2659,
+          "text": "CREATE FUNCTION modkit_events.e18(p_subscription_id pg_catalog.bytea)"
+        },
+        {
+          "line": 2692,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e18(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 2694,
+          "text": "CREATE FUNCTION modkit_events.e17("
+        },
+        {
+          "line": 2886,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e17(pg_catalog.uuid,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 2890,
+          "text": "CREATE FUNCTION modkit_events.e16(p_subscription_id pg_catalog.bytea,p_event_id pg_catalog.bytea)"
+        },
+        {
+          "line": 2981,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e16(pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 2983,
+          "text": "CREATE FUNCTION modkit_events.e34("
+        },
+        {
+          "line": 3316,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e34(pg_catalog.uuid,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 3319,
+          "text": "CREATE FUNCTION modkit_events.e01("
+        },
+        {
+          "line": 3375,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e01(pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 3382,
+          "text": "CREATE FUNCTION modkit_events.e03("
+        },
+        {
+          "line": 3730,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e03(pg_catalog.uuid,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.int4,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.text,pg_catalog.int4,pg_catalog.timestamptz,pg_catalog.timestamptz,pg_catalog.bytea,pg_catalog.int4,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bool,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 3733,
+          "text": "CREATE FUNCTION modkit_events.e28(p_event_id pg_catalog.bytea)"
+        },
+        {
+          "line": 3834,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e28(pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 3839,
+          "text": "CREATE FUNCTION modkit_events.e02("
+        },
+        {
+          "line": 3957,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e02(pg_catalog.bytea,pg_catalog.int4,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 3960,
+          "text": "CREATE FUNCTION modkit_events.e04("
+        },
+        {
+          "line": 4292,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e04(pg_catalog.bytea,pg_catalog.text,pg_catalog.bytea[],pg_catalog.int4[],pg_catalog.int4,pg_catalog.float8,pg_catalog.uuid,pg_catalog.int4) FROM PUBLIC;"
+        },
+        {
+          "line": 4295,
+          "text": "CREATE FUNCTION modkit_events.e05("
+        },
+        {
+          "line": 4500,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e05(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.float8) FROM PUBLIC;"
+        },
+        {
+          "line": 4503,
+          "text": "CREATE FUNCTION modkit_events.e06("
+        },
+        {
+          "line": 4692,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e06(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.uuid,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea) FROM PUBLIC;"
+        },
+        {
+          "line": 4695,
+          "text": "CREATE FUNCTION modkit_events.e07("
+        },
+        {
+          "line": 4867,
+          "text": "REVOKE ALL ON FUNCTION modkit_events.e07(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.int8,pg_catalog.int4,pg_catalog.int4,pg_catalog.timestamptz) FROM PUBLIC;"
+        }
+      ],
+      "pin": {
+        "sha256": "6cf0c7d1fb6baaccf98b5aaf0e3ed15c55c12941c4e73d45d083d948ec9a5534",
+        "size": 290583
+      }
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/sql/0001_initial.sql": {
+      "ddl_lines": [
+        {
+          "line": 242,
+          "text": "CREATE SCHEMA modkit_workers;"
+        },
+        {
+          "line": 243,
+          "text": "REVOKE ALL ON SCHEMA modkit_workers FROM PUBLIC;"
+        },
+        {
+          "line": 244,
+          "text": "REVOKE CREATE ON SCHEMA modkit_workers FROM modkit_runtime,modkit_reconciler,modkit_operator;"
+        },
+        {
+          "line": 246,
+          "text": "CREATE FUNCTION modkit_workers.w01("
+        },
+        {
+          "line": 551,
+          "text": "REVOKE ALL ON FUNCTION modkit_workers.w01(pg_catalog.uuid,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.int4,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.text,pg_catalog.int4,pg_catalog.timestamptz,pg_catalog.timestamptz,pg_catalog.text,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.bytea,pg_catalog.timestamptz,pg_catalog.bytea,pg_catalog.text,pg_catalog.bytea) FROM PUBLIC;"
+        }
+      ],
+      "pin": {
+        "sha256": "19d8af0bc4b881beccc7c68d5df185867d5e88e406bb81df5d266f1d6f228203",
+        "size": 43513
+      }
+    }
+  },
+  "status": "STATIC_NAVIGATION_NOT_SEMANTIC_CLOSURE_PROOF"
+}
