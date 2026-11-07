@@ -1,44 +1,63 @@
-"""Worker scaffold is intentionally export-neutral."""
+"""Pure root exports are additive; implementation namespaces remain inert."""
 
+import importlib
+import json
 import subprocess
 import sys
-import tempfile
 import unittest
-from pathlib import Path
 
 
 class Exports(unittest.TestCase):
     def test_no_unreleased_exports(self):
-        script = r"""
+        root = importlib.import_module("modkit_workers")
+        self.assertEqual(
+            set(root.__all__),
+            {
+                "AcquireRequest",
+                "AsyncJobHandler",
+                "AsyncWorkSource",
+                "ConflictingHandlerRouteError",
+                "DuplicateHandlerError",
+                "HandlerKind",
+                "HandlerRegistration",
+                "HandlerRegistry",
+                "InvalidWorkerConfiguration",
+                "JobContext",
+                "RenewalOwner",
+                "SyncJobHandler",
+                "UnknownCommandType",
+                "UnsupportedHandlerVersion",
+                "WorkerSettings",
+                "WorkSource",
+            },
+        )
+        self.assertFalse(hasattr(root, "JobWorker"))
+        self.assertFalse(hasattr(root, "EventWorker"))
+        # Collection may already import persistence children. Verify initializer
+        # behavior in a clean process using the caller's exact import locations.
+        script = """
 import importlib
+import json
 import sys
+import unittest
 
-sys.path.insert(0, sys.argv[1])
-root = importlib.import_module("modkit_workers")
-assert getattr(root, "__all__", None) == []
+sys.path[:] = json.loads(sys.argv[1])
+case = unittest.TestCase()
 for leaf in ("adapters", "persistence", "persistence.sql"):
     module = importlib.import_module("modkit_workers." + leaf)
     # Python binds explicitly imported child modules on their parent.
     allowed = {"sql", "migrations"} if leaf == "persistence" else set()
     public = {key for key in vars(module) if not key.startswith("_")}
-    assert public <= allowed, (leaf, public, allowed)
+    case.assertLessEqual(public, allowed)
     for name in public:
-        assert getattr(module, name) is importlib.import_module(module.__name__ + "." + name)
+        case.assertIs(
+            getattr(module, name), importlib.import_module(module.__name__ + "." + name)
+        )
 """
-        with tempfile.TemporaryDirectory(prefix="modkit-worker-exports-") as directory:
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    "-I",
-                    "-B",
-                    "-c",
-                    script,
-                    str(Path(__file__).resolve().parents[1] / "src"),
-                ],
-                cwd=directory,
-                capture_output=True,
-                text=True,
-                timeout=20,
-                check=False,
-            )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        result = subprocess.run(
+            [sys.executable, "-I", "-S", "-B", "-c", script, json.dumps(sys.path)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)

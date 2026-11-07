@@ -1,8 +1,16 @@
 # modkit-workers
 
-NEW unpublished package scaffold, proposed version0.1.0. MIT attribution is retained.
-The sole ordinary runtime requirement is modkit-events>=0.2,<0.3. No worker runtime
-root exports, supervisor loops or automatic services are provided by this partial source release.
+NEW unpublished source, proposed version0.1.0. MIT attribution is retained.
+Pure root contracts provide explicit HandlerRegistry registration/lookup and acquisition/
+subscription preflight, immutable JobContext, application-owned synchronous/async
+WorkSource hooks, AcquireRequest and bounded WorkerSettings. See
+[the pure contracts guide](docs/worker-contracts.md) for signatures and validation limits.
+These contracts do not execute handlers or run workers. JobWorker/EventWorker,
+supervisor loops and automatic services remain unavailable.
+
+The sole ordinary dependency is modkit-events>=0.2,<0.3. Events and Workers are
+separate generic packages: Workers requires Events; Events works with or without
+Workers. Applications retain business rules, durable work and transaction ownership.
 
 Python>=3.12 metadata retains the planned3.12–3.15 Linux/Windows/macOS matrix;
 that matrix and all optional dependencies remain unqualified. Explicit candidate extras:
