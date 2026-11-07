@@ -27,4 +27,31 @@ are intentionally absent pending reviewed bytes. manifest() fails FileNotFoundEr
 until that separate gate closes; test-only in-memory fixtures are not packaged resources.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
-No build/install/release, real PostgreSQL/Redis or full regression evidence is claimed.
+No install/release, real PostgreSQL/Redis or full regression qualification is claimed.
+
+## Dependency-independent source checks
+
+[The source-check workflow](.github/workflows/source-checks.yml) runs on
+Ubuntu 24.04 with Python 3.12. It installs only pinned test, lint and build
+tools from [.github/requirements-source-ci.txt](.github/requirements-source-ci.txt),
+not Workers or Events. Its exact checks are:
+
+- Ruff lint over all of `src` and `tests`.
+- `tests/test_package_exports.py`, `tests/test_migration_resources.py` and
+  `tests/test_handler_partials.py`, using `PYTHONPATH=src` for source imports
+  and child processes.
+- `tests/check_sdist_contents.py`, which builds a temporary source distribution
+  to verify private-document exclusions and required public files. It does not
+  install or qualify a release artifact.
+
+**The full suite remains blocked with the available public Events source.**
+The inspected [Events 0.1.0 source](https://github.com/maxxab/modkit-events/tree/076bb3a275725f21d0f5f8594de64370bacf9505)
+lacks `modkit_events.contracts` and `modkit_events.persistence`, so the complete
+Workers suite fails collection against it. Full source qualification needs
+compatible public Events APIs; installed-package qualification also requires a
+released Events distribution satisfying the unchanged `>=0.2,<0.3` requirement.
+
+A green dependency-independent check is not a full-suite, formatting, type-checking,
+installed-package, runtime or release qualification. The planned Python/OS matrix,
+optional adapters, native drivers, production SQL and real PostgreSQL/Redis gates
+remain open. No service, deployment or release job is configured.

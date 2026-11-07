@@ -1,0 +1,6 @@
+# Tooling for dependency-independent CI only; not a package installation.
+# Keep test/lint pins aligned with requirements-dev.txt and the build backend.
+pytest==9.2.0
+pytest-asyncio==1.4.1
+ruff==0.17.3
+hatchling==1.33.0
