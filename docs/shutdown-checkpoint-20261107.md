@@ -1,6 +1,14 @@
 # Workers shutdown checkpoint: 2026-11-07
 
 
+## Further source-only continuation: 2026-11-07
+
+- `56e60ed1d35a32b12bfb27d3d0457396b2cb147a` restores the already-selected sdist exclusions for `docs/handoffs`, `docs/coordination`, and `docs/plans`. A real Hatchling build first leaked all three private sentinel paths, then excluded them after the fix while retaining nested/similarly named public guides. Independent review repeated this archive-only check successfully. Run it explicitly with `uv run --offline --no-project --with hatchling==1.33.0 python tests/check_sdist_contents.py`; it is not pytest-discovered.
+- The retained three pure W04 family regressions are now included unchanged as `tests/test_job_find_atomicity.py`. They cover a corrupt final candidate, cancellation identity after the first row, and bounded overflow probing. Separate subprocess-only source mutations each caused the intended targeted failure; no repository production source was changed by those controls. Independent focused review/QA passed.
+- Current complete pure suite: **132 passed, 96 subtests passed**. Full Ruff and diff checks pass. Earlier artifact hashes below remain historical for their explicitly named source revision, not this updated tree.
+
+The authoritative remaining SQL order is W01 real fixture qualification, followed by integration/qualification of the retained W02/W04 drafts. W03 still requires the Events E30 physical access contract; W05 requires the Events E04 lifecycle contract. Common runtime work remains downstream of A/B/C and the selected ownership/materialization/resource/drain contracts. This continuation does not bypass those dependencies, execute SQL, import/install candidates, change release versions, or edit the live WIP/Events/ERP checkouts. See the scoped continuation plan for retained evidence.
+
 ## Resume update: 2026-11-07
 
 The original shutdown record below is historical. Subsequent reviewed source commits:
