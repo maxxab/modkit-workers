@@ -12,6 +12,7 @@
 - **workers:** add asynchronous source batch runner (`82d700b8986e`)
 - **workers:** add native job preparations (`c10ee3078214`)
 - **workers:** add bounded native job listing (`7c6a5f6245e2`)
+- **workers:** add native job identity lookup (`56edbfdd6663`)
 
 ### Bug Fixes
 
