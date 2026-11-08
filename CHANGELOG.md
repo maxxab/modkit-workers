@@ -13,6 +13,7 @@
 - **workers:** add native job preparations (`c10ee3078214`)
 - **workers:** add bounded native job listing (`7c6a5f6245e2`)
 - **workers:** add native job identity lookup (`56edbfdd6663`)
+- **persistence:** add native job acquisition (`a6276368daab`)
 
 ### Bug Fixes
 
