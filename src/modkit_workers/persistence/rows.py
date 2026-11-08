@@ -406,3 +406,95 @@ def _validate_list_result_raw(request, value, /):
         if record.work.namespace != namespace or prior is not None and current <= prior:
             _reject_validation()
         prior = current
+
+
+def _decode_candidate_raw(values: tuple, /) -> JobCandidate:
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_candidate_raw
+
+    values = native_profile.decode_columns(get_statement("W04"), values)
+    work = common_rows._decode_work_observation_raw(values[:56])
+    present, half = values[56], values[57:]
+    if work.kind == "job":
+        if present is not True:
+            _reject_validation()
+        record = _decode_job_half_raw(work, half)
+    else:
+        if (
+            work.kind != "inbox"
+            or present is not False
+            or any(value is not None for value in half)
+        ):
+            _reject_validation()
+        record = None
+    return _job_candidate_raw(work=work, job=record)
+
+
+_FIND_COMPARISON_FIELDS = (
+    "kind", "subscription_id", "namespace", "command_type", "scope_evidence",
+    "idempotency_key", "canonical_version", "schema_version_decimal",
+    "scope_application", "scope_tenant", "scope_owner", "intent_evidence",
+    "semantic_input", "protected_binding", "replay_policy", "max_attempts",
+    "deadline", "original_available_at",
+)
+
+
+def _classify_find_raw(expected, candidates, /):
+    """Validate every candidate before context-dependent classification."""
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_candidate_raw
+
+    if type(candidates) is not tuple or len(candidates) > 2:
+        _reject_validation()
+    for candidate in candidates:
+        _validate_job_candidate_raw(candidate)
+    prior = None
+    for candidate in candidates:
+        work = candidate.work
+        if prior is not None and work.work_id <= prior:
+            _reject_validation()
+        prior = work.work_id
+        if work.work_id != expected["work_id"] and not _key_bucket(work, expected):
+            _reject_validation()
+    if not candidates:
+        return JobIdentityDecision.NEW, None
+    if len(candidates) == 1 and candidates[0].job is not None:
+        work = candidates[0].work
+        if all(getattr(work, name) == expected[name] for name in _FIND_COMPARISON_FIELDS):
+            return JobIdentityDecision.MATCH, str(work.work_id)
+    return JobIdentityDecision.CONFLICT, None
+
+
+def _decode_find_raw(request, rows, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_identity_observation_raw
+
+    _native_request(request, "W04")
+    if type(rows) is not tuple or len(rows) > 2:
+        _reject_validation()
+    for row in rows:
+        if type(row) is not tuple or len(row) != 72:
+            _reject_validation()
+    candidates = tuple(_decode_candidate_raw(row) for row in rows)
+    expected = common._admission_values_raw(request.context.expected[0])
+    decision, original = _classify_find_raw(expected, candidates)
+    return _job_identity_observation_raw(
+        decision=decision, candidates=candidates, original_work_id=original,
+    )
+
+
+def _validate_find_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_identity_observation_raw
+
+    _native_request(request, "W04")
+    _validate_job_identity_observation_raw(value)
+    expected = common._admission_values_raw(request.context.expected[0])
+    decision, original = _classify_find_raw(expected, value.candidates)
+    if value.decision is not decision or value.original_work_id != original:
+        _reject_validation()

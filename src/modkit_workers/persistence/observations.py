@@ -334,3 +334,67 @@ def _validate_job_admission_raw(value, /):
     if type(value) is not JobAdmissionObservation:
         _invalid(True)
     _admission_fields(value.work_id, value.inserted, raw=True)
+
+
+def _validate_job_candidate_raw(value, /):
+    from modkit_events.persistence.observations import _validate_work_observation_raw
+
+    if type(value) is not JobCandidate:
+        _invalid(True)
+    _validate_work_observation_raw(value.work)
+    if value.work.kind == "job":
+        _validate_job_record_raw(value.job)
+        if value.job.work != value.work:
+            _invalid(True)
+    elif value.work.kind != "inbox" or value.job is not None:
+        _invalid(True)
+
+
+def _job_candidate_raw(*, work, job):
+    value = object.__new__(JobCandidate)
+    object.__setattr__(value, "work", work)
+    object.__setattr__(value, "job", job)
+    _validate_job_candidate_raw(value)
+    return value
+
+
+def _validate_job_identity_observation_raw(value, /):
+    from .models import _work_id_raw
+
+    if type(value) is not JobIdentityObservation:
+        _invalid(True)
+    if (
+        type(value.decision) is not JobIdentityDecision
+        or type(value.candidates) is not tuple
+        or len(value.candidates) > 2
+    ):
+        _invalid(True)
+    # Validate the entire family before decision and order checks.
+    for candidate in value.candidates:
+        _validate_job_candidate_raw(candidate)
+    if any(
+        value.candidates[index - 1].work.work_id >= value.candidates[index].work.work_id
+        for index in range(1, len(value.candidates))
+    ):
+        _invalid(True)
+    if value.decision is JobIdentityDecision.NEW:
+        if value.candidates or value.original_work_id is not None:
+            _invalid(True)
+    elif value.decision is JobIdentityDecision.MATCH:
+        if (
+            len(value.candidates) != 1
+            or value.candidates[0].job is None
+            or _work_id_raw(value.original_work_id) != value.candidates[0].work.work_id
+        ):
+            _invalid(True)
+    elif not value.candidates or value.original_work_id is not None:
+        _invalid(True)
+
+
+def _job_identity_observation_raw(*, decision, candidates, original_work_id):
+    value = object.__new__(JobIdentityObservation)
+    object.__setattr__(value, "decision", decision)
+    object.__setattr__(value, "candidates", candidates)
+    object.__setattr__(value, "original_work_id", original_work_id)
+    _validate_job_identity_observation_raw(value)
+    return value

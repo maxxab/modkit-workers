@@ -107,3 +107,37 @@ W02 returns JobRecord or None, including complete Work/Resolution provenance and
 Public pure builders/decoders keep fixed-code sanitized PersistenceError behavior. Inside native preparation/execution, only deliberate raw validation rejection is translated to the appropriate managed error. Unexpected received exceptions and cancellation preserve the common issuer's primary-error contract. Do not put a broad pure-codec decorator around native execution or log raw inputs, result records, credentials or exception text.
 
 No successful later statement, missing lookup, savepoint cleanup or new connection clears sticky uncertainty or authorizes replay. No automatic begin, commit, rollback, connection replacement, close or retry is performed by these Workers entrypoints.
+
+## W04 comparison-only lookup
+
+The source API also provides
+prepare_find_jobs(execution, request: JobFindRequest, /, *, execution_ledger)
+and FIND_JOBS_RESULT_CAPACITY. W04 has no aggregate-page budget option. It
+retains seven lookup parameters and a complete immutable admission comparison
+context, using the same caller-owned root and paid preparation/result lifecycle.
+
+The complete result is JobIdentityObservation: NEW for no candidates, MATCH for
+one identical job admission, or CONFLICT for a different admission or two
+candidates. A direct-ID inbox collision is a valid conflict with no job half.
+All candidates are validated before any result is published. A match by key may
+return a different original work ID. Original protected identity remains
+comparable after material erasure; lookup never restores material, submits,
+claims work, or establishes execution readiness.
+
+The caller must reserve FIND_JOBS_RESULT_CAPACITY and retain the result borrow
+while using any nested candidate data. Apply application authorization before
+exposing protected data. This fixed capacity accounts for both candidates and
+transport overflow detection, rather than only the small ordinary-case result.
+
+**W04 bounded native qualification passed; full Workers remains NOT_READY.**
+Seven real native lookup cases covered NEW, direct/key MATCH, and single/two-
+candidate CONFLICT, including inbox and mixed inbox/job families, with all 72
+fields compared. The checked fixed preparation/result reservations were
+3,156,870 and 119,667,132 bytes. Caller-owned root identity, staged visibility,
+rollback, and the original PZ005 error with held accounting passed. The same
+run ended with graceful exit 0 and nonforced fixture/socket cleanup.
+
+This bounded result does not qualify positive-resolution native records,
+native concurrency, maximum-sized cells, upper-bound resource behavior, or
+performance. It does not establish broader store/runtime, installation or
+release readiness, and does not borrow W03 qualification.

@@ -14,8 +14,11 @@ from modkit_events.persistence.native_profile import (
 
 from . import bindings, rows
 from .catalog import get_statement
-from .models import JobListRequest, JobReadRequest, JobSubmitRequest
-from .observations import JobAdmissionObservation, JobDetails, JobPayload, JobRecord
+from .models import JobFindRequest, JobListRequest, JobReadRequest, JobSubmitRequest
+from .observations import (
+    JobAdmissionObservation, JobCandidate, JobDetails, JobIdentityDecision,
+    JobIdentityObservation, JobPayload, JobRecord,
+)
 
 _SUBMIT = WorkersNativeOperation(
     statement=get_statement("W01"),
@@ -43,8 +46,21 @@ _LIST_JOBS = WorkersNativeOperation(
     result_types=(JobRecord, JobDetails, JobPayload),
 )
 
+_FIND_JOBS = WorkersNativeOperation(
+    statement=get_statement("W04"),
+    request_type=JobFindRequest,
+    build_request=bindings._find_jobs_raw,
+    decode_rows=rows._decode_find_raw,
+    validate_result=rows._validate_find_result_raw,
+    result_types=(
+        JobRecord, JobDetails, JobPayload, JobCandidate,
+        JobIdentityObservation, JobIdentityDecision,
+    ),
+)
+
 SUBMIT_RESULT_CAPACITY = result_capacity(_SUBMIT)
 READ_JOB_RESULT_CAPACITY = result_capacity(_READ_JOB)
+FIND_JOBS_RESULT_CAPACITY = result_capacity(_FIND_JOBS)
 
 
 def prepare_submit(execution, request: JobSubmitRequest, /, *, execution_ledger):
@@ -71,8 +87,14 @@ def prepare_list_jobs(
     )
 
 
+def prepare_find_jobs(execution, request: JobFindRequest, /, *, execution_ledger):
+    """Prepare a complete comparison-only lookup; never submit or claim work."""
+    from modkit_events.persistence.native_execution import prepare_component
+    return prepare_component(execution, _FIND_JOBS, request, execution_ledger=execution_ledger)
+
+
 __all__ = (
-    "prepare_submit", "prepare_read_job", "prepare_list_jobs",
-    "SUBMIT_RESULT_CAPACITY", "READ_JOB_RESULT_CAPACITY",
+    "prepare_submit", "prepare_read_job", "prepare_list_jobs", "prepare_find_jobs",
+    "SUBMIT_RESULT_CAPACITY", "READ_JOB_RESULT_CAPACITY", "FIND_JOBS_RESULT_CAPACITY",
     "DEFAULT_LIST_PAGE_PAYLOAD_BYTES", "MAX_LIST_PAGE_PAYLOAD_BYTES",
 )

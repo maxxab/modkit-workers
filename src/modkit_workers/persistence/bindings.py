@@ -162,13 +162,14 @@ def list_jobs(request: JobListRequest, /) -> common.FrozenRequest:
     )
 
 
-def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
+def _job_admission_raw(
+    job: JobInput, /
+) -> tuple[common.AdmissionInput, tuple[object, ...]]:
     """Trusted native builder; caller reserves D/A before entering this function."""
     from collections.abc import Mapping
     from datetime import datetime, timezone
 
     from modkit_events.persistence import models as shared
-    from modkit_events.persistence import native_profile
     from modkit_events.persistence.errors import _reject_validation
     from modkit_events.persistence.scope import (
         Scope,
@@ -178,9 +179,8 @@ def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
 
     from .models import _work_id_raw
 
-    if type(request) is not JobSubmitRequest or type(request.job) is not JobInput:
+    if type(job) is not JobInput:
         _reject_validation()
-    job = request.job
     # Fixed references only. Never replace/copy JobInput or traverse payload here.
     work_id, command, version, scope, payload, protected, original, deadline, key, policy, attempts = (
         job.work_id, job.command_type, job.schema_version, job.scope, job.payload,
@@ -237,6 +237,17 @@ def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
         material.expires_at, material.recovery_metadata, material.cleanup_policy.value,
         material.projection_metadata,
     )
+    return admission, parameters
+
+
+def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
+    """Trusted native builder; caller reserves D/A before entering this function."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    if type(request) is not JobSubmitRequest:
+        _reject_validation()
+    admission, parameters = _job_admission_raw(request.job)
     return native_profile.freeze_request(
         _statement("W01"), parameters,
         context=common._return_context_raw(expected=(admission,), readiness=None),
@@ -277,4 +288,20 @@ def _list_jobs_raw(request: JobListRequest, /) -> common.FrozenRequest:
     return native_profile.freeze_request(
         _statement("W03"), (b"jobs", created_at, work_id, limit),
         context=common._return_context_raw(),
+    )
+
+
+def _find_jobs_raw(request: JobFindRequest, /) -> common.FrozenRequest:
+    """Build one comparison-only W04 request under the caller's paid D/A."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    if type(request) is not JobFindRequest:
+        _reject_validation()
+    admission, submission_parameters = _job_admission_raw(request.job)
+    parameters = submission_parameters[:7]
+    del submission_parameters
+    return native_profile.freeze_request(
+        _statement("W04"), parameters,
+        context=common._return_context_raw(expected=(admission,), readiness=None),
     )
