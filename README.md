@@ -31,7 +31,8 @@ are not packaged resources. The [job listing guide](docs/job-listing.md) describ
 job-only pagination, complete-page validation, and separate qualification gates.
 The [job acquisition guide](docs/job-acquisition.md) describes W05's retained
 Events claim postimages, fresh coherent material snapshot, and bounded job-only
-native evidence, including a real two-session producer-visibility regression.
+native evidence, including a real two-session producer-visibility regression and
+maximum 256-claim/4096-visited pages with small fixture payloads.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
 No build/install/release, Redis, or full 84-cell PostgreSQL conformance qualification is claimed.

@@ -19,3 +19,7 @@
 - Qualify bounded native W05 claims and a deterministic two-session producer
   snapshot regression without E10. Record exact rollback and remaining coverage
   limits; production readiness and full conformance remain open.
+
+- Qualify W05's 4096-candidate discovery bound and 256 complete claims using a
+  caller-owned native test helper, exact row/history checks and full rollback.
+  Maximum payload bytes, resource budgets and broader runtime gates remain open.

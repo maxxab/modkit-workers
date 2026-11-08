@@ -88,9 +88,24 @@ E10 = 0. All database sessions closed. The isolated database contained only two
 lawful producer jobs and their two intake records before clean container disposal.
 No live/shared service, application data, production grants or network was changed.
 
+A separate native upper-limit test used the same PostgreSQL/driver versions and
+reviewed SQL with 4353 lawful W01 submissions in one caller-owned transaction:
+- The first page visited 4096 unsupported candidates, returned no claims and
+  preserved every table row and sequence value while advancing the cursor.
+- Continuation returned 256 complete protected job claims. Every returned field,
+  fence, ten-second lease and full history row matched the database. Only expected
+  claim fields and history changed; attempts and job material remained unchanged.
+- A final unsupported candidate and then an empty page reached exhaustion without
+  writes. The caller rolled back every submitted job and claim, restoring all
+  transactional rows. Sequence allocation remained permitted.
+The caller-owned test helper has no connection, transaction, setup or disposal
+ownership. Four W05 calls and zero E10 calls were corroborated by native statistics;
+the reviewed call closure excludes E10. This covers maximum row/discovery counts
+with small fixture payloads, not maximum payload bytes or resource/performance limits.
+
 This is bounded native evidence, not full conformance. The post-E04 W05
 material-error branch was not fault-injected: existing cooperative writers cannot
 change material there, and E15 rejects malformed families earlier. The missing-half
-test must not be described as a later W05 material-phase failure. Full 256-item and
-4096-visited pages, lease/revision edge schedules, peak-memory/physical-IO budgets,
-other driver/interpreter/platform combinations and installed artifacts remain open.
+test must not be described as a later W05 material-phase failure. Lease/revision
+edge schedules, maximum-byte payloads, peak-memory/physical-IO budgets, other
+driver/interpreter/platform combinations and installed artifacts remain open.
