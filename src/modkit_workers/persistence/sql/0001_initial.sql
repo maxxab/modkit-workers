@@ -1070,3 +1070,287 @@ BEGIN
     END IF;
 END
 $workers_readers_private_boundary$;
+
+
+-- W03 source candidate / NOT_READY. Shared listing index is Events-owned.
+-- Existing W01/readers preflights establish literal E15 and material helper ABI.
+DO $workers_listing_preflight$
+DECLARE
+    owner_oid pg_catalog.oid;
+    index_oid pg_catalog.oid;
+BEGIN
+    SELECT n.nspowner INTO owner_oid FROM pg_catalog.pg_namespace AS n
+     WHERE n.nspname='modkit_workers' AND n.nspowner=CURRENT_USER::pg_catalog.regrole;
+    index_oid:=pg_catalog.to_regclass('modkit_events.work_jobs_created_page');
+    IF owner_oid IS NULL OR NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_index AS i
+          JOIN pg_catalog.pg_class AS c ON c.oid=i.indexrelid
+          JOIN pg_catalog.pg_am AS am ON am.oid=c.relam
+         WHERE i.indexrelid=index_oid
+           AND i.indrelid=pg_catalog.to_regclass('modkit_events.work')
+           AND c.relowner=owner_oid AND c.relkind='i' AND am.amname='btree'
+           AND i.indisvalid AND i.indisready AND i.indislive
+           AND NOT i.indisunique AND NOT i.indisexclusion
+           AND i.indnkeyatts=3 AND i.indnatts=3 AND i.indexprs IS NULL
+           AND i.indoption='0 0 0'::pg_catalog.int2vector
+           AND i.indcollation='0 0 0'::pg_catalog.oidvector
+           AND pg_catalog.pg_get_indexdef(i.indexrelid,1,TRUE)='namespace'
+           AND pg_catalog.pg_get_indexdef(i.indexrelid,2,TRUE)='created_at'
+           AND pg_catalog.pg_get_indexdef(i.indexrelid,3,TRUE)='work_id'
+           AND i.indclass=ARRAY[
+               (SELECT o.oid FROM pg_catalog.pg_opclass AS o
+                 WHERE o.opcnamespace='pg_catalog'::pg_catalog.regnamespace
+                   AND o.opcname='bytea_ops' AND o.opcmethod=am.oid),
+               (SELECT o.oid FROM pg_catalog.pg_opclass AS o
+                 WHERE o.opcnamespace='pg_catalog'::pg_catalog.regnamespace
+                   AND o.opcname='timestamptz_ops' AND o.opcmethod=am.oid),
+               (SELECT o.oid FROM pg_catalog.pg_opclass AS o
+                 WHERE o.opcnamespace='pg_catalog'::pg_catalog.regnamespace
+                   AND o.opcname='uuid_ops' AND o.opcmethod=am.oid)]::pg_catalog.oidvector
+           AND pg_catalog.pg_get_expr(i.indpred,i.indrelid)=
+               '((kind COLLATE "C") = (''job''::text COLLATE "C"))'
+    ) THEN
+        RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='invalid job listing index';
+    END IF;
+END
+$workers_listing_preflight$;
+
+CREATE FUNCTION modkit_workers.w03(p_namespace pg_catalog.bytea,
+    p_after_created_at pg_catalog.timestamptz,p_after_work_id pg_catalog.uuid,p_limit pg_catalog.int4)
+RETURNS TABLE(
+    work_id pg_catalog.uuid,
+    kind pg_catalog.text,
+    subscription_id pg_catalog.bytea,
+    namespace pg_catalog.bytea,
+    command_type pg_catalog.bytea,
+    schema_version_decimal pg_catalog.bytea,
+    runnable_version pg_catalog.int4,
+    canonical_version pg_catalog.int4,
+    scope_evidence pg_catalog.bytea,
+    scope_application pg_catalog.bytea,
+    scope_tenant pg_catalog.bytea,
+    scope_owner pg_catalog.bytea,
+    idempotency_key pg_catalog.bytea,
+    intent_evidence pg_catalog.bytea,
+    semantic_input pg_catalog.bytea,
+    replay_input pg_catalog.bytea,
+    protected_binding pg_catalog.bytea,
+    replay_policy pg_catalog.text,
+    max_attempts pg_catalog.int4,
+    deadline pg_catalog.timestamptz,
+    original_available_at pg_catalog.timestamptz,
+    state pg_catalog.text,
+    cancellation_requested pg_catalog.bool,
+    token pg_catalog.uuid,
+    ownership_revision pg_catalog.int8,
+    lease_until pg_catalog.timestamptz,
+    available_at pg_catalog.timestamptz,
+    cycle pg_catalog.int4,
+    attempt_count pg_catalog.int4,
+    dispatch_id pg_catalog.uuid,
+    result pg_catalog.bytea,
+    created_at pg_catalog.timestamptz,
+    updated_at pg_catalog.timestamptz,
+    success_origin pg_catalog.text,
+    completion_guard_id pg_catalog.uuid,
+    final_fence_at pg_catalog.timestamptz,
+    completion_result_digest pg_catalog.bytea,
+    resolution_operation_id pg_catalog.uuid,
+    terminal_resolution_operation_id pg_catalog.uuid,
+    resolution_present pg_catalog.bool,
+    resolution_record_operation_id pg_catalog.uuid,
+    resolution_record_operation_kind pg_catalog.text,
+    resolution_record_work_id pg_catalog.uuid,
+    resolution_record_expected_revision pg_catalog.int8,
+    resolution_record_cycle pg_catalog.int4,
+    resolution_record_attempt pg_catalog.int4,
+    resolution_record_dispatch_id pg_catalog.uuid,
+    resolution_record_outcome pg_catalog.text,
+    resolution_record_retry_at pg_catalog.timestamptz,
+    resolution_record_result pg_catalog.bytea,
+    resolution_record_result_digest pg_catalog.bytea,
+    resolution_record_reason pg_catalog.text,
+    resolution_record_evidence pg_catalog.bytea,
+    resolution_record_binding pg_catalog.bytea,
+    resolution_record_resolution_root_xid pg_catalog.xid8,
+    resolution_record_recorded_at pg_catalog.timestamptz,
+    job_work_id pg_catalog.uuid,
+    job_application pg_catalog.bytea,
+    job_tenant pg_catalog.bytea,
+    job_owner pg_catalog.bytea,
+    job_protected_binding pg_catalog.bytea,
+    job_semantic_input pg_catalog.bytea,
+    material_state pg_catalog.text,
+    protected_sidecar pg_catalog.bytea,
+    protected_reference pg_catalog.bytea,
+    protected_codec pg_catalog.bytea,
+    protected_key_version pg_catalog.bytea,
+    protected_expires_at pg_catalog.timestamptz,
+    protected_recovery_metadata pg_catalog.bytea,
+    protected_cleanup_policy pg_catalog.text,
+    projection_metadata pg_catalog.bytea
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER CALLED ON NULL INPUT
+SET search_path = pg_catalog, pg_temp AS $body$
+DECLARE
+    item pg_catalog.record;
+    checked_count pg_catalog.int4:=0;
+    previous_created_at pg_catalog.timestamptz:=p_after_created_at;
+    previous_id pg_catalog.uuid:=p_after_work_id;
+BEGIN
+    IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN
+        RAISE EXCEPTION USING ERRCODE='PZ005',MESSAGE='unsupported job listing isolation';
+    END IF;
+    IF p_namespace IS DISTINCT FROM pg_catalog.convert_to('jobs','UTF8')
+       OR p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 256
+       OR (p_after_created_at IS NULL) <> (p_after_work_id IS NULL)
+       OR (p_after_created_at IS NOT NULL AND modkit_events._instant_bytes(p_after_created_at) IS NULL) THEN
+        RAISE EXCEPTION USING ERRCODE='PZ006',MESSAGE='invalid job listing arguments';
+    END IF;
+    -- Both bounded branches and all complete evidence share one invoking-query
+    -- snapshot. Only one branch is active; job filtering precedes either LIMIT.
+    FOR item IN
+        WITH page AS MATERIALIZED (
+            (SELECT listed.work_id AS selected_work_id,listed.created_at AS selected_created_at
+               FROM modkit_events.work AS listed
+              WHERE p_after_created_at IS NULL AND listed.namespace=p_namespace
+                AND listed.kind COLLATE pg_catalog."C" = 'job' COLLATE pg_catalog."C"
+              ORDER BY listed.created_at,listed.work_id
+              LIMIT p_limit)
+            UNION ALL
+            (SELECT listed.work_id AS selected_work_id,listed.created_at AS selected_created_at
+               FROM modkit_events.work AS listed
+              WHERE p_after_created_at IS NOT NULL AND listed.namespace=p_namespace
+                AND listed.kind COLLATE pg_catalog."C" = 'job' COLLATE pg_catalog."C"
+                AND (listed.created_at,listed.work_id)>(p_after_created_at,p_after_work_id)
+              ORDER BY listed.created_at,listed.work_id
+              LIMIT p_limit)
+        )
+        SELECT page.selected_work_id,page.selected_created_at,checked.*,j.*
+          FROM page
+          LEFT JOIN LATERAL modkit_events.e15(page.selected_work_id) AS checked ON TRUE
+          LEFT JOIN modkit_events.job_payloads AS j ON j.job_work_id=page.selected_work_id
+         ORDER BY page.selected_created_at,page.selected_work_id
+    LOOP
+        IF item.work_id IS NULL OR item.work_id IS DISTINCT FROM item.selected_work_id
+           OR item.created_at IS DISTINCT FROM item.selected_created_at
+           OR (previous_id IS NOT NULL
+               AND (item.created_at,item.work_id)<=(previous_created_at,previous_id)) THEN
+            RAISE EXCEPTION USING ERRCODE='PZ012',MESSAGE='invalid job listing identity or order';
+        END IF;
+        IF pg_catalog.convert_to(item.kind,'UTF8') IS DISTINCT FROM pg_catalog.convert_to('job','UTF8')
+           OR item.subscription_id IS NOT NULL OR item.namespace IS DISTINCT FROM p_namespace
+           OR item.job_work_id IS DISTINCT FROM item.work_id
+           OR item.job_application IS DISTINCT FROM item.scope_application
+           OR item.job_tenant IS DISTINCT FROM item.scope_tenant
+           OR item.job_owner IS DISTINCT FROM item.scope_owner
+           OR item.job_protected_binding IS DISTINCT FROM item.protected_binding
+           OR item.job_semantic_input IS DISTINCT FROM item.semantic_input
+           OR modkit_events._protected_valid(item.job_protected_binding,item.material_state,
+                item.protected_sidecar,item.protected_reference,item.protected_codec,item.protected_key_version,
+                item.protected_expires_at,item.protected_recovery_metadata,item.protected_cleanup_policy,
+                item.projection_metadata) IS NOT TRUE THEN
+            RAISE EXCEPTION USING ERRCODE='PZ012',MESSAGE='invalid complete job listing composition';
+        END IF;
+        checked_count:=checked_count+1;
+        IF checked_count>p_limit THEN
+            RAISE EXCEPTION USING ERRCODE='PZ012',MESSAGE='job listing cardinality exceeded';
+        END IF;
+        previous_created_at:=item.created_at;
+        previous_id:=item.work_id;
+        -- PL/pgSQL buffers this result until the whole function succeeds.
+        -- A corrupt later family aborts the statement without releasing a prefix.
+        RETURN QUERY SELECT item.work_id,
+            item.kind,
+            item.subscription_id,
+            item.namespace,
+            item.command_type,
+            item.schema_version_decimal,
+            item.runnable_version,
+            item.canonical_version,
+            item.scope_evidence,
+            item.scope_application,
+            item.scope_tenant,
+            item.scope_owner,
+            item.idempotency_key,
+            item.intent_evidence,
+            item.semantic_input,
+            item.replay_input,
+            item.protected_binding,
+            item.replay_policy,
+            item.max_attempts,
+            item.deadline,
+            item.original_available_at,
+            item.state,
+            item.cancellation_requested,
+            item.token,
+            item.ownership_revision,
+            item.lease_until,
+            item.available_at,
+            item.cycle,
+            item.attempt_count,
+            item.dispatch_id,
+            item.result,
+            item.created_at,
+            item.updated_at,
+            item.success_origin,
+            item.completion_guard_id,
+            item.final_fence_at,
+            item.completion_result_digest,
+            item.resolution_operation_id,
+            item.terminal_resolution_operation_id,
+            item.resolution_present,
+            item.resolution_record_operation_id,
+            item.resolution_record_operation_kind,
+            item.resolution_record_work_id,
+            item.resolution_record_expected_revision,
+            item.resolution_record_cycle,
+            item.resolution_record_attempt,
+            item.resolution_record_dispatch_id,
+            item.resolution_record_outcome,
+            item.resolution_record_retry_at,
+            item.resolution_record_result,
+            item.resolution_record_result_digest,
+            item.resolution_record_reason,
+            item.resolution_record_evidence,
+            item.resolution_record_binding,
+            item.resolution_record_resolution_root_xid,
+            item.resolution_record_recorded_at,
+            item.job_work_id,
+            item.job_application,
+            item.job_tenant,
+            item.job_owner,
+            item.job_protected_binding,
+            item.job_semantic_input,
+            item.material_state,
+            item.protected_sidecar,
+            item.protected_reference,
+            item.protected_codec,
+            item.protected_key_version,
+            item.protected_expires_at,
+            item.protected_recovery_metadata,
+            item.protected_cleanup_policy,
+            item.projection_metadata;
+    END LOOP;
+END
+$body$;
+REVOKE ALL ON FUNCTION modkit_workers.w03(pg_catalog.bytea,pg_catalog.timestamptz,pg_catalog.uuid,pg_catalog.int4) FROM PUBLIC;
+
+DO $workers_listing_private_boundary$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_catalog.pg_proc AS p,
+            LATERAL pg_catalog.aclexplode(
+                COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) AS acl
+        WHERE p.oid='modkit_workers.w03(bytea,timestamptz,uuid,int4)'::pg_catalog.regprocedure
+          AND acl.grantee<>p.proowner
+    ) OR EXISTS (
+        SELECT 1 FROM pg_catalog.pg_namespace AS n,
+            LATERAL pg_catalog.aclexplode(
+                COALESCE(n.nspacl,pg_catalog.acldefault('n',n.nspowner))) AS acl
+        WHERE n.nspname='modkit_workers' AND acl.grantee<>n.nspowner
+    ) THEN
+        RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe private Workers listing boundary';
+    END IF;
+END
+$workers_listing_private_boundary$;

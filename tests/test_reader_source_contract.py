@@ -10,7 +10,7 @@ from modkit_workers.persistence.catalog import get_statement
 SQL = Path(__file__).parents[1] / "src/modkit_workers/persistence/sql/0001_initial.sql"
 
 
-@pytest.mark.parametrize("key", ("W02", "W04"))
+@pytest.mark.parametrize("key", ("W02", "W03", "W04"))
 def test_reader_source_matches_ordered_canonical_abi(key):
     assert SQL.is_file(), "Reviewed Workers SQL resource is missing"
     source = SQL.read_text()

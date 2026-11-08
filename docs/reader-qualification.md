@@ -40,5 +40,6 @@ start a server, install a package, or claim release readiness.
 
 Foreign inbox collision coverage needs a real separately scoped E03 producer.
 Lifecycle/concurrent writer coverage, all three adapter recipes, runtime grant
-acceptance, final Events/Workers migration digests, W03/W05 and the full PostgreSQL
-matrix remain open. E10 QA remains outside this reader qualification.
+acceptance, final Events/Workers migration digests, W05 and the full PostgreSQL
+matrix remain open. W03's separate bounded evidence and limits are documented in
+[job listing](job-listing.md). E10 QA remains outside this reader qualification.

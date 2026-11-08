@@ -22,12 +22,13 @@ ERP's older Redis/SQLAlchemy lock compatibility remains unresolved.
 
 `modkit_workers.persistence.migrations` exposes immutable SQLResource,
 MigrationDependency, Migration, manifest and read_sql. It never applies SQL,
-creates roles, manages transactions or opens services. Reviewed W01/W02/W04 SQL
+creates roles, manages transactions or opens services. W01/W02/W03/W04 SQL
 source is present and explicitly NOT_READY. The production manifest and runtime
 grants remain absent, so manifest() still fails FileNotFoundError until that
 separate gate closes. See [reader qualification](docs/reader-qualification.md)
 for bounded native evidence and remaining gates; test-only in-memory fixtures
-are not packaged resources.
+are not packaged resources. The [job listing guide](docs/job-listing.md) describes W03's
+job-only pagination, complete-page validation, and separate qualification gates.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
 No build/install/release, Redis, or full 84-cell PostgreSQL conformance qualification is claimed.
