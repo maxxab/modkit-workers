@@ -15,3 +15,7 @@
   fresh, lock-protected complete material snapshot. Preserve caller transactions,
   paired capabilities, header-first scan progress and all-or-error results.
   Source review and pure tests do not qualify native execution or readiness.
+
+- Qualify bounded native W05 claims and a deterministic two-session producer
+  snapshot regression without E10. Record exact rollback and remaining coverage
+  limits; production readiness and full conformance remain open.

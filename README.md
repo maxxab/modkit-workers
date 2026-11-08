@@ -30,8 +30,8 @@ for bounded native evidence and remaining gates; test-only in-memory fixtures
 are not packaged resources. The [job listing guide](docs/job-listing.md) describes W03's
 job-only pagination, complete-page validation, and separate qualification gates.
 The [job acquisition guide](docs/job-acquisition.md) describes W05's retained
-Events claim postimages and fresh coherent material snapshot. Native W05 checks
-remain separate from the accepted read-only reader evidence.
+Events claim postimages, fresh coherent material snapshot, and bounded job-only
+native evidence, including a real two-session producer-visibility regression.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
 No build/install/release, Redis, or full 84-cell PostgreSQL conformance qualification is claimed.

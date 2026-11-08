@@ -1,18 +1,18 @@
 # Job acquisition SQL
 W05 composes the shared Events E04 acquisition operation with complete job material.
 Workers depends on Events; Events does not import or depend on Workers.
-This source is NOT_READY. Native W05 qualification, production manifests/grants,
-installed artifacts and adapter/runtime integration are not yet accepted.
+This source is NOT_READY. The bounded native checks below passed; production
+manifests/grants, installed artifacts and adapter/runtime integration remain open.
 
 ## Contract
 The existing seven inputs are namespace (exact bytes jobs), paired command/version
-capabilities, limit1..256, lease duration, optional scan cursor and discovery budget.
+capabilities, limit 1..256, lease duration, optional scan cursor and discovery budget.
 E04 validates the common bounds and owns discovery, capability selection, Work locks,
 claim state/token/revision/lease changes and history. W05 invokes it exactly once.
 Acquisition does not increment attempts or authorize execution, E10 completion, secret
 access or a second heartbeat. Applications retain authorization and transaction ownership.
 
-The75-column result starts with one header and then at most limit complete claims.
+The 75-column result starts with one header and then at most limit complete claims.
 Empty pages with positive visited preserve progress across locked or ineligible Work;
 they do not prove queue exhaustion. The caller chooses when to continue or reset a pass.
 Both SQL and the pure decoder check the full frame before a page is usable.
@@ -23,8 +23,8 @@ Therefore a direct outer join from E04 to job_payloads could use an older snapsh
 and miss material for a successfully claimed job. A STABLE E15/W02 reread also cannot
 replace E04's retained postimage.
 
-W05 fully consumes E04, validates its header and claims, and stores all39 physical
-Work fields in the existing shared composite type. Its17 additional resolution
+W05 fully consumes E04, validates its header and claims, and stores all 39 physical
+Work fields in the existing shared composite type. Its 17 additional resolution
 observation fields must be false/null, and those same values are returned unchanged.
 After E04 finishes, one distinct SQL command LEFT JOINs those retained claims to
 job_payloads in a fresh READ COMMITTED snapshot. No Work reread, duplicate claim
@@ -55,9 +55,42 @@ required. Runtime grants and ready resource receipts remain absent.
 Source tests check ordered ABI, retained field mapping, fresh material query and
 private ownership. Pure decoder tests cover complete claims, exact capability pairs,
 corrupt-final material, empty progress, cancellation and bounded overflow. These
-checks do not execute PostgreSQL. Native tests must still prove fresh producer
-visibility, actual claims/history, atomic late failure, locked-window progress,
-paired capabilities, ACL/isolation and multi-row bounds without using E10.
+checks do not execute PostgreSQL. The separate native evidence below does not
+replace broader adapter, lifecycle and resource qualification.
 
 A row limit is not a physical IO, latency or memory guarantee. The retained Work
 array can duplicate large bounded inputs; practical resource budgets need qualification.
+
+
+## Bounded native qualification
+PostgreSQL 18.1 and psycopg 3.3.8 passed one job-only disposable test invocation
+against the reviewed Events E04 implementation and exact Workers SQL source.
+The test first observed undefined-function 42883 before installing W05, then checked:
+- Canonical 75-column output, exact 39-field retained claim postimage, false/null
+  provenance fields, complete material fields, token/revision/lease and exact claim history.
+  Claiming preserved attempt counts and did not dispatch or execute a handler.
+- Protected sidecar material, exact paired capabilities, two-item claims,
+  one-row discovery windows, empty progress/end-of-pass, invalid raw arguments,
+  unsupported isolation, private function ACLs and denied runtime access.
+- A valid claimed prefix followed by a missing final job half caused E15 inside
+  E04 to reject the statement. All row/history changes rolled back; claim-history
+  sequence allocation remained, as PostgreSQL permits.
+- A genuine two-session schedule held a history-table lock while producer B was
+  uncommitted. The claimer was observed waiting for that relation inside active
+  E04. After B committed, E04 discovered it and W05 returned complete claims for
+  both A and B. The external caller snapshot still saw only A. This exercises a
+  commit after E04's invoking query began, not a gate before W05 invocation.
+- A locked first candidate yielded visited 1, no claim and nonexhaustion with no
+  row changes. Full claim rollback preserved both acknowledged producer rows.
+
+Static call-closure review found no E10 invocation; native statistics corroborated
+E10 = 0. All database sessions closed. The isolated database contained only two
+lawful producer jobs and their two intake records before clean container disposal.
+No live/shared service, application data, production grants or network was changed.
+
+This is bounded native evidence, not full conformance. The post-E04 W05
+material-error branch was not fault-injected: existing cooperative writers cannot
+change material there, and E15 rejects malformed families earlier. The missing-half
+test must not be described as a later W05 material-phase failure. Full 256-item and
+4096-visited pages, lease/revision edge schedules, peak-memory/physical-IO budgets,
+other driver/interpreter/platform combinations and installed artifacts remain open.
