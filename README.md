@@ -22,12 +22,18 @@ Compatibility with existing application dependency locks remains unqualified.
 
 `modkit_workers.persistence.migrations` exposes immutable SQLResource,
 MigrationDependency, Migration, manifest and read_sql. It never applies SQL,
-creates roles, manages transactions or opens services. Production manifest/SQL
-are intentionally absent pending reviewed bytes. manifest() fails FileNotFoundError
-until that separate gate closes; test-only in-memory fixtures are not packaged resources.
+creates roles, manages transactions or opens services. Reviewed W01 admission and
+W02/W03/W04 read, list and find SQL source is present, but remains **NOT_READY**.
+Production manifests and runtime grants are deliberately absent. manifest() still
+fails FileNotFoundError until that separate gate closes. The SQL also requires
+Events-owned functions and the job-listing index that are not yet available in
+the public Events migration resources. Do not apply it as a standalone migration.
+See [reader qualification](docs/reader-qualification.md) and
+[job listing](docs/job-listing.md) for bounded evidence and remaining gates.
+Test-only in-memory fixtures are not packaged production resources.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
-No install/release, real PostgreSQL/Redis or full regression qualification is claimed.
+No installed-package, release, Redis or full PostgreSQL conformance qualification is claimed.
 
 ## Dependency-independent source checks
 
