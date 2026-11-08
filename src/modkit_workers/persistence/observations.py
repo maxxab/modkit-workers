@@ -26,11 +26,10 @@ class JobDetails:
 
     @_observation_boundary
     def __post_init__(self) -> None:
-        _work_id(self.work_id)
-        Scope(self.application, self.tenant, self.owner)
-        binding = common._bytes(self.protected_binding)
-        common.decode_protected_binding(binding)
-        object.__setattr__(self, 'protected_binding', binding)
+        binding = _details_fields(
+            self.work_id, self.application, self.tenant, self.owner, self.protected_binding
+        )
+        object.__setattr__(self, "protected_binding", binding)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -48,36 +47,9 @@ class JobPayload:
 
     @_observation_boundary
     def __post_init__(self) -> None:
-        if type(self.material_state) is not shared.MaterialState or type(self.cleanup_policy) is not shared.CleanupPolicy:
-            raise ValueError
-        for name in ('semantic_input', 'recovery_metadata', 'projection_metadata'):
-            object.__setattr__(self, name, common._bytes(getattr(self, name)))
-        for name in ('sidecar', 'reference'):
-            value = getattr(self, name)
-            if value is not None:
-                object.__setattr__(self, name, common._bytes(value))
-        if not isinstance(common.parse_canonical_json(self.semantic_input), Mapping):
-            raise ValueError
-        if not isinstance(common.parse_canonical_json(self.projection_metadata), Mapping):
-            raise ValueError
-        if self.expires_at is not None:
-            object.__setattr__(self, 'expires_at', common._instant(self.expires_at))
-        if self.material_state is shared.MaterialState.ABSENT:
-            if any(value is not None for value in (self.sidecar, self.reference, self.codec,
-                                                   self.key_version, self.expires_at)):
-                raise ValueError
-            if self.recovery_metadata != b'' or self.cleanup_policy is not shared.CleanupPolicy.RETAIN:
-                raise ValueError
-        else:
-            common._identifier(self.codec)
-            common._identifier(self.key_version)
-            if not isinstance(common.parse_canonical_json(self.recovery_metadata), Mapping):
-                raise ValueError
-            if self.material_state is shared.MaterialState.PRESENT:
-                if (self.sidecar is None) == (self.reference is None) or self.sidecar == b'' or self.reference == b'':
-                    raise ValueError
-            elif self.sidecar is not None or self.reference is not None:
-                raise ValueError
+        normalized = _payload_fields(*_payload_values(self))
+        for name, value in zip(_PAYLOAD_FIELDS, normalized):
+            object.__setattr__(self, name, value)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -123,9 +95,7 @@ class JobAdmissionObservation:
 
     @_observation_boundary
     def __post_init__(self) -> None:
-        _work_id(self.work_id)
-        if type(self.inserted) is not bool:
-            raise ValueError
+        _admission_fields(self.work_id, self.inserted)
 
 
 class JobIdentityDecision(Enum):
@@ -207,3 +177,160 @@ class DispatchedJobObservation:
             raise ValueError
         object.__setattr__(self, 'claim', claim)
         object.__setattr__(self, 'fence', fence)
+
+
+# Four concrete semantic cores. Public constructors keep their original boundary
+# and normalization; native constructors/validators never enter those wrappers.
+def _invalid(raw):
+    if raw:
+        from modkit_events.persistence.errors import _reject_validation
+        _reject_validation()
+    raise ValueError
+
+
+def _details_fields(work_id, application, tenant, owner, binding, *, raw=False):
+    from .models import _work_id_raw
+
+    (_work_id_raw if raw else _work_id)(work_id)
+    if raw:
+        from modkit_events.persistence.scope import _scope_raw
+        _scope_raw(application, tenant, owner)
+        binding = common._bytes_raw(binding)
+        common._decode_protected_binding_raw(binding)
+    else:
+        Scope(application, tenant, owner)
+        binding = common._bytes(binding)
+        common.decode_protected_binding(binding)
+    return binding
+
+
+_PAYLOAD_FIELDS = (
+    "semantic_input", "material_state", "sidecar", "reference", "codec",
+    "key_version", "expires_at", "recovery_metadata", "cleanup_policy", "projection_metadata",
+)
+
+
+def _payload_values(value):
+    return (
+        value.semantic_input, value.material_state, value.sidecar, value.reference,
+        value.codec, value.key_version, value.expires_at, value.recovery_metadata,
+        value.cleanup_policy, value.projection_metadata,
+    )
+
+
+def _payload_fields(semantic, state, sidecar, reference, codec, key, expiry,
+                    recovery, cleanup, projection, *, raw=False):
+    if type(state) is not shared.MaterialState or type(cleanup) is not shared.CleanupPolicy:
+        _invalid(raw)
+    byte_value = common._bytes_raw if raw else common._bytes
+    parse = common._parse_canonical_json_raw if raw else common.parse_canonical_json
+    identifier = common._identifier_raw if raw else common._identifier
+    semantic, recovery, projection = (
+        byte_value(semantic), byte_value(recovery), byte_value(projection)
+    )
+    sidecar = None if sidecar is None else byte_value(sidecar)
+    reference = None if reference is None else byte_value(reference)
+    if not isinstance(parse(semantic), Mapping) or not isinstance(parse(projection), Mapping):
+        _invalid(raw)
+    if expiry is not None:
+        if raw:
+            from datetime import timezone
+            if type(expiry) is not datetime or expiry.tzinfo is not timezone.utc:
+                _invalid(raw)
+        else:
+            expiry = common._instant(expiry)
+    if state is shared.MaterialState.ABSENT:
+        if any(value is not None for value in (sidecar, reference, codec, key, expiry)):
+            _invalid(raw)
+        if recovery != b"" or cleanup is not shared.CleanupPolicy.RETAIN:
+            _invalid(raw)
+    else:
+        identifier(codec)
+        identifier(key)
+        if not isinstance(parse(recovery), Mapping):
+            _invalid(raw)
+        if state is shared.MaterialState.PRESENT:
+            if (sidecar is None) == (reference is None) or sidecar == b"" or reference == b"":
+                _invalid(raw)
+        elif sidecar is not None or reference is not None:
+            _invalid(raw)
+    return semantic, state, sidecar, reference, codec, key, expiry, recovery, cleanup, projection
+
+
+def _admission_fields(work_id, inserted, *, raw=False):
+    from .models import _work_id_raw
+    (_work_id_raw if raw else _work_id)(work_id)
+    if type(inserted) is not bool:
+        _invalid(raw)
+
+
+def _job_details_raw(work_id, application, tenant, owner, protected_binding, /):
+    binding = _details_fields(
+        work_id, application, tenant, owner, protected_binding, raw=True
+    )
+    value = object.__new__(JobDetails)
+    object.__setattr__(value, "work_id", work_id)
+    object.__setattr__(value, "application", application)
+    object.__setattr__(value, "tenant", tenant)
+    object.__setattr__(value, "owner", owner)
+    object.__setattr__(value, "protected_binding", binding)
+    return value
+
+
+def _validate_job_details_raw(value, /):
+    if type(value) is not JobDetails:
+        _invalid(True)
+    _details_fields(
+        value.work_id, value.application, value.tenant, value.owner,
+        value.protected_binding, raw=True,
+    )
+
+
+def _job_payload_raw(*, semantic_input, material_state, sidecar, reference, codec,
+                     key_version, expires_at, recovery_metadata, cleanup_policy,
+                     projection_metadata):
+    fields = _payload_fields(
+        semantic_input, material_state, sidecar, reference, codec, key_version,
+        expires_at, recovery_metadata, cleanup_policy, projection_metadata, raw=True,
+    )
+    value = object.__new__(JobPayload)
+    for name, item in zip(_PAYLOAD_FIELDS, fields):
+        object.__setattr__(value, name, item)
+    return value
+
+
+def _validate_job_payload_raw(value, /):
+    if type(value) is not JobPayload:
+        _invalid(True)
+    _payload_fields(*_payload_values(value), raw=True)
+
+
+def _job_record_raw(*, work, details, payload):
+    from .rows import _validated_parts
+    _validated_parts(work, details, payload, _raw=True)
+    value = object.__new__(JobRecord)
+    object.__setattr__(value, "work", work)
+    object.__setattr__(value, "details", details)
+    object.__setattr__(value, "payload", payload)
+    return value
+
+
+def _validate_job_record_raw(value, /):
+    from .rows import _validated_parts
+    if type(value) is not JobRecord:
+        _invalid(True)
+    _validated_parts(value.work, value.details, value.payload, _raw=True)
+
+
+def _job_admission_raw(*, work_id, inserted):
+    _admission_fields(work_id, inserted, raw=True)
+    value = object.__new__(JobAdmissionObservation)
+    object.__setattr__(value, "work_id", work_id)
+    object.__setattr__(value, "inserted", inserted)
+    return value
+
+
+def _validate_job_admission_raw(value, /):
+    if type(value) is not JobAdmissionObservation:
+        _invalid(True)
+    _admission_fields(value.work_id, value.inserted, raw=True)

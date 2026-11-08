@@ -43,34 +43,57 @@ def _request(request: common.FrozenRequest, key: str) -> dict:
     return dict(zip((parameter.name for parameter in request.statement.parameters), request.parameters))
 
 
-def _validated_parts(work, details, payload):
+def _validated_parts(work, details, payload, *, _raw=False):
+    from .observations import _invalid
+
     if type(work) is not WorkObservation or type(details) is not JobDetails or type(payload) is not JobPayload:
-        raise ValueError
-    work, details, payload = replace(work), replace(details), replace(payload)
+        _invalid(_raw)
+    if _raw:
+        from modkit_events.persistence.observations import _validate_work_observation_raw
+        from modkit_events.persistence.scope import (
+            _canonical_scope_raw,
+            _encode_scope_fields_raw,
+            _scope_raw,
+        )
+
+        from .models import _work_id_raw
+        from .observations import _validate_job_details_raw, _validate_job_payload_raw
+
+        _validate_work_observation_raw(work)
+        _validate_job_details_raw(details)
+        _validate_job_payload_raw(payload)
+        uuid = _work_id_raw(details.work_id)
+        logical = _scope_raw(details.application, details.tenant, details.owner)
+        scope_fields = _encode_scope_fields_raw(logical)
+        scope_bytes = _canonical_scope_raw(logical)
+        decode_binding = common._decode_protected_binding_raw
+    else:
+        work, details, payload = replace(work), replace(details), replace(payload)
+        uuid = _work_id(details.work_id)
+        logical = Scope(details.application, details.tenant, details.owner)
+        scope_fields = encode_scope_fields(logical)
+        scope_bytes = canonical_scope(logical)
+        decode_binding = common.decode_protected_binding
     if work.kind != 'job' or work.subscription_id is not None or work.namespace != b'jobs':
-        raise ValueError
-    if _work_id(details.work_id) != work.work_id:
-        raise ValueError
-    logical = Scope(details.application, details.tenant, details.owner)
-    if encode_scope_fields(logical) != (work.scope_application, work.scope_tenant, work.scope_owner):
-        raise ValueError
-    if canonical_scope(logical) != work.scope_evidence:
-        raise ValueError
+        _invalid(_raw)
+    if uuid != work.work_id:
+        _invalid(_raw)
+    if scope_fields != (work.scope_application, work.scope_tenant, work.scope_owner):
+        _invalid(_raw)
+    if scope_bytes != work.scope_evidence:
+        _invalid(_raw)
     if details.protected_binding != work.protected_binding or payload.semantic_input != work.semantic_input:
-        raise ValueError
-    original = common.decode_protected_binding(details.protected_binding)
+        _invalid(_raw)
+    original = decode_binding(details.protected_binding)
     names = ('codec', 'key_version', 'expires_at', 'recovery_metadata', 'cleanup_policy', 'projection_metadata')
     if any(getattr(payload, name) != getattr(original, name) for name in names):
-        raise ValueError
+        _invalid(_raw)
     if payload.material_state is MaterialState.ERASED:
         if original.material_state is not MaterialState.PRESENT or payload.sidecar is not None or payload.reference is not None:
-            raise ValueError
-        # Do not restore original embedded material into live payload fields.
+            _invalid(_raw)
     elif (payload.material_state, payload.sidecar, payload.reference) != (
             original.material_state, original.sidecar, original.reference):
-        raise ValueError
-    # Shared WorkObservation verifies canonical intent, replay/semantic equality,
-    # original schedule, state/fence and full resolution provenance. No clone codec.
+        _invalid(_raw)
     return work, details, payload
 
 
@@ -238,3 +261,101 @@ def observe_dispatch(claim: JobClaimObservation, dispatch_id: UUID, returned_att
     fence = replace(claim.fence, expected_attempt=returned_attempt)
     return DispatchedJobObservation(claim=claim, fence=fence,
                                     dispatch_id=dispatch_id, attempt=returned_attempt)
+
+
+def _native_request(request, key):
+    from modkit_events.persistence import native_profile
+    native_profile.validate_request(request, get_statement(key))
+
+
+def _native_rows(values, *, exact):
+    from modkit_events.persistence.errors import _reject_validation
+    if type(values) is not tuple or len(values) > 1 or (exact and len(values) != 1):
+        _reject_validation()
+    if values and type(values[0]) is not tuple:
+        _reject_validation()
+
+
+def _decode_submit_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_admission_raw
+
+    _native_request(request, "W01")
+    _native_rows(rows, exact=True)
+    work_id, inserted = native_profile.decode_columns(get_statement("W01"), rows[0])
+    if inserted and work_id != request.parameters[0]:
+        _reject_validation()
+    return _job_admission_raw(work_id=str(work_id), inserted=inserted)
+
+
+def _validate_submit_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .models import _work_id_raw
+    from .observations import _validate_job_admission_raw
+
+    _native_request(request, "W01")
+    _validate_job_admission_raw(value)
+    if value.inserted and _work_id_raw(value.work_id) != request.parameters[0]:
+        _reject_validation()
+
+
+def _identifier_text_raw(value):
+    from modkit_events.persistence.errors import _reject_validation
+
+    value = common._bytes_raw(value, 256)
+    text = common._decode_utf8(value, _reject=_reject_validation)
+    common._identifier_raw(text)
+    return text
+
+
+def _decode_read_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.scope import _decode_scope_fields_raw
+
+    from .observations import _job_details_raw, _job_payload_raw, _job_record_raw
+
+    _native_request(request, "W02")
+    _native_rows(rows, exact=False)
+    if not rows:
+        return None
+    values = native_profile.decode_columns(get_statement("W02"), rows[0])
+    work = common_rows._decode_work_observation_raw(values[:56])
+    if work.work_id != request.parameters[0]:
+        _reject_validation()
+    (job_id, app, tenant, owner, binding, semantic, state, sidecar, reference,
+     codec, key, expiry, recovery, cleanup, projection) = values[56:]
+    scope = _decode_scope_fields_raw(app, tenant, owner)
+    states = {"absent": MaterialState.ABSENT, "present": MaterialState.PRESENT,
+              "erased": MaterialState.ERASED}
+    cleanups = {"retain": CleanupPolicy.RETAIN, "erase_after_terminal": CleanupPolicy.ERASE_AFTER_TERMINAL}
+    if state not in states or cleanup not in cleanups:
+        _reject_validation()
+    details = _job_details_raw(
+        str(job_id), scope.application, scope.tenant, scope.owner, binding
+    )
+    payload = _job_payload_raw(
+        semantic_input=semantic, material_state=states[state], sidecar=sidecar,
+        reference=reference,
+        codec=None if codec is None else _identifier_text_raw(codec),
+        key_version=None if key is None else _identifier_text_raw(key),
+        expires_at=expiry, recovery_metadata=recovery, cleanup_policy=cleanups[cleanup],
+        projection_metadata=projection,
+    )
+    return _job_record_raw(work=work, details=details, payload=payload)
+
+
+def _validate_read_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_record_raw
+
+    _native_request(request, "W02")
+    if value is None:
+        return
+    _validate_job_record_raw(value)
+    if value.work.work_id != request.parameters[0]:
+        _reject_validation()

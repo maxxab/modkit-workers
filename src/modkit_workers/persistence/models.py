@@ -14,14 +14,35 @@ from modkit_events.persistence.errors import _boundary
 from modkit_events.persistence.scope import Scope, canonical_scope, encode_scope_fields
 
 
-def _work_id(value: object) -> UUID:
-    """Worker string convenience only; shared carriers continue to use UUID."""
-    if type(value) is not str or len(value) != 36:
+def _work_id_core(value: object, *, raw: bool = False) -> UUID:
+    from modkit_events.persistence.errors import _reject_validation
+
+    def invalid():
+        if raw:
+            _reject_validation()
         raise ValueError
+
+    if type(value) is not str or len(value) != 36:
+        invalid()
+    if raw and any(
+        char != "-" if index in (8, 13, 18, 23) else char not in "0123456789abcdef"
+        for index, char in enumerate(value)
+    ):
+        invalid()
     parsed = UUID(value)
     if str(parsed) != value:
-        raise ValueError
+        invalid()
     return parsed
+
+
+def _work_id(value: object) -> UUID:
+    """Worker string convenience only; shared carriers continue to use UUID."""
+    return _work_id_core(value)
+
+
+def _work_id_raw(value: object) -> UUID:
+    """Selected native spelling conversion without a public sanitizer."""
+    return _work_id_core(value, raw=True)
 
 
 def _logical_json(value: object, depth: int = 0, active: set[int] | None = None) -> object:

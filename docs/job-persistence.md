@@ -60,3 +60,7 @@ There is no standalone mutation-operation reader in the39-key catalog. Repeating
 ## Qualification boundaries
 
 Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. The bounded job-only PostgreSQL checks do not close the broader PostgreSQL/Redis fixture and runtime gates; missing coverage must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.
+
+## Native operation preparation
+
+The optional fixed W01/W02 preparation API is described in [Native job preparations](native-job-store.md). It uses Events' existing caller-owned native lifecycle and paid result borrowing. This source integration does not qualify the full native store, ORM recipes, installed resources or worker runtime.
