@@ -1,8 +1,8 @@
-# Pure worker contracts
+# Worker contracts and one-shot batches
 
 Workers root imports use only the standard library through lazy loading. This does not make Workers independent of Events: the distribution requires Events, and persistence uses Events-owned contracts. Events itself must remain usable without Workers.
 
-These unpublished interfaces provide explicit handler lookup, immutable execution observations, bounded acquisition arguments and application-owned source hooks. They do not run workers. `JobWorker` and `EventWorker`, runtime startup, adapters, services and durable execution qualification remain pending. Root imports require only the standard library; constructing `JobContext` or `AcquireRequest` explicitly uses the actual `modkit-events` pure shared contracts.
+These unpublished pure interfaces provide explicit handler lookup, immutable execution observations, bounded acquisition arguments and application-owned source hooks. The explicit `modkit_workers.runtime.run_batch` operation below can run one synchronous application-owned batch. `JobWorker` and `EventWorker`, supervised runtime startup, adapters, services and durable execution qualification remain pending. Root imports require only the standard library; constructing `JobContext` or `AcquireRequest` explicitly uses the actual `modkit-events` pure shared contracts.
 
 ## Explicit handler registration
 
@@ -100,7 +100,7 @@ These are logical request bounds, not physical IO, latency, peak-memory or datab
 | cancel | `(work: WorkT, /) -> None`, cooperative cancellation request for that acquired handle |
 | shutdown | `() -> None`, request drain/release of source-owned resources |
 
-For async sources each hook except the property is `async def` with the same eventual return type. The protocols supply no implementation, invocation, offloading, controller or scheduler. Application handles need no package base class or duplicate ERP job record. Source owns cursor/scan progress; an empty acquisition tuple never proves queue/pass exhaustion. Built-in W05 complete-page/visited/cursor semantics stay inside its separately implemented source. A future engine must validate source output bounds before tasks and safely handle invalid output without abandoning acquired work.
+For async sources each hook except the property is `async def` with the same eventual return type. The protocols supply no implementation, invocation, offloading, controller or scheduler. Application handles need no package base class or duplicate ERP job record. Source owns cursor/scan progress; an empty acquisition tuple never proves queue/pass exhaustion. Built-in W05 complete-page/visited/cursor semantics stay inside its separately implemented source. The one-shot runner below validates source output before execution and delegates invalid/partial acquisition cleanup to source shutdown. Any future supervised engine must also enforce its complete resource and task bounds.
 
 SOURCE explicitly identifies the one authoritative renewal path. ERP sources delegate to their existing executor/heartbeat. A common runtime must honor this negotiation and must not add another heartbeat. A future built-in source may use the existing shared lifecycle controller internally; this pure interface neither implements nor proves renewal. Alternative runtime delegation requires a separately reviewed contract.
 
@@ -108,6 +108,150 @@ The source/application owns actual authorization, fencing/deadline checks, provi
 
 On success, source owns observing its actual durable result. On business failure it rolls back the full business root before fenced failure recording in a separate caller-owned root. Uncertain commits/provider outcomes remain held for reconciliation. A returned None or raised exception is control flow, not commit/rollback proof or replay permission. No generic engine may infer provider replay safety from either.
 
-Cancel requests do not prove persisted cancellation, authorization, rollback or that external work stopped. Shutdown does not prove threads stopped or shared application pools were released. A cancelled await cannot stop its backing thread; source and runtime must track real execution/drain and preserve uncertainty. Hooks must coordinate source-owned execution/renewal; resource ownership and partial-startup cleanup require future runtime/application integration. No timeout, cancellation token or drain deadline is implemented here.
+Cancel requests do not prove persisted cancellation, authorization, rollback or that external work stopped. Shutdown does not prove threads stopped or shared application pools were released. A cancelled await cannot stop its backing thread; source and runtime must track real execution/drain and preserve uncertainty. Hooks must coordinate source-owned execution/renewal. The one-shot runner defines a limited lifecycle boundary below; broader resource admission and partial-startup cleanup still require supervised runtime/application integration. No timeout, cancellation token or drain deadline is implemented here.
 
-The package does not invoke/wrap callbacks, swallow programmer errors, replace cancellation identity, close returned awaitables or log diagnostics. Applications own safe diagnostics; callback exception/traceback exposure must be controlled explicitly. Pure source examples are interface demonstrations, not real transaction, heartbeat, cancellation or shutdown qualification.
+The pure interfaces do not invoke callbacks or own resources. The explicit runner below invokes source hooks; it never closes returned awaitables or logs diagnostics. Applications own safe diagnostics; callback exception/traceback exposure must be controlled explicitly. Pure source examples are interface demonstrations, not real transaction, heartbeat, cancellation or shutdown qualification.
+
+## Run one synchronous batch
+
+`from modkit_workers.runtime import run_batch` opts into execution. The signature is
+`run_batch(source: WorkSource[T], request: AcquireRequest, /) -> int`. The root
+exports remain pure and unchanged; importing the runtime module starts no work
+and does not import Events or optional drivers. Constructing/revalidating a request
+still uses the actual Events shared contracts.
+
+Give this call exclusive lifecycle ownership of a source suitable for one-shot
+shutdown, usually an application-owned batch-scoped facade. Do not share that
+source with another runner or shut it down concurrently. There is no global
+registry, lock or second lifecycle controller policing callers.
+
+The runner first reconstructs an exact AcquireRequest, before accessing the
+source. It then requires `renewal_owner is RenewalOwner.SOURCE` and captures the
+three used hooks: acquire, execute and shutdown. Each must be callable with a
+synchronous entrypoint. Shape checks use the same direct, callable-instance and
+exact built-in partial rules as handler registration above. Native coroutine,
+generator and async-generator hooks are rejected before acquisition. The unused
+cancel hook is never read or called. These checks do not certify the full
+WorkSource protocol, resource readiness or transaction ownership.
+
+After preflight the runner:
+1. Calls acquire exactly once with the reconstructed request.
+2. Requires an exact built-in tuple of at most request.limit handles before any
+   execute call. Arbitrary iterables, tuple subclasses and oversized tuples are
+   rejected without executing any handles; invalid output is not enumerated.
+3. Calls execute sequentially in tuple order, stopping at the first failure.
+   Handles are opaque and passed unchanged; no equality or deduplication policy
+   is imposed. Each execute must return None.
+4. Attempts shutdown exactly once after entering acquisition, on success, empty
+   output, invalid output or any BaseException. Shutdown must return None.
+
+The returned integer counts execute hooks that returned normally with None, and
+is returned only when shutdown also succeeds. It does not count committed or
+successful jobs. An empty tuple yields zero after shutdown, not proof of queue
+exhaustion. There is no retry, replay, implicit cancellation, heartbeat, background
+task, thread, executor offload, wait or automatic second acquisition.
+
+The source must retain enough ownership information to drain/release **all**
+partially acquired and unprocessed work during shutdown, including when acquire
+raises or returns malformed output. The runner cannot recover unknown handles
+by enumerating invalid output. It never calls cancel on ordinary execution
+failure: cancellation could change business semantics. Source/application code
+owns authorization, handler/provider dispatch, transactions, durable failure and
+cancellation, uncertainty reconciliation, and the one authoritative renewal path.
+A source facade must not close a shared application pool that it does not own.
+
+Preflight failures leave lifecycle ownership with the caller and do not call
+shutdown, including failures while reading source properties/descriptors.
+Malformed request/owner/hook shape uses InvalidWorkerConfiguration; existing
+request-constructor and descriptor exceptions propagate unchanged. Missing hooks
+raise ordinary AttributeError. Wrong result types use TypeError; an oversized
+tuple uses ValueError. These new error messages contain no application values.
+Non-None execute/shutdown results, including awaitables, are invalid: the runner
+neither awaits nor closes caller-owned values.
+
+If acquisition/execution fails and shutdown succeeds, the original exception
+object is re-raised. If only shutdown fails, that exact exception propagates.
+If both fail, a standard BaseExceptionGroup with message
+"WorkSource batch and shutdown failed" contains the exact primary and shutdown
+exceptions in that order. Python narrows this to ExceptionGroup when both are
+ordinary Exceptions. A cancellation, KeyboardInterrupt or SystemExit is preserved
+as the original exception when alone and as an exact group member on dual failure;
+the outer exception is then a group, not the original cancellation. Applications
+must handle that grouped failure explicitly and control traceback exposure.
+
+This is a bound on invocations: one acquire, at most request.limit sequential
+execute calls, and one shutdown attempt. It is not a memory, wallclock, IO, lease,
+thread-drain or durable-outcome proof. A stuck source hook can block the caller.
+Shutdown returning None is not proof that resources stopped or a transaction
+committed. Full supervised-engine fairness, capacity admission, health, async
+execution, built-in stores, JobWorker/EventWorker and deployment qualification
+remain pending.
+
+### Application-local example
+
+This complete example performs actual in-process string transformations. It is
+deliberately non-durable, has no provider/DB/Redis work, and is not a built-in store
+or production transaction example. Application source code selects supported work,
+performs the operation and returns unprocessed items to its own pending queue on
+shutdown.
+
+```python
+from collections import deque
+from dataclasses import dataclass
+
+from modkit_events.persistence.models import Capability
+from modkit_workers import AcquireRequest, RenewalOwner
+from modkit_workers.runtime import run_batch
+
+
+@dataclass(eq=False)
+class Text:
+    value: str
+
+
+class LocalUppercaseSource:
+    renewal_owner = RenewalOwner.SOURCE
+
+    def __init__(self, texts):
+        self.pending = deque(Text(text) for text in texts)
+        self.acquired = deque()
+        self.results = []
+
+    def acquire(self, request, /):
+        selected = {(c.command_type, c.schema_version) for c in request.capabilities}
+        if ("uppercase", 1) not in selected:
+            return ()
+        for _ in range(min(request.limit, len(self.pending))):
+            self.acquired.append(self.pending.popleft())
+        return tuple(self.acquired)
+
+    def execute(self, work, /):
+        if not self.acquired or self.acquired[0] is not work:
+            raise ValueError("Not the next acquired item")
+        self.results.append(work.value.upper())
+        self.acquired.popleft()
+
+    def cancel(self, work, /):
+        self.acquired.remove(work)  # Explicitly discard this local, unstarted item.
+
+    def shutdown(self):
+        self.pending.extendleft(reversed(self.acquired))
+        self.acquired.clear()
+
+
+source = LocalUppercaseSource(["one", "two", "three"])
+request = AcquireRequest(
+    capabilities=[Capability(command_type="uppercase", schema_version=1)],
+    limit=2,
+    discovery_budget=16,
+)
+assert run_batch(source, request) == 2
+assert source.results == ["ONE", "TWO"]
+assert [work.value for work in source.pending] == ["three"]
+assert not source.acquired
+```
+
+On an execute failure, no later item is executed and shutdown returns the
+remaining acquired items to this local queue. Returning them is not authorization
+to replay an external effect. A durable application source must implement its own
+fencing, outcome recording and uncertainty handling instead.

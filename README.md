@@ -4,9 +4,11 @@ NEW unpublished source, proposed version0.1.0. MIT attribution is retained.
 Pure root contracts provide explicit HandlerRegistry registration/lookup and acquisition/
 subscription preflight, immutable JobContext, application-owned synchronous/async
 WorkSource hooks, AcquireRequest and bounded WorkerSettings. See
-[the pure contracts guide](docs/worker-contracts.md) for signatures and validation limits.
-These contracts do not execute handlers or run workers. JobWorker/EventWorker,
-supervisor loops and automatic services remain unavailable.
+[the contracts and batch guide](docs/worker-contracts.md) for signatures and validation limits.
+The explicit modkit_workers.runtime.run_batch operation acquires one application-owned
+batch, executes its synchronous source hooks sequentially and always attempts source
+shutdown after acquisition begins. Its count is not a durable outcome receipt.
+JobWorker/EventWorker, supervisor loops and automatic services remain unavailable.
 
 The sole ordinary dependency is modkit-events>=0.2,<0.3. Events and Workers are
 separate generic packages: Workers requires Events; Events works with or without

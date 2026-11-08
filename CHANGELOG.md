@@ -4,8 +4,8 @@
 
 - Prepare an import-neutral typed worker package and inert migration resource reader.
 - Dependency metadata is proposed, not installed-artifact or service qualification.
-- Production SQL/manifests and worker runtime exports remain held. No release or
-  historical November6 source restoration is claimed.
+- Production SQL/manifests and supervised worker runtime exports remain held.
+  No release or historical November6 source restoration is claimed.
 
 - Add private W03 job listing SQL with tuple pagination, job-kind filtering before
   the page limit, complete material validation, and an Events-owned index guard.
@@ -26,3 +26,8 @@
 
 - Declare existing frozen binding return values and comparison-only find request
   fields for typed consumers. No wrapper, request format or execution behavior changes.
+
+- Add explicit synchronous run_batch for an application-owned, exclusive one-shot
+  source lifetime: one bounded acquisition, sequential execution and exactly one
+  shutdown attempt, preserving primary and cleanup failures without replay or
+  automatic cancellation. This is not a supervised engine or durable receipt.
