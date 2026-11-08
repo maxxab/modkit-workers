@@ -1,6 +1,6 @@
 # Built-in job persistence
 
-The built-in store participates in an application's existing PostgreSQL transaction. These pure models, parameter builders and row decoders do not connect, begin, commit, roll back, dispatch a handler, resolve a credential or run a worker. The current reconstruction has not been qualified against PostgreSQL or Redis. Application-owned job stores need not create duplicate built-in records.
+The built-in store participates in an application's existing PostgreSQL transaction. These pure models, parameter builders and row decoders do not connect, begin, commit, roll back, dispatch a handler, resolve a credential or run a worker. Bounded PostgreSQL SQL checks are recorded in the reader and acquisition guides; full store/runtime conformance and Redis qualification remain open. Application-owned job stores need not create duplicate built-in records.
 
 ## Logical input and storage profile
 
@@ -15,6 +15,15 @@ Scope remains logical Scope(application,tenant=None,owner=None). Its sole shared
 ## Preparation, statement snapshots and collisions
 
 submit, read_job, acquire and list_jobs produce shared immutable FrozenRequest values using schema-owned catalog descriptors and the one shared freeze_request implementation. find_jobs produces PreparedJobFind with a W04 lookup and a comparison-only frozen W01 expected submission. NEVER execute expected_submission as part of a find. Only its complete immutable admission/material evidence is used to compare returned candidates. Builders freeze every buffer, capability pair, bound and cursor before a driver gate/await; decoders use that exact request, never the caller's mutable original.
+
+The builder return annotations expose those existing shared FrozenRequest values.
+PreparedJobFind.lookup and expected_submission are both typed FrozenRequest fields;
+the second remains comparison-only. Static callers also need the matching Events
+boundary decorators to preserve callable signatures. This is a binding-type contract,
+not whole-package typing, driver execution or store/runtime qualification.
+The focused static regression is tests/typecheck_job_bindings.py. Run it with
+mypy --strict --follow-imports=silent and both compatible package sources available
+to the checker. It checks exact results, input types and positional-only calls.
 
 Job identity includes kind job, namespace jobs, command/version, exact scope, optional scoped key and all immutable semantic/binding/policy/scheduling fields. Proposed work ID is the direct-ID collision index, excluded from canonical intent so an identical scoped-key request can return an existing original ID. Changed key/scope/input/protected bytes or split direct/key winners conflict; digest equality alone never proves identity. W01's ID/inserted result is STAGED, not a commit acknowledgement or complete reconciliation evidence.
 
@@ -50,4 +59,4 @@ There is no standalone mutation-operation reader in the39-key catalog. Repeating
 
 ## Qualification boundaries
 
-Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. PostgreSQL and Redis fixture execution is blocked and must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.
+Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. The bounded job-only PostgreSQL checks do not close the broader PostgreSQL/Redis fixture and runtime gates; missing coverage must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.

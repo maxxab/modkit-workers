@@ -23,3 +23,6 @@
 - Qualify W05's 4096-candidate discovery bound and 256 complete claims using a
   caller-owned native test helper, exact row/history checks and full rollback.
   Maximum payload bytes, resource budgets and broader runtime gates remain open.
+
+- Declare existing frozen binding return values and comparison-only find request
+  fields for typed consumers. No wrapper, request format or execution behavior changes.
