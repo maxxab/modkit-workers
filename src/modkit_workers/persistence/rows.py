@@ -314,9 +314,6 @@ def _identifier_text_raw(value):
 def _decode_read_raw(request, rows, /):
     from modkit_events.persistence import native_profile
     from modkit_events.persistence.errors import _reject_validation
-    from modkit_events.persistence.scope import _decode_scope_fields_raw
-
-    from .observations import _job_details_raw, _job_payload_raw, _job_record_raw
 
     _native_request(request, "W02")
     _native_rows(rows, exact=False)
@@ -326,8 +323,17 @@ def _decode_read_raw(request, rows, /):
     work = common_rows._decode_work_observation_raw(values[:56])
     if work.work_id != request.parameters[0]:
         _reject_validation()
+    return _decode_job_half_raw(work, values[56:])
+
+
+def _decode_job_half_raw(work, values):
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.scope import _decode_scope_fields_raw
+
+    from .observations import _job_details_raw, _job_payload_raw, _job_record_raw
+
     (job_id, app, tenant, owner, binding, semantic, state, sidecar, reference,
-     codec, key, expiry, recovery, cleanup, projection) = values[56:]
+     codec, key, expiry, recovery, cleanup, projection) = values
     scope = _decode_scope_fields_raw(app, tenant, owner)
     states = {"absent": MaterialState.ABSENT, "present": MaterialState.PRESENT,
               "erased": MaterialState.ERASED}
@@ -359,3 +365,44 @@ def _validate_read_result_raw(request, value, /):
     _validate_job_record_raw(value)
     if value.work.work_id != request.parameters[0]:
         _reject_validation()
+
+
+def _decode_list_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    _native_request(request, "W03")
+    if type(rows) is not tuple or len(rows) > request.parameters[3]:
+        _reject_validation()
+    # Preflight the complete page before constructing any record.
+    for row in rows:
+        if type(row) is not tuple or len(row) != 71:
+            _reject_validation()
+    records = [None] * len(rows)
+    for index, row in enumerate(rows):
+        values = native_profile.decode_columns(get_statement("W03"), row)
+        work = common_rows._decode_work_observation_raw(values[:56])
+        records[index] = _decode_job_half_raw(work, values[56:])
+    result = tuple(records)
+    del records
+    # All complete records precede page-order checks, as in the public decoder.
+    _validate_list_result_raw(request, result)
+    return result
+
+
+def _validate_list_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_record_raw
+
+    _native_request(request, "W03")
+    if type(value) is not tuple or len(value) > request.parameters[3]:
+        _reject_validation()
+    namespace, created_at, work_id, _ = request.parameters
+    prior = None if created_at is None else (created_at, work_id)
+    for record in value:
+        _validate_job_record_raw(record)
+        current = (record.work.created_at, record.work.work_id)
+        if record.work.namespace != namespace or prior is not None and current <= prior:
+            _reject_validation()
+        prior = current

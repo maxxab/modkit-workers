@@ -1356,6 +1356,358 @@ END
 $workers_listing_private_boundary$;
 
 
+
+-- Bounded native W03 source candidate / NOT_READY. No installation authority.
+-- SELECT INTO below relies on this exact reviewed W02 body returning at most one row.
+DO $workers_bounded_listing_preflight$
+DECLARE
+    owner_oid pg_catalog.oid;
+    reader_abi pg_catalog.record;
+    shared_abi pg_catalog.record;
+BEGIN
+    SELECT n.nspowner INTO owner_oid FROM pg_catalog.pg_namespace AS n
+      WHERE n.nspname='modkit_workers' AND n.nspowner=CURRENT_USER::pg_catalog.regrole;
+    SELECT p.* INTO reader_abi FROM pg_catalog.pg_proc AS p
+      WHERE p.oid=pg_catalog.to_regprocedure('modkit_workers.w02(uuid)');
+    SELECT p.* INTO shared_abi FROM pg_catalog.pg_proc AS p
+      WHERE p.oid=pg_catalog.to_regprocedure('modkit_events.e15(uuid)');
+    -- Earlier W01/readers preflights pin the literal E15 checked56 ABI.
+    IF owner_oid IS NULL OR reader_abi.oid IS NULL OR shared_abi.oid IS NULL
+       OR reader_abi.proowner IS DISTINCT FROM owner_oid
+       OR shared_abi.proowner IS DISTINCT FROM owner_oid
+       OR shared_abi.provolatile::pg_catalog.text IS DISTINCT FROM 's'
+       OR reader_abi.provolatile::pg_catalog.text IS DISTINCT FROM 's'
+       OR reader_abi.prosecdef IS DISTINCT FROM TRUE
+       OR reader_abi.proretset IS DISTINCT FROM TRUE
+       OR reader_abi.prorettype IS DISTINCT FROM pg_catalog.to_regtype('record')
+       OR reader_abi.proisstrict IS DISTINCT FROM FALSE OR reader_abi.prokind IS DISTINCT FROM 'f'
+       OR reader_abi.pronargs IS DISTINCT FROM 1 OR reader_abi.pronargdefaults IS DISTINCT FROM 0
+       OR reader_abi.provariadic IS DISTINCT FROM 0::pg_catalog.oid
+       OR reader_abi.proargtypes IS DISTINCT FROM
+          ARRAY[pg_catalog.to_regtype('uuid')::pg_catalog.oid]::pg_catalog.oidvector
+       OR reader_abi.proconfig IS DISTINCT FROM ARRAY['search_path=pg_catalog, pg_temp']::pg_catalog.text[]
+       OR reader_abi.prolang IS DISTINCT FROM (SELECT oid FROM pg_catalog.pg_language WHERE lanname='plpgsql')
+       OR reader_abi.proargnames IS DISTINCT FROM
+          (ARRAY['p_work_id']::pg_catalog.text[] || shared_abi.proargnames[2:57] ||
+           ARRAY['job_work_id','job_application','job_tenant','job_owner','job_protected_binding','job_semantic_input','material_state','protected_sidecar','protected_reference','protected_codec','protected_key_version','protected_expires_at','protected_recovery_metadata','protected_cleanup_policy','projection_metadata']::pg_catalog.text[])
+       OR reader_abi.proallargtypes IS DISTINCT FROM
+          (ARRAY[pg_catalog.to_regtype('uuid')::pg_catalog.oid] || shared_abi.proallargtypes[2:57] ||
+           ARRAY[pg_catalog.to_regtype('uuid')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('text')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('timestamptz')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid,
+          pg_catalog.to_regtype('text')::pg_catalog.oid,
+          pg_catalog.to_regtype('bytea')::pg_catalog.oid])
+       OR reader_abi.proargmodes IS DISTINCT FROM
+          (ARRAY['i'::pg_catalog."char"] || pg_catalog.array_fill('t'::pg_catalog."char",ARRAY[71]))
+       OR pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(reader_abi.prosrc,'UTF8')),'hex')
+          IS DISTINCT FROM '6c5a320a0be8afb9a8fc6df0655569fa96cad55996c78b90a677565642072ce2'
+       OR EXISTS (SELECT 1 FROM pg_catalog.aclexplode(
+           COALESCE(reader_abi.proacl,pg_catalog.acldefault('f',reader_abi.proowner))) AS acl
+           WHERE acl.grantee<>reader_abi.proowner) THEN
+        RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='invalid bounded job listing reader dependency';
+    END IF;
+END
+$workers_bounded_listing_preflight$;
+
+CREATE FUNCTION modkit_workers.w03(p_namespace pg_catalog.bytea,
+    p_after_created_at pg_catalog.timestamptz,p_after_work_id pg_catalog.uuid,p_limit pg_catalog.int4,
+    p_max_page_payload_bytes pg_catalog.int8)
+RETURNS TABLE(
+    work_id pg_catalog.uuid,
+    kind pg_catalog.text,
+    subscription_id pg_catalog.bytea,
+    namespace pg_catalog.bytea,
+    command_type pg_catalog.bytea,
+    schema_version_decimal pg_catalog.bytea,
+    runnable_version pg_catalog.int4,
+    canonical_version pg_catalog.int4,
+    scope_evidence pg_catalog.bytea,
+    scope_application pg_catalog.bytea,
+    scope_tenant pg_catalog.bytea,
+    scope_owner pg_catalog.bytea,
+    idempotency_key pg_catalog.bytea,
+    intent_evidence pg_catalog.bytea,
+    semantic_input pg_catalog.bytea,
+    replay_input pg_catalog.bytea,
+    protected_binding pg_catalog.bytea,
+    replay_policy pg_catalog.text,
+    max_attempts pg_catalog.int4,
+    deadline pg_catalog.timestamptz,
+    original_available_at pg_catalog.timestamptz,
+    state pg_catalog.text,
+    cancellation_requested pg_catalog.bool,
+    token pg_catalog.uuid,
+    ownership_revision pg_catalog.int8,
+    lease_until pg_catalog.timestamptz,
+    available_at pg_catalog.timestamptz,
+    cycle pg_catalog.int4,
+    attempt_count pg_catalog.int4,
+    dispatch_id pg_catalog.uuid,
+    result pg_catalog.bytea,
+    created_at pg_catalog.timestamptz,
+    updated_at pg_catalog.timestamptz,
+    success_origin pg_catalog.text,
+    completion_guard_id pg_catalog.uuid,
+    final_fence_at pg_catalog.timestamptz,
+    completion_result_digest pg_catalog.bytea,
+    resolution_operation_id pg_catalog.uuid,
+    terminal_resolution_operation_id pg_catalog.uuid,
+    resolution_present pg_catalog.bool,
+    resolution_record_operation_id pg_catalog.uuid,
+    resolution_record_operation_kind pg_catalog.text,
+    resolution_record_work_id pg_catalog.uuid,
+    resolution_record_expected_revision pg_catalog.int8,
+    resolution_record_cycle pg_catalog.int4,
+    resolution_record_attempt pg_catalog.int4,
+    resolution_record_dispatch_id pg_catalog.uuid,
+    resolution_record_outcome pg_catalog.text,
+    resolution_record_retry_at pg_catalog.timestamptz,
+    resolution_record_result pg_catalog.bytea,
+    resolution_record_result_digest pg_catalog.bytea,
+    resolution_record_reason pg_catalog.text,
+    resolution_record_evidence pg_catalog.bytea,
+    resolution_record_binding pg_catalog.bytea,
+    resolution_record_resolution_root_xid pg_catalog.xid8,
+    resolution_record_recorded_at pg_catalog.timestamptz,
+    job_work_id pg_catalog.uuid,
+    job_application pg_catalog.bytea,
+    job_tenant pg_catalog.bytea,
+    job_owner pg_catalog.bytea,
+    job_protected_binding pg_catalog.bytea,
+    job_semantic_input pg_catalog.bytea,
+    material_state pg_catalog.text,
+    protected_sidecar pg_catalog.bytea,
+    protected_reference pg_catalog.bytea,
+    protected_codec pg_catalog.bytea,
+    protected_key_version pg_catalog.bytea,
+    protected_expires_at pg_catalog.timestamptz,
+    protected_recovery_metadata pg_catalog.bytea,
+    protected_cleanup_policy pg_catalog.text,
+    projection_metadata pg_catalog.bytea
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER CALLED ON NULL INPUT
+SET search_path = pg_catalog, pg_temp AS $body$
+DECLARE
+    selected pg_catalog.record;
+    item pg_catalog.record;
+    previous_created_at pg_catalog.timestamptz:=p_after_created_at;
+    previous_id pg_catalog.uuid:=p_after_work_id;
+    row_payload_bytes pg_catalog.int8;
+    page_payload_bytes pg_catalog.int8:=0;
+BEGIN
+    IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN
+        RAISE EXCEPTION USING ERRCODE='PZ005',MESSAGE='unsupported job listing isolation';
+    END IF;
+    IF p_namespace IS DISTINCT FROM pg_catalog.convert_to('jobs','UTF8')
+       OR p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 256
+       OR (p_after_created_at IS NULL) <> (p_after_work_id IS NULL)
+       OR (p_after_created_at IS NOT NULL AND modkit_events._instant_bytes(p_after_created_at) IS NULL)
+       OR p_max_page_payload_bytes IS NULL OR p_max_page_payload_bytes NOT BETWEEN 1 AND 3758096384 THEN
+        RAISE EXCEPTION USING ERRCODE='PZ006',MESSAGE='invalid bounded job listing arguments';
+    END IF;
+    -- Only bounded immutable keys are collected before current-row materialization.
+    FOR selected IN
+        WITH page AS MATERIALIZED (
+            (SELECT listed.work_id AS selected_work_id,listed.created_at AS selected_created_at
+               FROM modkit_events.work AS listed
+              WHERE p_after_created_at IS NULL AND listed.namespace=p_namespace
+                AND listed.kind COLLATE pg_catalog."C" = 'job' COLLATE pg_catalog."C"
+              ORDER BY listed.created_at,listed.work_id
+              LIMIT p_limit)
+            UNION ALL
+            (SELECT listed.work_id AS selected_work_id,listed.created_at AS selected_created_at
+               FROM modkit_events.work AS listed
+              WHERE p_after_created_at IS NOT NULL AND listed.namespace=p_namespace
+                AND listed.kind COLLATE pg_catalog."C" = 'job' COLLATE pg_catalog."C"
+                AND (listed.created_at,listed.work_id)>(p_after_created_at,p_after_work_id)
+              ORDER BY listed.created_at,listed.work_id
+              LIMIT p_limit)
+        )
+        SELECT page.selected_work_id,page.selected_created_at FROM page
+         ORDER BY page.selected_created_at,page.selected_work_id
+    LOOP
+        -- STABLE W02 shares this invoking statement snapshot and validates one full job.
+        SELECT checked.* INTO item
+          FROM modkit_workers.w02(selected.selected_work_id) AS checked;
+        IF NOT FOUND OR item.work_id IS DISTINCT FROM selected.selected_work_id
+           OR item.created_at IS DISTINCT FROM selected.selected_created_at
+           OR item.namespace IS DISTINCT FROM p_namespace
+           OR pg_catalog.convert_to(item.kind,'UTF8') IS DISTINCT FROM pg_catalog.convert_to('job','UTF8')
+           OR item.subscription_id IS NOT NULL
+           OR (previous_id IS NOT NULL
+               AND (item.created_at,item.work_id)<=(previous_created_at,previous_id)) THEN
+            RAISE EXCEPTION USING ERRCODE='PZ012',MESSAGE='invalid bounded job listing identity or order';
+        END IF;
+        -- Fixed native variable-field bounds.
+        IF (
+        (item.kind IS NOT NULL AND pg_catalog.octet_length(pg_catalog.convert_to(item.kind, 'UTF8')) OPERATOR(pg_catalog.<=) 3)
+        AND (item.subscription_id IS NULL OR pg_catalog.octet_length(item.subscription_id) OPERATOR(pg_catalog.<=) 256)
+        AND (item.namespace IS NOT NULL AND pg_catalog.octet_length(item.namespace) OPERATOR(pg_catalog.<=) 256)
+        AND (item.command_type IS NOT NULL AND pg_catalog.octet_length(item.command_type) OPERATOR(pg_catalog.<=) 256)
+        AND (item.schema_version_decimal IS NOT NULL AND pg_catalog.octet_length(item.schema_version_decimal) OPERATOR(pg_catalog.<=) 4096)
+        AND (item.scope_evidence IS NOT NULL AND pg_catalog.octet_length(item.scope_evidence) OPERATOR(pg_catalog.<=) 781)
+        AND (item.scope_application IS NOT NULL AND pg_catalog.octet_length(item.scope_application) OPERATOR(pg_catalog.<=) 256)
+        AND (item.scope_tenant IS NULL OR pg_catalog.octet_length(item.scope_tenant) OPERATOR(pg_catalog.<=) 256)
+        AND (item.scope_owner IS NULL OR pg_catalog.octet_length(item.scope_owner) OPERATOR(pg_catalog.<=) 256)
+        AND (item.idempotency_key IS NULL OR pg_catalog.octet_length(item.idempotency_key) OPERATOR(pg_catalog.<=) 256)
+        AND (item.intent_evidence IS NOT NULL AND pg_catalog.octet_length(item.intent_evidence) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.semantic_input IS NOT NULL AND pg_catalog.octet_length(item.semantic_input) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.replay_input IS NOT NULL AND pg_catalog.octet_length(item.replay_input) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.protected_binding IS NOT NULL AND pg_catalog.octet_length(item.protected_binding) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.replay_policy IS NOT NULL AND pg_catalog.octet_length(pg_catalog.convert_to(item.replay_policy, 'UTF8')) OPERATOR(pg_catalog.<=) 16)
+        AND (item.state IS NOT NULL AND pg_catalog.octet_length(pg_catalog.convert_to(item.state, 'UTF8')) OPERATOR(pg_catalog.<=) 14)
+        AND (item.result IS NULL OR pg_catalog.octet_length(item.result) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.success_origin IS NULL OR pg_catalog.octet_length(pg_catalog.convert_to(item.success_origin, 'UTF8')) OPERATOR(pg_catalog.<=) 10)
+        AND (item.completion_result_digest IS NULL OR pg_catalog.octet_length(item.completion_result_digest) OPERATOR(pg_catalog.<=) 32)
+        AND (item.resolution_record_operation_kind IS NULL OR pg_catalog.octet_length(pg_catalog.convert_to(item.resolution_record_operation_kind, 'UTF8')) OPERATOR(pg_catalog.<=) 14)
+        AND (item.resolution_record_outcome IS NULL OR pg_catalog.octet_length(pg_catalog.convert_to(item.resolution_record_outcome, 'UTF8')) OPERATOR(pg_catalog.<=) 19)
+        AND (item.resolution_record_result IS NULL OR pg_catalog.octet_length(item.resolution_record_result) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.resolution_record_result_digest IS NULL OR pg_catalog.octet_length(item.resolution_record_result_digest) OPERATOR(pg_catalog.<=) 32)
+        AND (item.resolution_record_reason IS NULL OR pg_catalog.octet_length(pg_catalog.convert_to(item.resolution_record_reason, 'UTF8')) OPERATOR(pg_catalog.<=) 256)
+        AND (item.resolution_record_evidence IS NULL OR pg_catalog.octet_length(item.resolution_record_evidence) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.resolution_record_binding IS NULL OR pg_catalog.octet_length(item.resolution_record_binding) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.job_application IS NOT NULL AND pg_catalog.octet_length(item.job_application) OPERATOR(pg_catalog.<=) 256)
+        AND (item.job_tenant IS NULL OR pg_catalog.octet_length(item.job_tenant) OPERATOR(pg_catalog.<=) 256)
+        AND (item.job_owner IS NULL OR pg_catalog.octet_length(item.job_owner) OPERATOR(pg_catalog.<=) 256)
+        AND (item.job_protected_binding IS NOT NULL AND pg_catalog.octet_length(item.job_protected_binding) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.job_semantic_input IS NOT NULL AND pg_catalog.octet_length(item.job_semantic_input) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.material_state IS NOT NULL AND pg_catalog.octet_length(pg_catalog.convert_to(item.material_state, 'UTF8')) OPERATOR(pg_catalog.<=) 7)
+        AND (item.protected_sidecar IS NULL OR pg_catalog.octet_length(item.protected_sidecar) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.protected_reference IS NULL OR pg_catalog.octet_length(item.protected_reference) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.protected_codec IS NULL OR pg_catalog.octet_length(item.protected_codec) OPERATOR(pg_catalog.<=) 256)
+        AND (item.protected_key_version IS NULL OR pg_catalog.octet_length(item.protected_key_version) OPERATOR(pg_catalog.<=) 256)
+        AND (item.protected_recovery_metadata IS NOT NULL AND pg_catalog.octet_length(item.protected_recovery_metadata) OPERATOR(pg_catalog.<=) 1048576)
+        AND (item.protected_cleanup_policy IS NOT NULL AND pg_catalog.octet_length(pg_catalog.convert_to(item.protected_cleanup_policy, 'UTF8')) OPERATOR(pg_catalog.<=) 20)
+        AND (item.projection_metadata IS NOT NULL AND pg_catalog.octet_length(item.projection_metadata) OPERATOR(pg_catalog.<=) 1048576)
+        ) IS NOT TRUE THEN
+            RAISE EXCEPTION USING ERRCODE='PZ012',MESSAGE='invalid native job listing field bounds';
+        END IF;
+        row_payload_bytes:=COALESCE(pg_catalog.octet_length(item.intent_evidence)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.semantic_input)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.replay_input)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.protected_binding)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.result)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.resolution_record_result)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.resolution_record_evidence)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.resolution_record_binding)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.job_protected_binding)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.job_semantic_input)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.protected_sidecar)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.protected_reference)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.protected_recovery_metadata)::pg_catalog.int8,0::pg_catalog.int8)
+          + COALESCE(pg_catalog.octet_length(item.projection_metadata)::pg_catalog.int8,0::pg_catalog.int8);
+        IF row_payload_bytes > p_max_page_payload_bytes - page_payload_bytes THEN
+            RAISE EXCEPTION USING ERRCODE='PZ013',MESSAGE='W03 page payload budget exceeded';
+        END IF;
+        page_payload_bytes:=page_payload_bytes+row_payload_bytes;
+        previous_created_at:=item.created_at;
+        previous_id:=item.work_id;
+        -- The whole buffered page succeeds or raises; no partial prefix escapes.
+        RETURN QUERY SELECT item.work_id,
+            item.kind,
+            item.subscription_id,
+            item.namespace,
+            item.command_type,
+            item.schema_version_decimal,
+            item.runnable_version,
+            item.canonical_version,
+            item.scope_evidence,
+            item.scope_application,
+            item.scope_tenant,
+            item.scope_owner,
+            item.idempotency_key,
+            item.intent_evidence,
+            item.semantic_input,
+            item.replay_input,
+            item.protected_binding,
+            item.replay_policy,
+            item.max_attempts,
+            item.deadline,
+            item.original_available_at,
+            item.state,
+            item.cancellation_requested,
+            item.token,
+            item.ownership_revision,
+            item.lease_until,
+            item.available_at,
+            item.cycle,
+            item.attempt_count,
+            item.dispatch_id,
+            item.result,
+            item.created_at,
+            item.updated_at,
+            item.success_origin,
+            item.completion_guard_id,
+            item.final_fence_at,
+            item.completion_result_digest,
+            item.resolution_operation_id,
+            item.terminal_resolution_operation_id,
+            item.resolution_present,
+            item.resolution_record_operation_id,
+            item.resolution_record_operation_kind,
+            item.resolution_record_work_id,
+            item.resolution_record_expected_revision,
+            item.resolution_record_cycle,
+            item.resolution_record_attempt,
+            item.resolution_record_dispatch_id,
+            item.resolution_record_outcome,
+            item.resolution_record_retry_at,
+            item.resolution_record_result,
+            item.resolution_record_result_digest,
+            item.resolution_record_reason,
+            item.resolution_record_evidence,
+            item.resolution_record_binding,
+            item.resolution_record_resolution_root_xid,
+            item.resolution_record_recorded_at,
+            item.job_work_id,
+            item.job_application,
+            item.job_tenant,
+            item.job_owner,
+            item.job_protected_binding,
+            item.job_semantic_input,
+            item.material_state,
+            item.protected_sidecar,
+            item.protected_reference,
+            item.protected_codec,
+            item.protected_key_version,
+            item.protected_expires_at,
+            item.protected_recovery_metadata,
+            item.protected_cleanup_policy,
+            item.projection_metadata;
+    END LOOP;
+END
+$body$;
+REVOKE ALL ON FUNCTION modkit_workers.w03(pg_catalog.bytea,pg_catalog.timestamptz,pg_catalog.uuid,pg_catalog.int4,pg_catalog.int8) FROM PUBLIC;
+
+DO $workers_bounded_listing_private_boundary$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_catalog.pg_proc AS p,
+            LATERAL pg_catalog.aclexplode(
+                COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) AS acl
+        WHERE p.oid='modkit_workers.w03(bytea,timestamptz,uuid,int4,int8)'::pg_catalog.regprocedure
+          AND acl.grantee<>p.proowner
+    ) OR EXISTS (
+        SELECT 1 FROM pg_catalog.pg_namespace AS n,
+            LATERAL pg_catalog.aclexplode(
+                COALESCE(n.nspacl,pg_catalog.acldefault('n',n.nspowner))) AS acl
+        WHERE n.nspname='modkit_workers' AND acl.grantee<>n.nspowner
+    ) THEN
+        RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe private bounded Workers listing boundary';
+    END IF;
+END
+$workers_bounded_listing_private_boundary$;
+
 -- W05 source candidate. Production resources and runtime qualification remain NOT_READY.
 DO $workers_acquisition_preflight$
 DECLARE

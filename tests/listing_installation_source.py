@@ -1,13 +1,16 @@
 """W03 private installation regressions; caller supplies the isolated connection."""
 
 IDENTITY = "modkit_workers.w03(bytea,timestamptz,uuid,int4)"
+BOUNDED_IDENTITY = "modkit_workers.w03(bytea,timestamptz,uuid,int4,int8)"
+IDENTITIES = (IDENTITY, BOUNDED_IDENTITY)
 
 
 def snapshot(connection):
     functions = connection.execute(
         "SELECT p.oid,p.proacl::text,pg_catalog.pg_get_functiondef(p.oid) "
-        "FROM pg_catalog.pg_proc p WHERE p.oid=to_regprocedure(%s)",
-        (IDENTITY,),
+        "FROM pg_catalog.pg_proc p "
+        "WHERE p.oid IN (to_regprocedure(%s),to_regprocedure(%s)) ORDER BY p.oid",
+        IDENTITIES,
     ).fetchall()
     index = connection.execute(
         "SELECT i.*,c.relowner,pg_catalog.pg_get_indexdef(i.indexrelid) "
@@ -18,7 +21,7 @@ def snapshot(connection):
     return functions, index, defaults
 
 
-def rejected(connection, listing_sql, setup):
+def rejected(connection, listing_sql, setup, *, identities=IDENTITIES):
     """Every DDL negative is rollback-only, never applied to a shared installation."""
     before = snapshot(connection)
     error = None
@@ -27,7 +30,9 @@ def rejected(connection, listing_sql, setup):
     try:
         connection.execute("BEGIN ISOLATION LEVEL READ COMMITTED")
         connection.execute("SET LOCAL ROLE modkit_w01_owner")
-        connection.execute("DROP FUNCTION " + IDENTITY)
+        for identity in identities:
+            assert identity in IDENTITIES
+            connection.execute("DROP FUNCTION IF EXISTS " + identity)
         for command in setup:
             connection.execute(command)
         applying = True
@@ -73,3 +78,15 @@ def check_installation(connection, listing_sql):
         if definition is not None:
             setup.append(definition)
         rejected(connection, listing_sql, setup)
+
+
+def check_bounded_installation(connection, bounded_sql):
+    """Apply only the bounded source fragment in rollback-only ACL negatives."""
+    assert connection.autocommit is True
+    for setup in (
+        ["ALTER DEFAULT PRIVILEGES GRANT EXECUTE ON FUNCTIONS TO modkit_runtime"],
+        ["GRANT USAGE ON SCHEMA modkit_workers TO modkit_runtime"],
+    ):
+        rejected(
+            connection, bounded_sql, setup, identities=(BOUNDED_IDENTITY,)
+        )

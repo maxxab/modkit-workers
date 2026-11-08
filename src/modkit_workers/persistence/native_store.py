@@ -5,11 +5,16 @@ The common issuer must execute the admitted preparation and retain its result
 until the caller has finished borrowing it.
 """
 
-from modkit_events.persistence.native_profile import WorkersNativeOperation, result_capacity
+from modkit_events.persistence.native_profile import (
+    DEFAULT_LIST_PAGE_PAYLOAD_BYTES,
+    MAX_LIST_PAGE_PAYLOAD_BYTES,
+    WorkersNativeOperation,
+    result_capacity,
+)
 
 from . import bindings, rows
 from .catalog import get_statement
-from .models import JobReadRequest, JobSubmitRequest
+from .models import JobListRequest, JobReadRequest, JobSubmitRequest
 from .observations import JobAdmissionObservation, JobDetails, JobPayload, JobRecord
 
 _SUBMIT = WorkersNativeOperation(
@@ -29,6 +34,15 @@ _READ_JOB = WorkersNativeOperation(
     result_types=(JobRecord, JobDetails, JobPayload),
 )
 
+_LIST_JOBS = WorkersNativeOperation(
+    statement=get_statement("W03"),
+    request_type=JobListRequest,
+    build_request=bindings._list_jobs_raw,
+    decode_rows=rows._decode_list_raw,
+    validate_result=rows._validate_list_result_raw,
+    result_types=(JobRecord, JobDetails, JobPayload),
+)
+
 SUBMIT_RESULT_CAPACITY = result_capacity(_SUBMIT)
 READ_JOB_RESULT_CAPACITY = result_capacity(_READ_JOB)
 
@@ -45,7 +59,20 @@ def prepare_read_job(execution, request: JobReadRequest, /, *, execution_ledger)
     return prepare_component(execution, _READ_JOB, request, execution_ledger=execution_ledger)
 
 
+def prepare_list_jobs(
+    execution, request: JobListRequest, /, *, execution_ledger,
+    max_page_payload_bytes=DEFAULT_LIST_PAGE_PAYLOAD_BYTES,
+):
+    """Prepare a complete page with an explicit aggregate BYTEA allowance."""
+    from modkit_events.persistence.native_execution import prepare_component
+    return prepare_component(
+        execution, _LIST_JOBS, request, execution_ledger=execution_ledger,
+        max_page_payload_bytes=max_page_payload_bytes,
+    )
+
+
 __all__ = (
-    "prepare_submit", "prepare_read_job",
+    "prepare_submit", "prepare_read_job", "prepare_list_jobs",
     "SUBMIT_RESULT_CAPACITY", "READ_JOB_RESULT_CAPACITY",
+    "DEFAULT_LIST_PAGE_PAYLOAD_BYTES", "MAX_LIST_PAGE_PAYLOAD_BYTES",
 )

@@ -255,3 +255,26 @@ def _read_job_raw(request: JobReadRequest, /) -> common.FrozenRequest:
         _statement("W02"), (_work_id_raw(request.work_id),),
         context=common._return_context_raw(),
     )
+
+
+def _list_jobs_raw(request: JobListRequest, /) -> common.FrozenRequest:
+    """Freeze W03 under the caller's paid preparation without logical copies."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import WorkCursor
+
+    if type(request) is not JobListRequest:
+        _reject_validation()
+    limit = common._integer_raw(request.limit, 1, 256)
+    after = request.after
+    if after is None:
+        created_at, work_id = None, None
+    else:
+        if type(after) is not WorkCursor:
+            _reject_validation()
+        created_at = common._instant_raw(after.created_at)
+        work_id = common._uuid_raw(after.work_id)
+    return native_profile.freeze_request(
+        _statement("W03"), (b"jobs", created_at, work_id, limit),
+        context=common._return_context_raw(),
+    )

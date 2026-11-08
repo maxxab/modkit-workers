@@ -362,3 +362,139 @@ def test_native_raw_tampered_result_is_rejected_without_normalizing():
     with pytest.raises(_ValidationReject):
         rows._validate_read_result_raw(request, value)
     assert value.payload.semantic_input is buffer
+
+
+def test_raw_list_builder_retains_exact_cursor_without_public_boundaries(monkeypatch):
+    from modkit_events.persistence.models import WorkCursor
+    from test_job_persistence_contracts import NOW
+
+    logical = models.JobListRequest(
+        after=WorkCursor(created_at=NOW, work_id=UUID(ID)), limit=2
+    )
+    cursor = logical.after
+    expected = bindings.list_jobs(logical)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("native list entered public copy or constructor")
+
+    monkeypatch.setattr(bindings, "replace", forbidden)
+    monkeypatch.setattr(models, "replace", forbidden)
+    monkeypatch.setattr(bindings, "list_jobs", forbidden)
+    monkeypatch.setattr(models.JobListRequest, "__post_init__", forbidden)
+    monkeypatch.setattr(WorkCursor, "__post_init__", forbidden)
+    actual = bindings._list_jobs_raw(logical)
+    assert actual == expected
+    assert actual.statement is expected.statement
+    assert actual.parameters == (b"jobs", NOW, UUID(ID), 2)
+    assert actual.parameters[1] is cursor.created_at
+    assert actual.parameters[2] is cursor.work_id
+    assert actual.context.expected == ()
+    assert actual.context.readiness is None
+
+
+@pytest.mark.parametrize("limit", [1, 256])
+def test_raw_list_builder_accepts_limit_boundaries(limit):
+    request = bindings._list_jobs_raw(models.JobListRequest(after=None, limit=limit))
+    assert request.parameters == (b"jobs", None, None, limit)
+
+
+@pytest.mark.parametrize("variant", [
+    "request_type", "limit_zero", "limit_over", "limit_bool", "cursor_type",
+    "non_utc", "naive", "uuid_type", "uuid_integer", "uuid_safety",
+])
+def test_raw_list_builder_rejects_tampered_logical_fields(variant):
+    from datetime import timedelta, timezone
+
+    from modkit_events.persistence.models import WorkCursor
+    from test_job_persistence_contracts import NOW
+
+    request = models.JobListRequest(
+        after=WorkCursor(created_at=NOW, work_id=UUID(ID)), limit=2
+    )
+    if variant == "request_type":
+        request = object()
+    elif variant.startswith("limit_"):
+        object.__setattr__(request, "limit", {
+            "limit_zero": 0, "limit_over": 257, "limit_bool": True,
+        }[variant])
+    elif variant == "cursor_type":
+        object.__setattr__(request, "after", object())
+    elif variant in ("non_utc", "naive"):
+        value = (
+            NOW.replace(tzinfo=timezone(timedelta(hours=1)))
+            if variant == "non_utc" else NOW.replace(tzinfo=None)
+        )
+        object.__setattr__(request.after, "created_at", value)
+    elif variant == "uuid_type":
+        object.__setattr__(request.after, "work_id", ID)
+    elif variant == "uuid_integer":
+        object.__setattr__(request.after.work_id, "int", True)
+    else:
+        object.__setattr__(request.after.work_id, "is_safe", object())
+    with pytest.raises(_ValidationReject):
+        bindings._list_jobs_raw(request)
+
+
+@pytest.mark.parametrize("error", [ValueError("list sentinel"), RuntimeError("list sentinel"),
+                                  KeyboardInterrupt("list sentinel")])
+def test_raw_list_builder_preserves_unexpected_primary(monkeypatch, error):
+    from modkit_events.persistence.models import WorkCursor
+    from test_job_persistence_contracts import NOW
+
+    logical = models.JobListRequest(
+        after=WorkCursor(created_at=NOW, work_id=UUID(ID)), limit=2
+    )
+
+    def fail(value):
+        raise error
+
+    monkeypatch.setattr(common, "_instant_raw", fail)
+    with pytest.raises(type(error)) as caught:
+        bindings._list_jobs_raw(logical)
+    assert caught.value is error
+
+
+def test_raw_read_id_check_precedes_job_half(monkeypatch):
+    request = bindings._read_job_raw(models.JobReadRequest(work_id=OTHER_ID))
+
+    def forbidden(*args):
+        pytest.fail("wrong read ID entered job-half composition")
+
+    monkeypatch.setattr(rows, "_decode_job_half_raw", forbidden, raising=False)
+    with pytest.raises(_ValidationReject):
+        rows._decode_read_raw(request, (full_job_row(job()),))
+
+
+@pytest.mark.parametrize("explicit,budget", [
+    (False, None), (True, 1), (True, 16777216), (True, 2**31),
+    (True, 3758096384), (True, None),
+])
+def test_native_list_preparation_forwards_without_building_early(monkeypatch, explicit, budget):
+    store = import_module("modkit_workers.persistence.native_store")
+    if find_spec("psycopg") is None:
+        pytest.skip("optional psycopg native extra required for wrapper-import control")
+    # An installed but broken driver must fail, not become an optional skip.
+    from modkit_events.persistence import native_execution
+
+    logical = models.JobListRequest(after=None, limit=2)
+    marker = object()
+    calls = []
+
+    def prepare(execution, operation, request, /, *, execution_ledger, max_page_payload_bytes):
+        calls.append((execution, operation, request, execution_ledger, max_page_payload_bytes))
+        return marker
+
+    monkeypatch.setattr(native_execution, "prepare_component", prepare)
+    kwargs = {"max_page_payload_bytes": budget} if explicit else {}
+    assert store.prepare_list_jobs("execution", logical, execution_ledger="ledger", **kwargs) is marker
+    execution, operation, request, ledger, retained_budget = calls[0]
+    assert retained_budget is (budget if explicit else store.DEFAULT_LIST_PAGE_PAYLOAD_BYTES)
+    assert store.DEFAULT_LIST_PAGE_PAYLOAD_BYTES == 16777216
+    assert store.MAX_LIST_PAGE_PAYLOAD_BYTES == 3758096384
+    assert (execution, ledger) == ("execution", "ledger")
+    assert request is logical
+    assert operation.statement is bindings._statement("W03")
+    assert operation.build_request is bindings._list_jobs_raw
+    assert operation.decode_rows is rows._decode_list_raw
+    assert operation.validate_result is rows._validate_list_result_raw
+    assert "prepare_list_jobs" in store.__all__
