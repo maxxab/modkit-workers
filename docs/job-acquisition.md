@@ -135,3 +135,63 @@ decoder/profile or a complete store operation. The broader concurrency and
 upper-bound results above remain historical; no new performance, resource-budget,
 platform, production-grant or release qualification is implied.
 The whole product remains NOT_READY.
+
+
+## Additive bounded native preparation
+
+The native API exposes `native_store.prepare_acquire` with a separate
+16 MiB default aggregate budget, configurable by exact integer from 1 byte to
+4 GiB. It retains the existing seven acquisition business parameters; Q is
+native metadata passed to the additive SQL overload only. The legacy pure
+builder/decoder and seven-argument W05 remain unchanged.
+
+Q counts all nonnull BYTEA/UTF-8 TEXT output occurrences, including equal Work
+and job values and header/item tags. Header-only requires six bytes. New E04
+bounds retained Work before append. New W05 independently bounds retained Work,
+uses a fresh narrow presence/width/length aggregate before the fresh wide
+material sort, then recomputes actual output charge. Existing Work locks and
+immutable/no-delete subtype material preserve the family across both commands.
+Missing material rejects rather than disappearing through an inner join.
+
+PZ013 rejects the entire over-budget statement, never truncating claims or
+advancing a replacement cursor; its claim/history mutations roll back while
+sequence gaps may remain. PZ005/PZ006/PZ012 retain their isolation, argument and
+invalid-observation categories. A transport or Python validation failure after
+SQL must not be described as statement rollback. Caller-owned root uncertainty,
+held accounting, borrowed-result lifetime and no implicit retry remain intact.
+
+The reviewed current-source bounded native packet passed once with exit 0 and
+empty stderr. Independent result/document acceptance is complete; the whole
+product remains NOT_READY. Runner SHA256
+`bc9425741f936b3364fa0cff701d6851860355e4bc3528dc604e7785e27c2969`
+and input-manifest SHA256
+`805c043652ce8b041b148f91e4982faaf55dfc3baa000d29f87a107f989db36f`
+pin this evidence separately from the historical checks above.
+
+The actual issuer exercised an empty header at Q=6, 256 paired capabilities,
+256 complete typed claims, and exact binary metadata for 75 canonical columns
+plus cap_ok. Local arrays, INT4 versions and fractional FLOAT8 lease binding
+were used. The full page passed at its independently measured exact occurrence
+budget; Q-1 failed atomically. A separate E04 expected-postimage overflow on the
+second candidate proved the first claim/history allocation rolled back while
+the history sequence advanced exactly once. The generic whole-page Q-1 failure
+alone does not prove which stage rejected it.
+
+Managed success retained the caller's root, left staged work invisible to an
+observer, and exercised borrowed-result release and explicit rollback. Actual
+PZ013 preserved exception identity/cause/context/suppression, HELD operation and
+UNKNOWN root accounting, and prevented result reads/refunds. A producer commit
+after the E04 invoking snapshot became visible to the bounded acquisition;
+a locked first candidate advanced visited progress without writes. Late corrupt
+replay and missing-material rejection were preclaim E15 checks, not post-E04
+material fault injection. The same isolated fixture shut down gracefully with
+exit 0 and was removed without force; absence was verified.
+
+Independent consolidated source review and 69 scoped pure checks passed. New
+execution transients are finitely bounded under construction ownership and
+inherited driver assumptions; D is a slot, not numeric byte admission or a
+peak-RSS guarantee. Maximum multi-GiB payloads, performance/native allocator
+peaks, new async cancellation or transport-loss faults, natural cursor-close
+failure, unknown commit outcomes and post-E04 material fault injection remain
+outside this run. No production installation, grants or release readiness is
+claimed. Historical evidence keeps its original pins and scope.

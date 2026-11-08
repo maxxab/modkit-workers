@@ -6,7 +6,9 @@ until the caller has finished borrowing it.
 """
 
 from modkit_events.persistence.native_profile import (
+    DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES,
     DEFAULT_LIST_PAGE_PAYLOAD_BYTES,
+    MAX_ACQUIRE_PAGE_PAYLOAD_BYTES,
     MAX_LIST_PAGE_PAYLOAD_BYTES,
     WorkersNativeOperation,
     result_capacity,
@@ -14,10 +16,22 @@ from modkit_events.persistence.native_profile import (
 
 from . import bindings, rows
 from .catalog import get_statement
-from .models import JobFindRequest, JobListRequest, JobReadRequest, JobSubmitRequest
+from .models import (
+    JobAcquireRequest,
+    JobFindRequest,
+    JobListRequest,
+    JobReadRequest,
+    JobSubmitRequest,
+)
 from .observations import (
-    JobAdmissionObservation, JobCandidate, JobDetails, JobIdentityDecision,
-    JobIdentityObservation, JobPayload, JobRecord,
+    JobAdmissionObservation,
+    JobCandidate,
+    JobClaimObservation,
+    JobDetails,
+    JobIdentityDecision,
+    JobIdentityObservation,
+    JobPayload,
+    JobRecord,
 )
 
 _SUBMIT = WorkersNativeOperation(
@@ -58,6 +72,15 @@ _FIND_JOBS = WorkersNativeOperation(
     ),
 )
 
+_ACQUIRE = WorkersNativeOperation(
+    statement=get_statement("W05"),
+    request_type=JobAcquireRequest,
+    build_request=bindings._acquire_raw,
+    decode_rows=rows._decode_acquire_raw,
+    validate_result=rows._validate_acquire_result_raw,
+    result_types=(JobRecord, JobDetails, JobPayload, JobClaimObservation),
+)
+
 SUBMIT_RESULT_CAPACITY = result_capacity(_SUBMIT)
 READ_JOB_RESULT_CAPACITY = result_capacity(_READ_JOB)
 FIND_JOBS_RESULT_CAPACITY = result_capacity(_FIND_JOBS)
@@ -93,7 +116,20 @@ def prepare_find_jobs(execution, request: JobFindRequest, /, *, execution_ledger
     return prepare_component(execution, _FIND_JOBS, request, execution_ledger=execution_ledger)
 
 
+def prepare_acquire(
+    execution, request: JobAcquireRequest, /, *, execution_ledger,
+    max_page_payload_bytes=DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES,
+):
+    """Prepare an atomic complete claim page with an all-variable-byte budget."""
+    from modkit_events.persistence.native_execution import prepare_component
+    return prepare_component(
+        execution, _ACQUIRE, request, execution_ledger=execution_ledger,
+        max_page_payload_bytes=max_page_payload_bytes,
+    )
+
+
 __all__ = (
+    "prepare_acquire", "DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES", "MAX_ACQUIRE_PAGE_PAYLOAD_BYTES",
     "prepare_submit", "prepare_read_job", "prepare_list_jobs", "prepare_find_jobs",
     "SUBMIT_RESULT_CAPACITY", "READ_JOB_RESULT_CAPACITY", "FIND_JOBS_RESULT_CAPACITY",
     "DEFAULT_LIST_PAGE_PAYLOAD_BYTES", "MAX_LIST_PAGE_PAYLOAD_BYTES",

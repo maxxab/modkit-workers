@@ -305,3 +305,45 @@ def _find_jobs_raw(request: JobFindRequest, /) -> common.FrozenRequest:
         _statement("W04"), parameters,
         context=common._return_context_raw(expected=(admission,), readiness=None),
     )
+
+
+def _acquire_raw(request: JobAcquireRequest, /) -> common.FrozenRequest:
+    """Snapshot exact capability pairs without public exception sanitization."""
+    from math import isfinite
+
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import Capability
+
+    if type(request) is not JobAcquireRequest:
+        _reject_validation()
+    capabilities = request.capabilities
+    if type(capabilities) is not tuple or not 1 <= len(capabilities) <= 256:
+        _reject_validation()
+    commands, versions = [], []
+    previous = None
+    for item in capabilities:
+        if type(item) is not Capability:
+            _reject_validation()
+        command = common._identifier_raw(item.command_type)
+        version = common._integer_raw(item.schema_version, 1, 2147483647)
+        pair = (command, version)
+        if previous is not None and pair <= previous:
+            _reject_validation()
+        previous = pair
+        commands.append(command)
+        versions.append(version)
+    limit = common._integer_raw(request.limit, 1, 256)
+    budget = common._integer_raw(request.discovery_budget, limit, 4096)
+    lease = request.lease_seconds
+    if type(lease) not in (int, float) or not 0 < lease <= 3600:
+        _reject_validation()
+    lease = float(lease)
+    if not isfinite(lease):
+        _reject_validation()
+    cursor = None if request.scan_after is None else common._uuid_raw(request.scan_after)
+    return native_profile.freeze_request(
+        _statement("W05"),
+        (b"jobs", tuple(commands), tuple(versions), limit, lease, cursor, budget),
+        context=common._return_context_raw(),
+    )

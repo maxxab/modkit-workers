@@ -398,3 +398,31 @@ def _job_identity_observation_raw(*, decision, candidates, original_work_id):
     object.__setattr__(value, "original_work_id", original_work_id)
     _validate_job_identity_observation_raw(value)
     return value
+
+
+def _validate_job_claim_raw(value, /):
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import _validate_fence_raw
+
+    if type(value) is not JobClaimObservation:
+        _reject_validation()
+    _validate_job_record_raw(value.record)
+    _validate_fence_raw(value.fence)
+    work, fence = value.record.work, value.fence
+    if (
+        work.state != "claimed" or work.dispatch_id is not None or work.cancellation_requested
+        or work.runnable_version is None or work.lease_until is None
+        or work.attempt_count >= work.max_attempts
+        or (fence.work_id, fence.token, fence.ownership_revision, fence.cycle,
+            fence.expected_attempt) != (work.work_id, work.token, work.ownership_revision,
+                                       work.cycle, work.attempt_count)
+    ):
+        _reject_validation()
+
+
+def _job_claim_raw(*, record, fence):
+    value = object.__new__(JobClaimObservation)
+    object.__setattr__(value, "record", record)
+    object.__setattr__(value, "fence", fence)
+    _validate_job_claim_raw(value)
+    return value

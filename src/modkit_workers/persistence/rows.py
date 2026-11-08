@@ -498,3 +498,79 @@ def _validate_find_result_raw(request, value, /):
     decision, original = _classify_find_raw(expected, value.candidates)
     if value.decision is not decision or value.original_work_id != original:
         _reject_validation()
+
+
+def _decode_acquire_raw(request, rows, /):
+    """Decode a complete W05 page; never expose a validated prefix."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import _fence_raw
+    from modkit_events.persistence.observations import _scan_page_raw
+
+    from .observations import _job_claim_raw
+
+    _native_request(request, "W05")
+    if type(rows) is not tuple or not 1 <= len(rows) <= request.parameters[3] + 1:
+        _reject_validation()
+    # Frame and required-null provenance preflight precede any typed graph.
+    for index, row in enumerate(rows):
+        if type(row) is not tuple or len(row) != 75:
+            _reject_validation()
+        if index == 0:
+            if row[0] != "header" or any(value is not None for value in row[4:]):
+                _reject_validation()
+        elif (
+            row[0] != "item" or any(value is not None for value in row[1:4])
+            or row[43] is not False or any(value is not None for value in row[44:60])
+            or any(row[position] is not None for position in (33, 34, 37, 38, 39, 40, 41, 42))
+        ):
+            _reject_validation()
+    header = native_profile.decode_columns(get_statement("W05"), rows[0])
+    claims = [None] * (len(rows) - 1)
+    for index in range(1, len(rows)):
+        values = native_profile.decode_columns(get_statement("W05"), rows[index])
+        work = common_rows._decode_work_observation_raw(values[4:60])
+        record = _decode_job_half_raw(work, values[60:])
+        fence = _fence_raw(
+            work_id=work.work_id, token=work.token, ownership_revision=work.ownership_revision,
+            cycle=work.cycle, expected_attempt=work.attempt_count,
+        )
+        claims[index - 1] = _job_claim_raw(record=record, fence=fence)
+    result = _scan_page_raw(items=tuple(claims), visited=header[1],
+                           next_cursor=header[2], pass_exhausted=header[3])
+    del claims
+    _validate_acquire_result_raw(request, result)
+    return result
+
+
+def _validate_acquire_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.observations import _validate_scan_page_raw
+
+    from .observations import _validate_job_claim_raw
+
+    _native_request(request, "W05")
+    _validate_scan_page_raw(value)
+    namespace, commands, versions, limit, _, incoming, budget = request.parameters
+    count, visited, cursor = len(value.items), value.visited, value.next_cursor
+    if (
+        count > limit or visited > budget or cursor is not None and type(cursor) is not UUID
+        or visited == 0 and (count != 0 or cursor != incoming)
+        or visited > 0 and (cursor is None or incoming is not None and cursor <= incoming)
+        or value.pass_exhausted and (visited >= budget or count >= limit)
+    ):
+        _reject_validation()
+    pairs = tuple(zip(commands, versions))
+    prior = incoming
+    for claim in value.items:
+        _validate_job_claim_raw(claim)
+        work = claim.record.work
+        if (
+            work.kind != "job" or work.namespace != namespace
+            or (work.command_type, work.runnable_version) not in pairs
+            or prior is not None and work.work_id <= prior
+            or cursor is None or work.work_id > cursor
+            or work.resolution is not None
+        ):
+            _reject_validation()
+        prior = work.work_id

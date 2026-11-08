@@ -141,3 +141,87 @@ This bounded result does not qualify positive-resolution native records,
 native concurrency, maximum-sized cells, upper-bound resource behavior, or
 performance. It does not establish broader store/runtime, installation or
 release readiness, and does not borrow W03 qualification.
+
+
+## W05 bounded native acquisition
+
+`prepare_acquire(execution, request: JobAcquireRequest, /, *, execution_ledger,
+max_page_payload_bytes=DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES)` prepares one complete
+claim page. The default is 16 MiB. The override must be an exact integer in
+1..4294967296; explicit `None`, `bool`, and floating-point values reject.
+The seven business parameters and empty return context remain unchanged. The
+budget is retained on the ticket and passed only as the eighth SQL argument.
+Use the same admit/reserve/execute/borrow/release lifecycle shown above, deriving
+capacity from the retained ticket. There is no fixed acquisition capacity constant.
+
+Unlike W03, acquisition counts **every** nonnull BYTEA and UTF-8 TEXT occurrence
+in the 75 canonical fields, including framing strings and repeated Work/job
+values. NULL costs zero variable bytes; fixed containers and scalar objects are
+accounted separately. Header-only costs six bytes, so budgets 1..5 deliberately
+cannot return even an empty page. Exact-budget pages are accepted; a page one
+byte over budget fails as a whole. No silent budget increase or partial page
+is allowed. Limit 1..256, capability count 1..256 and discovery budget up to
+4096 are unchanged. Capabilities remain paired, not a cross product.
+
+The native path requires the new private eight-argument W05 and nine-argument
+E04 overloads. Their old SQL bodies and the public pure APIs are unchanged.
+E04 bounds its retained claims; W05 independently bounds retained Work,
+preflights only material presence/lengths before the wide ordered material query,
+and checks actual complete-page charge. Both fresh material commands rely on
+held Work locks and immutable/no-delete job material. There is no postclaim
+Work/E15 reread, cursor reset or lease extension. The result is a complete
+ScanPage of JobClaimObservation records whose Fence matches the retained Work
+postimage. A structural claim does not establish application execution readiness.
+
+PZ005 denotes unsupported isolation, PZ006 invalid arguments, PZ012 invalid
+framing/composition/field bounds and PZ013 aggregate acquisition-budget overflow.
+A server statement failure rolls back that statement's claim/history changes;
+sequence allocation may remain. A later transport/decoder failure does **not**
+prove rollback: keep the caller-owned root, original error, HELD/UNKNOWN and
+no-refund rules. No automatic transaction control, retry or recovery is added.
+
+**The bounded W05 native run passed; independent result/document acceptance
+is complete. Full Workers remains NOT_READY.** The one-shot reviewed packet
+completed with exit 0 and empty stderr on PostgreSQL 18.1 using the selected
+native issuer. Its evidence is pinned by runner SHA256
+`bc9425741f936b3364fa0cff701d6851860355e4bc3528dc604e7785e27c2969`
+and input-manifest SHA256
+`805c043652ce8b041b148f91e4982faaf55dfc3baa000d29f87a107f989db36f`.
+
+The bounded run covered:
+- Header-only success at Q=6 and PZ013 at Q=5; 256 complete claims with
+  256 paired capabilities, including maximum-width command identifiers and
+  INT4 versions. The actual issuer checked all 75 binary column names, OIDs
+  and formats plus the cap_ok transport column, with 257 header/item rows.
+  Supported local arrays and fractional FLOAT8 lease binding were exercised.
+- An independently measured exact occurrence budget accepted the complete
+  256-row page; Q-1 raised PZ013 with statement rollback. A separate targeted
+  E04 expected-postimage budget rejected the second candidate after the first
+  claim had allocated history: transactional rows were restored and the history
+  sequence advanced by exactly one. The whole-page Q-1 case alone does not
+  identify its rejecting stage.
+- Actual managed-issuer empty and 256-row success, including a repeat at exact
+  Q, retained caller-root identity, uncommitted observer visibility, result
+  borrowing and explicit release/rollback. PZ013 preserved the original driver
+  exception and its cause/context/suppression, left the operation HELD and root
+  UNKNOWN, and denied result reads/refunds without changing retained counts.
+- A producer committed while acquisition waited inside E04: both complete
+  protected claims became visible although the outer query snapshot saw only
+  the first. A locked first candidate advanced visited progress without a
+  claim or write. Corrupt late replay and missing material were rejected via
+  the preclaim E15 path, not an injected post-E04 material fault.
+
+The same disposable fixture then shut down gracefully with SIGTERM and exit 0;
+nonforced removal and subsequent absence were verified. No runner replay was
+needed. Historical evidence elsewhere remains tied to its original pins.
+
+Independent consolidated source review and 69 scoped pure checks also passed.
+The new adapter transients have finite bounds under construction ownership and
+the inherited supported-driver assumptions. D remains a construction slot,
+**not numeric byte admission or a total-memory bound**. Q and the result graph
+formula are not RSS, native-allocator, backend-memory, latency or throughput
+guarantees. PostgreSQL executor/TOAST/WAL, per-row scratch and temporary array
+coexistence remain distinct. This run did not inject post-E04 material faults,
+async cancellation/transport loss, natural cursor-close failure or unknown
+commit outcomes, and did not exercise maximum multi-GiB payloads. It does not
+establish production installation/grants or release readiness.
