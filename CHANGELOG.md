@@ -28,6 +28,7 @@
 - **workers:** reconcile frozen W01 fixture source inputs (`e2bbd3a6e912`)
 - **workers:** preserve reviewed W01 target proposal (`81136786d471`)
 - **workers:** record bounded acquisition qualification (`2cc278e057db`)
+- **workers:** record bounded native qualification (`d40bc393006c`)
 
 ### Testing
 
