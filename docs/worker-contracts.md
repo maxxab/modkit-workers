@@ -100,7 +100,7 @@ These are logical request bounds, not physical IO, latency, peak-memory or datab
 | cancel | `(work: WorkT, /) -> None`, cooperative cancellation request for that acquired handle |
 | shutdown | `() -> None`, request drain/release of source-owned resources |
 
-For async sources each hook except the property is `async def` with the same eventual return type. The protocols supply no implementation, invocation, offloading, controller or scheduler. Application handles need no package base class or duplicate ERP job record. Source owns cursor/scan progress; an empty acquisition tuple never proves queue/pass exhaustion. Built-in W05 complete-page/visited/cursor semantics stay inside its separately implemented source. The one-shot runner below validates source output before execution and delegates invalid/partial acquisition cleanup to source shutdown. Any future supervised engine must also enforce its complete resource and task bounds.
+For async sources each hook except the property is `async def` with the same eventual return type. The protocols supply no implementation, invocation, offloading, controller or scheduler. Application handles need no package base class or duplicate ERP job record. Source owns cursor/scan progress; an empty acquisition tuple never proves queue/pass exhaustion. Built-in W05 complete-page/visited/cursor semantics stay inside its separately implemented source. The one-shot runners below validate source output before execution and delegate invalid/partial acquisition cleanup to source shutdown. Any future supervised engine must also enforce its complete resource and task bounds.
 
 SOURCE explicitly identifies the one authoritative renewal path. ERP sources delegate to their existing executor/heartbeat. A common runtime must honor this negotiation and must not add another heartbeat. A future built-in source may use the existing shared lifecycle controller internally; this pure interface neither implements nor proves renewal. Alternative runtime delegation requires a separately reviewed contract.
 
@@ -110,7 +110,7 @@ On success, source owns observing its actual durable result. On business failure
 
 Cancel requests do not prove persisted cancellation, authorization, rollback or that external work stopped. Shutdown does not prove threads stopped or shared application pools were released. A cancelled await cannot stop its backing thread; source and runtime must track real execution/drain and preserve uncertainty. Hooks must coordinate source-owned execution/renewal. The one-shot runner defines a limited lifecycle boundary below; broader resource admission and partial-startup cleanup still require supervised runtime/application integration. No timeout, cancellation token or drain deadline is implemented here.
 
-The pure interfaces do not invoke callbacks or own resources. The explicit runner below invokes source hooks; it never closes returned awaitables or logs diagnostics. Applications own safe diagnostics; callback exception/traceback exposure must be controlled explicitly. Pure source examples are interface demonstrations, not real transaction, heartbeat, cancellation or shutdown qualification.
+The pure interfaces do not invoke callbacks or own resources. The explicit runners below invoke source hooks; they never close returned awaitables or log diagnostics. Applications own safe diagnostics; callback exception/traceback exposure must be controlled explicitly. Pure source examples are interface demonstrations, not real transaction, heartbeat, cancellation or shutdown qualification.
 
 ## Run one synchronous batch
 
@@ -183,9 +183,9 @@ This is a bound on invocations: one acquire, at most request.limit sequential
 execute calls, and one shutdown attempt. It is not a memory, wallclock, IO, lease,
 thread-drain or durable-outcome proof. A stuck source hook can block the caller.
 Shutdown returning None is not proof that resources stopped or a transaction
-committed. Full supervised-engine fairness, capacity admission, health, async
-execution, built-in stores, JobWorker/EventWorker and deployment qualification
-remain pending.
+committed. Full supervised-engine fairness, capacity admission, health, built-in stores,
+JobWorker/EventWorker and deployment qualification remain pending. The separate
+finite async operation below is not that supervised engine.
 
 ### Application-local example
 
@@ -255,3 +255,137 @@ On an execute failure, no later item is executed and shutdown returns the
 remaining acquired items to this local queue. Returning them is not authorization
 to replay an external effect. A durable application source must implement its own
 fencing, outcome recording and uncertainty handling instead.
+
+
+## Run one asynchronous batch
+
+`from modkit_workers.runtime import run_batch_async` selects the explicit native
+async counterpart: `async def run_batch_async(source: AsyncWorkSource[T], request:
+AcquireRequest, /) -> int`. Await it in the application's existing async execution
+context. The runtime does not run an event loop, offload sync hooks, create tasks
+or threads, or export execution from the package root.
+
+The same exclusive, one-shot source ownership and request/owner/output/error
+contract applies as for run_batch. Creating this coroutine performs no preflight
+or source access. If it never starts, including cancellation before the coroutine
+first runs, lifecycle ownership remains with the caller. Once running, it
+reconstructs the request before source access, saves the limit, and captures only
+acquire, execute and shutdown. These hooks must expose native coroutine
+entrypoints under the existing handler shape rules. Synchronous functions that
+return awaitables, generators and async generators are not supported hooks.
+Exact built-in partial and callable-instance handling is the same as registration;
+arbitrary decorators are not unwrapped, and custom partial subclasses are outside
+that transparency guarantee. Shape checks are not a proof of application code's
+behavior or resource readiness.
+
+It awaits acquire once, requires an exact tuple within the saved limit, awaits
+execute sequentially on each exact handle, then attempts awaited shutdown once.
+All hooks run in the **same caller task and context**, so task-local/session
+ownership and ContextVar changes are preserved. Preflight failures do not enter
+this lifecycle; failures after acquisition begins still attempt shutdown. The
+unused cancel hook is never accessed. Execute and shutdown must eventually return
+None; returned nested awaitables are invalid values, not awaited again or closed.
+The count is returned only after shutdown succeeds and records normal hook
+returns, never committed jobs, drained resources or durable outcomes.
+
+### Cancellation and interrupted cleanup
+
+A cancellation delivered while awaiting acquire or execute stops later executions
+and enters the one shutdown attempt. Shutdown is awaited in that same task with
+no shield, detached cleanup task, retry, timeout or uncancel. Under normal asyncio
+task execution a previously delivered cancellation does not by itself prevent
+cleanup awaits; another cancellation can interrupt them. The source remains
+responsible for resources and uncertainty when shutdown cannot finish. Cancellation
+during shutdown alone propagates unchanged. If a hook suppresses cancellation and
+returns normally, the runner treats that as normal source control flow; it does
+not infer failure or synthesize cancellation from the task's cancellation count.
+
+Single failures preserve the exact exception object. A primary failure plus a
+shutdown failure preserves both exact objects, in order, in BaseExceptionGroup
+with message "WorkSource batch and shutdown failed", just like run_batch. This
+includes a second CancelledError interrupting shutdown. When cancellation becomes
+a group member, the outer exception is a group, so task.cancelled() may be false
+and TaskGroup or timeout handling may surface the group instead of cancellation.
+There is no special cancellation adapter hiding either failure.
+
+These guarantees concern a normally awaited coroutine, with real asyncio task
+cancellation covered by tests. They do not promise cleanup for manual driving or
+closing of an already-suspended coroutine, event-loop/process teardown, cancellation
+suppressed by a hook, or every framework's cancellation scopes. Level-triggered
+scopes may immediately interrupt cleanup. Cancellation of an await is not proof
+that a backing thread, external operation or transaction stopped. Blocking,
+offloading, renewal, real drain and any partial/unknown acquired work remain
+source-owned; this operation adds no resource admission, health or supervision.
+
+### Application-local async example
+
+This complete example uses native async hooks for in-process transformations and
+source-owned partial-work cleanup. Its immediate local operations do not require
+a scheduling point. It demonstrates neither durable effects nor a production
+async driver/session or thread-drain policy. The application owns asyncio.run;
+inside an existing event loop it would instead await main().
+
+```python
+import asyncio
+from collections import deque
+from dataclasses import dataclass
+
+from modkit_events.persistence.models import Capability
+from modkit_workers import AcquireRequest, RenewalOwner
+from modkit_workers.runtime import run_batch_async
+
+
+@dataclass(eq=False)
+class Text:
+    value: str
+
+
+class LocalAsyncUppercaseSource:
+    renewal_owner = RenewalOwner.SOURCE
+
+    def __init__(self, texts):
+        self.pending = deque(Text(text) for text in texts)
+        self.acquired = deque()
+        self.results = []
+
+    async def acquire(self, request, /):
+        selected = {(c.command_type, c.schema_version) for c in request.capabilities}
+        if ("uppercase", 1) not in selected:
+            return ()
+        for _ in range(min(request.limit, len(self.pending))):
+            self.acquired.append(self.pending.popleft())
+        return tuple(self.acquired)
+
+    async def execute(self, work, /):
+        if not self.acquired or self.acquired[0] is not work:
+            raise ValueError("Not the next acquired item")
+        self.results.append(work.value.upper())
+        self.acquired.popleft()
+
+    async def cancel(self, work, /):
+        self.acquired.remove(work)  # Explicitly discard this local, unstarted item.
+
+    async def shutdown(self):
+        self.pending.extendleft(reversed(self.acquired))
+        self.acquired.clear()
+
+
+async def main():
+    request = AcquireRequest(
+        capabilities=[Capability(command_type="uppercase", schema_version=1)],
+        limit=2,
+        discovery_budget=16,
+    )
+    source = LocalAsyncUppercaseSource(["one", "two", "three"])
+    assert await run_batch_async(source, request) == 2
+    assert source.results == ["ONE", "TWO"]
+    assert [work.value for work in source.pending] == ["three"]
+    assert not source.acquired
+
+
+asyncio.run(main())
+```
+
+If an execute hook raises, later items are not executed and this source's shutdown
+returns unprocessed items to its local queue. This is source behavior, not generic
+replay permission or evidence that an external effect was reversed.

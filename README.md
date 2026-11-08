@@ -5,9 +5,11 @@ Pure root contracts provide explicit HandlerRegistry registration/lookup and acq
 subscription preflight, immutable JobContext, application-owned synchronous/async
 WorkSource hooks, AcquireRequest and bounded WorkerSettings. See
 [the contracts and batch guide](docs/worker-contracts.md) for signatures and validation limits.
-The explicit modkit_workers.runtime.run_batch operation acquires one application-owned
-batch, executes its synchronous source hooks sequentially and always attempts source
-shutdown after acquisition begins. Its count is not a durable outcome receipt.
+The explicit modkit_workers.runtime.run_batch and run_batch_async operations acquire
+one application-owned batch, execute synchronous or native async hooks sequentially,
+and attempt source shutdown once after acquisition begins. The async operation awaits
+hooks in the caller task; cancellation can interrupt cleanup. Their counts are not
+durable outcome or drain receipts.
 JobWorker/EventWorker, supervisor loops and automatic services remain unavailable.
 
 The sole ordinary dependency is modkit-events>=0.2,<0.3. Events and Workers are

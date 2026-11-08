@@ -31,3 +31,9 @@
   source lifetime: one bounded acquisition, sequential execution and exactly one
   shutdown attempt, preserving primary and cleanup failures without replay or
   automatic cancellation. This is not a supervised engine or durable receipt.
+
+- Add explicit run_batch_async for native async sources using direct awaits in the
+  caller task, with the same finite acquisition/execution/cleanup and exception
+  contract. Delivered cancellation attempts source shutdown; repeated cancellation
+  can interrupt it and preserves both failures without shielding or detached work.
+  Source-owned drain, transactions and uncertainty remain outside the count.
