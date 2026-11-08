@@ -2,7 +2,11 @@
 
 This optional module supplies the fixed W01 submission and W02 complete protected-record read profiles to Events' shared native issuer. It does not manage transactions, execute handlers, grant access to protected material, or qualify the broader Workers runtime. Native PostgreSQL qualification and final installed-resource/grant checks are separate gates.
 
-**Qualification status: NOT_READY.** Independent source review and source-level checks are accepted, but full native database qualification has not passed. A joint native attempt reached an identical duplicate W01 submission after submit/read/missing-read checks, then exceeded a 20-second statement timeout in Events' stored-JSON validation path with a 256 KiB string value. The SQL performance fix and fresh joint qualification remain pending. Read-only reconciliation found no durable Work, job payload, history or business rows and no other active clients in the isolated fixture; those findings do not establish successful cleanup, transaction qualification or readiness.
+**Qualification status: NOT_READY.** Independent review accepted the source and bounded W01/W02 native checks against Events revision 63b9f6c and Workers revision b44d1bf. Actual preparation functions and the common issuer passed submission, complete protected-record and missing reads, identical duplicate submission, and caller-owned rollback/commit checks. The tested profile retained PostgreSQL 18.1, psycopg 3.3.8, libpq 180006, a 256 KiB string value, 20-second statement limits and one CPU. The Events SQL fix closes the original timeout regression for this profile.
+
+Both scoped-key and direct-ID conflicts produced real PZ002 errors. Checks preserved the exact received primary and exception context, HELD operations, UNKNOWN roots and charged backing. Successful cases checked the paid result-borrow/release sequence, local oversized-input rejection, and unchanged hostile input/output adapter maps. Physical connection close in a conflict case is not a managed cleanup or refund receipt.
+
+Earlier timeout and QA oracle/permission failures remain historical failures; successful completed phases do not make those entire attempts pass. These bounded results do not qualify the full store/runtime, production migrations/grants, installed artifacts, other driver/platform combinations, or throughput, peak memory and latency guarantees.
 
 Import the named preparation functions and fixed capacities from modkit_workers.persistence.native_store:
 

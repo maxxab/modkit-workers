@@ -63,6 +63,10 @@ array can duplicate large bounded inputs; practical resource budgets need qualif
 
 
 ## Bounded native qualification
+The following broader and upper-bound runs remain historical evidence against
+frozen Events revision 60eac7a. They were not rerun for the current helper change;
+the targeted current-dependency checks are described separately below.
+
 PostgreSQL 18.1 and psycopg 3.3.8 passed one job-only disposable test invocation
 against the reviewed Events E04 implementation and exact Workers SQL source.
 The test first observed undefined-function 42883 before installing W05, then checked:
@@ -109,3 +113,25 @@ change material there, and E15 rejects malformed families earlier. The missing-h
 test must not be described as a later W05 material-phase failure. Lease/revision
 edge schedules, maximum-byte payloads, peak-memory/physical-IO budgets, other
 driver/interpreter/platform combinations and installed artifacts remain open.
+
+
+## Current shared-helper dependency checks
+Independent review accepted two targeted W05 SQL checks against Events revision
+63b9f6c and Workers revision b44d1bf after the shared JSON-validation change.
+A valid protected acquisition matched all 75 named PostgreSQL values and the
+exact Work/history claim delta. Caller rollback restored all 13 fixture tables
+to their baseline; sequence allocation remained, as PostgreSQL permits.
+
+A later selected Work row with malformed replay produced PZ012, invalid neutral
+work composition, through E15/E04/W05 after an earlier real claim had allocated
+history. The caller rolled back the root and all 13 tables again matched the
+baseline. The negative row deliberately had no job subtype: the exact neutral
+error establishes rejection before missing-half validation, not malformed
+complete-family or post-E04 material-fault coverage.
+
+These checks qualify only the changed shared-helper dependency. Their oracle uses
+named SQL values, not binary column order, emission order, a Python W05 native
+decoder/profile or a complete store operation. The broader concurrency and
+upper-bound results above remain historical; no new performance, resource-budget,
+platform, production-grant or release qualification is implied.
+The whole product remains NOT_READY.
