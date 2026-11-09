@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from types import MappingProxyType
+from typing import NoReturn, cast
 from uuid import UUID
 
 from modkit_events.persistence import bindings as common
@@ -18,7 +19,7 @@ from modkit_events.persistence.scope import Scope, canonical_scope, encode_scope
 def _work_id_core(value: object, *, raw: bool = False) -> UUID:
     from modkit_events.persistence.errors import _reject_validation
 
-    def invalid():
+    def invalid() -> NoReturn:
         if raw:
             _reject_validation()
         raise ValueError
@@ -74,7 +75,11 @@ def _logical_json(value: object, depth: int = 0, active: set[int] | None = None)
                 result[key] = _logical_json(item, depth + 1, active)
             return MappingProxyType(result)
         if type(value) in (list, tuple):
-            return tuple(_logical_json(item, depth + 1, active) for item in value)
+            # The exact list/tuple guard above excludes arbitrary iterables.
+            return tuple(
+                _logical_json(item, depth + 1, active)
+                for item in cast("list[object] | tuple[object, ...]", value)
+            )
         raise ValueError
     finally:
         active.remove(id(value))

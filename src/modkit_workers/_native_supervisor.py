@@ -204,7 +204,8 @@ class _SupervisorCore:
         started = False
         try:
             self._control.register_lane("data")
-            if self._source.startup(self._request) is not None:
+            # Defensive runtime validation must detect violations of the typed port.
+            if self._source.startup(self._request) is not None:  # type: ignore[func-returns-value]
                 raise TypeError("Source.startup must return None")
             started = True
             self._startup_done.set()
@@ -234,7 +235,7 @@ class _SupervisorCore:
                     with self._lock:
                         self._executing = True
                     try:
-                        if self._source.execute(work) is not None:
+                        if self._source.execute(work) is not None:  # type: ignore[func-returns-value]
                             raise TypeError("Source.execute must return None")
                     finally:
                         with self._lock:
@@ -269,7 +270,7 @@ class _SupervisorCore:
             self._control.request_renewal_exit()
             self._control.join_renewal()
             try:
-                if self._source.shutdown() is not None:
+                if self._source.shutdown() is not None:  # type: ignore[func-returns-value]
                     raise TypeError("Source.shutdown must return None")
             except BaseException:
                 self._record_failure(WorkerReason.CONTROL_FAILED)

@@ -114,3 +114,14 @@ def test_scan_cancellation_propagates_identity_without_partial_claim_page():
     with pytest.raises(CursorCancellation) as caught:
         rows.decode_acquire(request(), fetched())
     assert caught.value is error
+
+
+def test_valid_unowned_snapshot_cannot_become_claim_or_leak_prior_claim():
+    first, _ = claims()
+    unowned = full_job_row(job(work_id=OTHER_ID), state="queued")
+    # The snapshot is valid for reading but has no claim token.
+    assert rows._full(unowned).work.token is None
+    with pytest.raises(PersistenceError) as failure:
+        rows.decode_acquire(request(), frame(first, unowned))
+    assert failure.value.code is ErrorCode.INVALID_OBSERVATION
+    assert failure.value.unconfirmed is True

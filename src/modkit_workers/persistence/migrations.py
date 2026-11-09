@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+from typing import NoReturn
 
 from . import _resource_io as _io
 from . import sql as _sql_anchor  # noqa: F401 - Initializes standard origin metadata.
@@ -25,7 +26,7 @@ _IDS = ("modkit-pg-ab-2", "MKSC-1", "MKPF-1")
 _MANIFEST_LIMIT = 65536
 
 
-def _invalid() -> None:
+def _invalid() -> NoReturn:
     raise ValueError("invalid migration descriptor")
 
 
@@ -34,7 +35,7 @@ def _string(value: object) -> None:
         _invalid()
 
 
-def _digest(value: object) -> None:
+def _digest(value: str) -> None:
     _string(value)
     if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
         _invalid()

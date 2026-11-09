@@ -25,6 +25,7 @@ class JobWorker:
     """One retained supervisor/source owner. Construct with create_job_worker."""
 
     __slots__ = ("_core",)
+    _core: _SupervisorCore
 
     def __new__(cls, *args, **kwargs):
         raise TypeError("Use create_job_worker")

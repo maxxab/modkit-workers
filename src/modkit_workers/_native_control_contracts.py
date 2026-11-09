@@ -5,17 +5,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from math import isfinite
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, cast
 
 WorkT = TypeVar("WorkT")
-FenceT = TypeVar("FenceT")
+FenceT = TypeVar("FenceT", contravariant=True)
 
 
 def _seconds(value: object, *, zero: bool = False) -> float:
     if type(value) not in (int, float):
         raise ValueError("Expected finite seconds")
     try:
-        result = float(value)
+        # Exact type membership is stricter than the numeric protocols.
+        result = float(cast("int | float", value))
     except OverflowError:
         raise ValueError("Expected finite seconds") from None
     if not isfinite(result) or result < 0 or (not zero and result == 0):

@@ -312,6 +312,9 @@ def decode_acquire(
         work = record.work
         if (work.command_type, work.runnable_version) not in pairs:
             raise ValueError
+        # Snapshot fields are nullable in other states; a claim requires a token.
+        if work.token is None:
+            raise ValueError
         fence = Fence(
             work_id=work.work_id,
             token=work.token,

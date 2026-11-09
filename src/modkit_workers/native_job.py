@@ -6,7 +6,7 @@ Importing this module does not import a native driver or open a connection.
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Protocol, cast
 
 if TYPE_CHECKING:
     from modkit_events.persistence.native_sync import ManagedConnection
@@ -50,6 +50,7 @@ class _Opaque:
 
 class JobWork(_Opaque):
     __slots__ = ("_owner",)
+    _owner: JobWorkSource
 
     def __init_subclass__(cls, **kwargs):
         raise TypeError("JobWork is sealed")
@@ -67,6 +68,9 @@ def _owns_work(work, owner) -> bool:
 
 class DbLocalRoot(_Opaque):
     __slots__ = ("_connection", "_root_xid", "_active")
+    _connection: ManagedConnection | None
+    _root_xid: int
+    _active: bool
 
     def __init_subclass__(cls, **kwargs):
         raise TypeError("DbLocalRoot is sealed")
@@ -75,7 +79,8 @@ class DbLocalRoot(_Opaque):
     def connection(self) -> ManagedConnection:
         if not self._active:
             raise RuntimeError("Application root binding has ended")
-        return self._connection
+        # Only _expire_root clears the connection, together with the active bit.
+        return cast("ManagedConnection", self._connection)
 
     @property
     def root_xid(self) -> int:
@@ -484,6 +489,7 @@ class JobWorkSource:
             self._publish(native_in_flight=True)
             if succeeded:
                 guard = self._guard
+                parameters: tuple[object, ...] | None
                 parameters = tuple(getattr(guard, name) for name in guard.__dataclass_fields__)
                 self._data.statement(
                     "E10",

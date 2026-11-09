@@ -8,18 +8,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from threading import Lock
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from .native_contracts import NativeJobConfig, NativeJobResources
 
 if TYPE_CHECKING:
     from modkit_events.persistence.managed_lifecycle import LifecycleLimits
+    from modkit_events.persistence.resource_registry import ResourceDomain
 
 __all__ = ["NativeJobConfigurationReceipt", "configure_native_job_profile"]
 
 
 class NativeJobConfigurationReceipt:
     __slots__ = ("_stamp",)
+    _stamp: object
 
     def __new__(cls):
         raise TypeError("Configuration receipts are issued internally")
@@ -47,7 +49,7 @@ class NativeJobConfigurationReceipt:
 class _Configuration:
     receipt: NativeJobConfigurationReceipt
     stamp: object
-    domain: object
+    domain: ResourceDomain
     limits: tuple[tuple[str, int], ...]
     association: tuple[NativeJobResources, object, tuple[object, ...]] | None = None
 
@@ -241,4 +243,8 @@ def _resources_adopted(resources: NativeJobResources, source: object, /) -> bool
         record = _record(resources.configuration)
         if not _association_matches(record, resources):
             return False
-        return record.association[1] is source
+        # _association_matches proved non-null and exact carrier identities under _lock.
+        return (
+            cast("tuple[NativeJobResources, object, tuple[object, ...]]", record.association)[1]
+            is source
+        )

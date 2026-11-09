@@ -534,3 +534,29 @@ def test_admitted_startup_drains_after_stop_without_ready_or_claim(monkeypatch):
         source.unblock()
         core.request_stop()
         assert core.join(3)
+
+
+@pytest.mark.parametrize("hook", ["startup", "execute", "shutdown"])
+def test_typed_void_hooks_still_reject_non_none_runtime_returns(hook):
+    worker, source, _, c = build((object(),))
+    original = getattr(source, hook)
+
+    def broken_return(*args):
+        original(*args)
+        return object()
+
+    setattr(source, hook, broken_return)
+    try:
+        worker.start()
+        if hook == "shutdown":
+            assert source.finished.wait(3)
+            worker.request_stop()
+        assert worker.join(3)
+        snapshot = worker.snapshot()
+        assert snapshot.state is c.WorkerState.FAILED
+        assert not snapshot.clean_stop
+        if hook == "startup":
+            assert "physical_acquire" not in source.calls
+        assert source.calls.count("shutdown") == 1
+    finally:
+        cleanup(worker, source)

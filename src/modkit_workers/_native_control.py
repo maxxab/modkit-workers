@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from threading import Condition, Thread, current_thread
 from time import monotonic
+from typing import cast
 
 from ._native_control_contracts import (
     NativeAdmissionKind,
@@ -51,7 +52,7 @@ class _SourceControl:
             raise ValueError("Expected NativeWorkerSettings")
         self.settings = settings
         self._cv = Condition()
-        self._source = None
+        self._source: object | None = None
         self._renew: Callable | None = None
         self._lanes: dict[str, Thread] = {}
         self._renewal_thread: Thread | None = None
@@ -65,7 +66,7 @@ class _SourceControl:
         self._known_refusal = False
         self._acquisition = None
         self._work = None
-        self._fence = None
+        self._fence: object | None = None
         self._active = False
         self._drain = None
         self._in_renewal = False
@@ -356,7 +357,8 @@ class _SourceControl:
             succeeded = False
             try:
                 # No control lock across application/native renewal.
-                if callback(work, fence) is not None:
+                # Binding/startup precedes activation; snapshot remains owned under _cv.
+                if cast("Callable[[object, object], None]", callback)(work, fence) is not None:
                     raise TypeError("Source.renew must return None")
                 succeeded = True
             except BaseException:

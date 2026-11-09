@@ -10,9 +10,13 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from hashlib import sha256
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 from .context import JobContext
+
+if TYPE_CHECKING:
+    from modkit_events.persistence.scope import Scope
 
 
 class MaterialCapacityError(RuntimeError):
@@ -64,7 +68,7 @@ class _DetachedJob:
     work_id: str
     command_type: str
     schema_version: int
-    scope: object
+    scope: Scope
     semantic_input: bytes
     fence: object
     deadline: datetime | None
@@ -150,7 +154,8 @@ def _detach_claim(claim, lease: _MaterialLease) -> _DetachedJob:
     return _DetachedJob(
         str(fence.work_id),
         work.command_type.decode("utf-8"),
-        work.runnable_version,
+        # Exact JobClaimObservation already validates a non-null runnable version.
+        cast("int", work.runnable_version),
         scope,
         semantic,
         fence,
