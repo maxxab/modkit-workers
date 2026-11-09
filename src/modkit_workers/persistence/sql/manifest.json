@@ -20,7 +20,7 @@
         {
           "component": "events",
           "version": 1,
-          "migration_digest": "e3d6efb1318ec523e85dee7c6db6d4c34c106f9551d799a6613d985adbb686d7"
+          "migration_digest": "3349c315b602c278e12bc7ab70a3275ebf4bebbdbb12abff3617662a82b881ee"
         }
       ],
       "catalog_contract_id": "modkit-pg-ab-2",
