@@ -1,8 +1,8 @@
--- Workers W01 SOURCE DRAFT / NOT_READY. NOT AUTHORIZED TO APPLY.
--- Owner-only structural profile, not production E33/MKMF/grants readiness.
--- Application owns the explicit installation transaction and every W01 root.
--- No grants resource/manifest, transaction control, role or shared schema changes.
--- Dependency source closure: w01-implementation/abi-pins.json + sql-owner.md.
+-- Workers component initial schema.
+-- Application owns the explicit installation transaction and existing owner selection.
+-- Requires a matching independently qualified installation closure.
+-- This source alone does not establish installation or runtime qualification.
+-- No transaction control, role creation or implicit installation is supplied.
 DO $preflight$
 DECLARE
     owner_oid pg_catalog.oid;
@@ -2290,9 +2290,37 @@ BEGIN
            WHERE acl.grantee<>owner_oid)
        OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_namespace AS n
            WHERE n.nspname='modkit_events' AND n.nspowner=owner_oid)
-       OR EXISTS (SELECT 1 FROM pg_catalog.pg_namespace AS n,
-           LATERAL pg_catalog.aclexplode(COALESCE(n.nspacl,pg_catalog.acldefault('n',n.nspowner))) AS acl
-           WHERE n.nspname='modkit_events' AND acl.grantee<>owner_oid) THEN
+       -- IC-D-E6 BEGIN: exact approved Events schema closure, never ACL repair.
+       OR EXISTS (
+           WITH expected AS (
+               SELECT acl.grantee,acl.grantor,acl.privilege_type,acl.is_grantable
+               FROM pg_catalog.aclexplode(pg_catalog.acldefault('n',owner_oid)) AS acl
+               UNION ALL
+               SELECT r.oid,owner_oid,'USAGE'::pg_catalog.text,FALSE
+               FROM pg_catalog.pg_roles AS r
+               WHERE r.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
+           ), actual AS (
+               SELECT acl.grantee,acl.grantor,acl.privilege_type,acl.is_grantable
+               FROM pg_catalog.pg_namespace AS n,
+                 LATERAL pg_catalog.aclexplode(
+                   COALESCE(n.nspacl,pg_catalog.acldefault('n',n.nspowner))) AS acl
+               WHERE n.nspname='modkit_events'
+           )
+           (SELECT * FROM actual EXCEPT SELECT * FROM expected)
+           UNION ALL
+           (SELECT * FROM expected EXCEPT SELECT * FROM actual)
+       )
+       OR (SELECT pg_catalog.count(*) FROM pg_catalog.pg_roles
+           WHERE rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator'))<>3
+       OR EXISTS (
+           SELECT 1 FROM pg_catalog.pg_roles AS r
+           WHERE r.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
+             AND (NOT pg_catalog.has_schema_privilege(r.oid,'modkit_events','USAGE')
+                  OR pg_catalog.has_schema_privilege(r.oid,'modkit_events','CREATE'))
+       )
+       -- Original role-ancestry preflight rejects all paths except operator READ.
+       -- IC-D-E6 END
+       THEN
         RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='invalid shared job acquisition ABI';
     END IF;
 END

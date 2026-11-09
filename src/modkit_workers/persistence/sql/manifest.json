@@ -1,0 +1,31 @@
+{
+  "format_version": 1,
+  "package": "modkit-workers",
+  "migrations": [
+    {
+      "component": "workers",
+      "version": 1,
+      "resources": [
+        {
+          "path": "workers/0001_initial.sql",
+          "sha256": "e451d64d26be1ce0cd117c77263c9259c390c5587d1484d2d823df7349236b0c"
+        },
+        {
+          "path": "workers/grants_runtime.sql",
+          "sha256": "d5a3c59596a7a2331f73357e47910d3d0602c0f93b97ad36b66d42c2b985d0d4"
+        }
+      ],
+      "migration_digest": "af13dfd7c453c8bf12c0192bda4f1921b0a9c3f5a2f2cb8e08e78f95243204db",
+      "depends_on": [
+        {
+          "component": "events",
+          "version": 1,
+          "migration_digest": "650cbd1f333471b7e34214728703bcf022e2a26c6c763b75b33a099624148d60"
+        }
+      ],
+      "catalog_contract_id": "modkit-pg-ab-2",
+      "scope_format_id": "MKSC-1",
+      "intent_format_id": "MKPF-1"
+    }
+  ]
+}

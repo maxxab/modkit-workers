@@ -397,7 +397,26 @@ class Source4(unittest.TestCase):
             self.sandbox.move_root()
             self.assertEqual(lease.read("manifest.json"), self.sandbox.files["manifest.json"])
 
-    def test_checkout_origin_missing_production_is_honest(self):
+    def test_checkout_origin_real_candidate_resources_are_verified(self):
+        # IC-REG-1: candidate-only transition, not installed-artifact qualification.
+        from pathlib import Path
+
+        (item,) = self.m.manifest()
+        self.assertEqual(item.component, COMPONENT)
+        root = Path(self.m.__file__).parent / "sql"
+        for resource in item.resources:
+            raw = (root / resource.path.split("/")[1]).read_bytes()
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), resource.sha256)
+            self.assertEqual(self.m.read_sql(item, resource).encode("utf-8"), raw)
+
+    def test_missing_manifest_still_fails_through_public_api(self):
+        missing = self.sandbox.directory(
+            "missing-manifest",
+            {name: raw for name, raw in self.sandbox.files.items() if name != "manifest.json"},
+        )
+        original = self.backend.open_lease
+        self.addCleanup(setattr, self.backend, "open_lease", original)
+        self.backend.open_lease = lambda anchor: self.backend.PosixLease(missing)
         with self.assertRaises(FileNotFoundError):
             self.m.manifest()
 

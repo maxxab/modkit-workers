@@ -9,12 +9,23 @@ PREFIX_BYTES = 126602
 PREFIX_SHA = "5d2498760e4f419e08a41429e397c349b2a9c79b928441b578f7b85a4586f138"
 
 
+ORIGINAL_HEADER = '-- Workers W01 SOURCE DRAFT / NOT_READY. NOT AUTHORIZED TO APPLY.\n-- Owner-only structural profile, not production E33/MKMF/grants readiness.\n-- Application owns the explicit installation transaction and every W01 root.\n-- No grants resource/manifest, transaction control, role or shared schema changes.\n-- Dependency source closure: w01-implementation/abi-pins.json + sql-owner.md.\n'
+
+
+def legacy_header_bytes():
+    # Preserve the original literal prefix oracle, not a regenerated candidate hash.
+    # Only five approved comment lines are removed; DO $preflight$ is retained.
+    lines = SQL.read_bytes().splitlines(keepends=True)
+    assert lines[5] == b"DO $preflight$\n"
+    return ORIGINAL_HEADER.encode() + b"".join(lines[5:])
+
+
 def suffix():
-    return SQL.read_bytes()[PREFIX_BYTES:].decode()
+    return legacy_header_bytes()[PREFIX_BYTES:].decode()
 
 
 def test_entire_transferred_prefix_unchanged():
-    assert sha256(SQL.read_bytes()[:PREFIX_BYTES]).hexdigest() == PREFIX_SHA
+    assert sha256(legacy_header_bytes()[:PREFIX_BYTES]).hexdigest() == PREFIX_SHA
 
 
 def test_new_overload_preserves_exact_75_output_columns():

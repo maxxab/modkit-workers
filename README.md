@@ -20,16 +20,25 @@ Python>=3.12 metadata retains the planned3.12–3.15 Linux/Windows/macOS matrix;
 that matrix and all optional dependencies remain unqualified. Explicit candidate extras:
 redis, sqlalchemy, native, postgresql-psycopg, postgresql-asyncpg, pydantic.
 They select dependencies only and do not promise unreleased adapter functionality.
-SQLAlchemy alone does not select a PostgreSQL driver or aiosqlite. Native psycopg
-uses caller-provided libpq/system setup; no implicit binary installation or driver fallback.
+SQLAlchemy alone does not select a PostgreSQL driver or aiosqlite. The PostgreSQL
+extras select the existing Events sqlalchemy extra and their named driver only;
+they do not add PostgreSQL support to Events' SQLite-only SQLAlchemy adapter.
+The native extra selects psycopg==3.3.8, matching the current native guard, and
+requires caller-provided libpq 18.6 (pq.version() == 180006) and system setup.
+Dependency resolution does not qualify that runtime profile. The PostgreSQL
+psycopg selector retains a candidate range; native use also requires the native
+extra and its exact profile. No implicit binary installation or driver fallback.
 ERP's older Redis/SQLAlchemy lock compatibility remains unresolved.
 
 `modkit_workers.persistence.migrations` exposes immutable SQLResource,
 MigrationDependency, Migration, manifest and read_sql. It never applies SQL,
 creates roles, manages transactions or opens services. W01/W02/W03/W04/W05 SQL
-source is present and explicitly NOT_READY. The production manifest and runtime
-grants remain absent, so manifest() still fails FileNotFoundError until that
-separate gate closes. See [reader qualification](docs/reader-qualification.md)
+source, exact grants and a verified manifest are present in this unpublished
+installation-closure candidate. Resource verification is inert; missing resources
+still fail closed. Installation and runtime qualification remain separate gates;
+this candidate is NOT_READY and NOT_RELEASE_QUALIFIED. See
+[installation closure](docs/installation.md) and
+[reader qualification](docs/reader-qualification.md)
 for bounded native evidence and remaining gates; test-only in-memory fixtures
 are not packaged resources. The [job listing guide](docs/job-listing.md) describes W03's
 job-only pagination, complete-page validation, and separate qualification gates.

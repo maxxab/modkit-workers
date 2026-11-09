@@ -82,8 +82,8 @@ def test_acquisition_keeps_private_boundary_and_no_transaction_controller():
         "pg_catalog.uuid,pg_catalog.int4) FROM PUBLIC;"
     ) in source
     assert not re.search(r"\b(?:COMMIT|ROLLBACK|SAVEPOINT|EXCEPTION WHEN)\b", body)
-    assert not SQL.with_name("manifest.json").exists()
-    assert not SQL.with_name("grants_runtime.sql").exists()
+    assert SQL.with_name("manifest.json").is_file()
+    assert SQL.with_name("grants_runtime.sql").is_file()
 
 
 def test_emitted_header_and_item_projection_preserve_all_canonical_positions():

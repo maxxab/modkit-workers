@@ -164,8 +164,8 @@ def test_exact_dependency_and_overload_acl_guards_do_not_trust_installer_default
     assert "COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))" in boundary
     assert "acl.grantee<>p.proowner" in boundary and "acl.grantee<>n.nspowner" in boundary
     assert "ERRCODE='PZ011'" in boundary
-    assert not SQL.with_name("manifest.json").exists()
-    assert not SQL.with_name("grants_runtime.sql").exists()
+    assert SQL.with_name("manifest.json").is_file()
+    assert SQL.with_name("grants_runtime.sql").is_file()
 
 
 def closure():

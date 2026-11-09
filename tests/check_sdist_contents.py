@@ -25,12 +25,16 @@ def main() -> None:
         "docs/handoffs/private-sentinel.md",
         "docs/coordination/nested/private-sentinel.json",
         "docs/plans/private-sentinel.md",
+        "docs/shutdown-checkpoint-20261107.md",
+        "docs/shutdown-checkpoint-20991231.md",
     )
     public = (
         "docs/public/plans/guide.md",
         "docs/plans-help.md",
         "docs/handoffs-guide.md",
         "docs/coordination-guide.md",
+        "docs/shutdown-checkpoint-guide.md",
+        "docs/public/shutdown-checkpoint-20261107.md",
     )
     with tempfile.TemporaryDirectory(prefix="modkit-workers-sdist-") as directory:
         project = Path(directory) / "project"
@@ -71,6 +75,10 @@ def main() -> None:
             "docs/worker-contracts.md",
             "tests/check_sdist_contents.py",
             "src/modkit_workers/py.typed",
+            "tests/_resource_fixtures.py",
+            "src/modkit_workers/persistence/sql/0001_initial.sql",
+            "src/modkit_workers/persistence/sql/grants_runtime.sql",
+            "src/modkit_workers/persistence/sql/manifest.json",
             "LICENSE",
         )
         missing = [name for name in required if prefix + "/" + name not in names]
