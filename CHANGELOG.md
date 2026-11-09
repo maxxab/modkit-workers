@@ -14,6 +14,7 @@
 - **workers:** add bounded native job listing (`7c6a5f6245e2`)
 - **workers:** add native job identity lookup (`56edbfdd6663`)
 - **persistence:** add native job acquisition (`a6276368daab`)
+- **workers:** add supervised DB-local native execution (`dd8ff202c64e`)
 
 ### Bug Fixes
 
