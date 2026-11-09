@@ -51,7 +51,7 @@ def test_reader_installation_keeps_private_boundary_before_explicit_grants():
     # exposes the closed read matrix. Presence does not attest an installed DB.
     from modkit_workers.persistence.migrations import manifest, read_sql
 
-    migration, = manifest()
+    (migration,) = manifest()
     assert migration.component == "workers"
     resources = {resource.path: resource for resource in migration.resources}
     assert read_sql(migration, resources["workers/0001_initial.sql"]) == source

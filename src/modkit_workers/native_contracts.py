@@ -3,6 +3,7 @@
 Constructing a carrier does not validate native resources, adopt them, start
 threads, configure Events, or grant application authorization.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -30,9 +31,17 @@ if TYPE_CHECKING:
     from .native_setup import NativeJobConfigurationReceipt
 
 __all__ = [
-    "JobSourcePhase", "JobSourceSnapshot", "NativeAdmissionKind", "NativeJobConfig",
-    "NativeJobResources", "NativeWorkerSettings", "RenewalQuiescence", "SourceControl",
-    "WorkerReason", "WorkerSnapshot", "WorkerState",
+    "JobSourcePhase",
+    "JobSourceSnapshot",
+    "NativeAdmissionKind",
+    "NativeJobConfig",
+    "NativeJobResources",
+    "NativeWorkerSettings",
+    "RenewalQuiescence",
+    "SourceControl",
+    "WorkerReason",
+    "WorkerSnapshot",
+    "WorkerState",
 ]
 
 
@@ -74,9 +83,10 @@ class NativeJobConfig:
         _integer(self.max_payload_bytes, 1, 1048576)
         _integer(self.max_result_bytes, 1, 1048576)
         _integer(self.max_payload_depth, 1, 32)
-        _integer(self.source_material_bytes, _required_source_material_bytes(
-            self.max_payload_bytes, self.max_result_bytes
-        ))
+        _integer(
+            self.source_material_bytes,
+            _required_source_material_bytes(self.max_payload_bytes, self.max_result_bytes),
+        )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -102,7 +112,11 @@ class SourceControl(Protocol):
     def activate(self, work: JobWork, fence: Fence, /) -> None: ...
     def close_renewal(self, work: JobWork, /) -> object: ...
     def await_renewal_quiescent(
-        self, token: object, /, *, deadline_monotonic: float,
+        self,
+        token: object,
+        /,
+        *,
+        deadline_monotonic: float,
     ) -> RenewalQuiescence: ...
     def retire_work(self, work: JobWork, /) -> None: ...
     def fail(self, reason: WorkerReason, /) -> None: ...

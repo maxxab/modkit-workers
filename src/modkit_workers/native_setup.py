@@ -3,6 +3,7 @@
 No connection, SQL, attachment or adoption is performed on import. The sole
 resource domain and every resource counter remain owned by Events.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
@@ -57,13 +58,23 @@ _configuration: _Configuration | None = None
 
 # Accepted conservative full-family native vector. Source E remains scalable.
 _MINIMUM_LIMITS = {
-    "retained_cells": 2, "admitted_live": 2, "checkouts": 2,
-    "roots": 3, "roots_per_checkout": 2, "executions": 2,
-    "preparations": 2, "preparations_per_execution": 1,
-    "prepare_bytes": 1049857, "prepare_bytes_per_execution": 1049857,
-    "results": 2, "results_per_ticket": 1,
-    "result_bytes": 44129507, "result_bytes_per_ticket": 44129507,
-    "cleanup_bundles": 2, "cleanup_bytes": 8192, "construction_slots": 6,
+    "retained_cells": 2,
+    "admitted_live": 2,
+    "checkouts": 2,
+    "roots": 3,
+    "roots_per_checkout": 2,
+    "executions": 2,
+    "preparations": 2,
+    "preparations_per_execution": 1,
+    "prepare_bytes": 1049857,
+    "prepare_bytes_per_execution": 1049857,
+    "results": 2,
+    "results_per_ticket": 1,
+    "result_bytes": 44129507,
+    "result_bytes_per_ticket": 44129507,
+    "cleanup_bundles": 2,
+    "cleanup_bytes": 8192,
+    "construction_slots": 6,
 }
 
 
@@ -103,13 +114,18 @@ def _record(configuration: NativeJobConfigurationReceipt) -> _Configuration:
 
     current = _configuration
     try:
-        stamp = configuration._stamp if type(configuration) is NativeJobConfigurationReceipt else None
+        stamp = (
+            configuration._stamp if type(configuration) is NativeJobConfigurationReceipt else None
+        )
     except AttributeError:
         raise ValueError("Invalid native configuration receipt") from None
-    if (type(configuration) is not NativeJobConfigurationReceipt or current is None
-            or configuration is not current.receipt
-            or stamp is not current.stamp
-            or resource_domain() is not current.domain):
+    if (
+        type(configuration) is not NativeJobConfigurationReceipt
+        or current is None
+        or configuration is not current.receipt
+        or stamp is not current.stamp
+        or resource_domain() is not current.domain
+    ):
         raise ValueError("Invalid native configuration receipt")
     return current
 
@@ -129,8 +145,13 @@ def _native_connection_type():
 
 
 def _resource_identities(resources: NativeJobResources) -> tuple[object, ...]:
-    return (resources.configuration, resources.data_connection, resources.renewal_connection,
-            resources.data_ledger, resources.renewal_ledger)
+    return (
+        resources.configuration,
+        resources.data_connection,
+        resources.renewal_connection,
+        resources.data_ledger,
+        resources.renewal_ledger,
+    )
 
 
 def _resource_facts(resources: NativeJobResources, source: object) -> None:
@@ -146,15 +167,23 @@ def _resource_facts(resources: NativeJobResources, source: object) -> None:
     connection_type = _native_connection_type()
     data, renewal = resources.data_connection, resources.renewal_connection
     first, second = resources.data_ledger, resources.renewal_ledger
-    if (type(data) is not connection_type or type(renewal) is not connection_type
-            or data is renewal or data.pgconn is renewal.pgconn
-            or type(first) is not ExecutionLedger or type(second) is not ExecutionLedger
-            or first is second):
+    if (
+        type(data) is not connection_type
+        or type(renewal) is not connection_type
+        or data is renewal
+        or data.pgconn is renewal.pgconn
+        or type(first) is not ExecutionLedger
+        or type(second) is not ExecutionLedger
+        or first is second
+    ):
         raise ValueError("Expected distinct exact native resources")
     for connection in (data, renewal):
-        if (connection.closed or connection.autocommit
-                or connection.pgconn.transaction_status != 0
-                or connection.pgconn.pipeline_status != 0):
+        if (
+            connection.closed
+            or connection.autocommit
+            or connection.pgconn.transaction_status != 0
+            or connection.pgconn.pipeline_status != 0
+        ):
             raise ValueError("Native resources must be clean and idle")
     for ledger in (first, second):
         if ledger.uncertainty.present:
@@ -174,7 +203,11 @@ def _association_matches(record: _Configuration, resources: NativeJobResources) 
 
 
 def _validate_resources(
-    resources: NativeJobResources, /, *, config: NativeJobConfig, source: object,
+    resources: NativeJobResources,
+    /,
+    *,
+    config: NativeJobConfig,
+    source: object,
 ) -> None:
     if type(config) is not NativeJobConfig:
         raise ValueError("Expected exact NativeJobConfig")

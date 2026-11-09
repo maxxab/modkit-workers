@@ -87,6 +87,4 @@ def check_bounded_installation(connection, bounded_sql):
         ["ALTER DEFAULT PRIVILEGES GRANT EXECUTE ON FUNCTIONS TO modkit_runtime"],
         ["GRANT USAGE ON SCHEMA modkit_workers TO modkit_runtime"],
     ):
-        rejected(
-            connection, bounded_sql, setup, identities=(BOUNDED_IDENTITY,)
-        )
+        rejected(connection, bounded_sql, setup, identities=(BOUNDED_IDENTITY,))

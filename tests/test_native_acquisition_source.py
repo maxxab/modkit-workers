@@ -9,7 +9,7 @@ PREFIX_BYTES = 126602
 PREFIX_SHA = "5d2498760e4f419e08a41429e397c349b2a9c79b928441b578f7b85a4586f138"
 
 
-ORIGINAL_HEADER = '-- Workers W01 SOURCE DRAFT / NOT_READY. NOT AUTHORIZED TO APPLY.\n-- Owner-only structural profile, not production E33/MKMF/grants readiness.\n-- Application owns the explicit installation transaction and every W01 root.\n-- No grants resource/manifest, transaction control, role or shared schema changes.\n-- Dependency source closure: w01-implementation/abi-pins.json + sql-owner.md.\n'
+ORIGINAL_HEADER = "-- Workers W01 SOURCE DRAFT / NOT_READY. NOT AUTHORIZED TO APPLY.\n-- Owner-only structural profile, not production E33/MKMF/grants readiness.\n-- Application owns the explicit installation transaction and every W01 root.\n-- No grants resource/manifest, transaction control, role or shared schema changes.\n-- Dependency source closure: w01-implementation/abi-pins.json + sql-owner.md.\n"
 
 
 def legacy_header_bytes():

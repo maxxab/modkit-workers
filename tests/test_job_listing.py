@@ -118,23 +118,26 @@ def test_raw_list_decodes_whole_page_without_public_boundaries(monkeypatch):
     references = tuple((item, item.work, item.details, item.payload) for item in result)
     rows._validate_list_result_raw(request, result)
     for before, item in zip(references, result):
-        assert all(left is right for left, right in zip(
-            before, (item, item.work, item.details, item.payload)
-        ))
+        assert all(
+            left is right
+            for left, right in zip(before, (item, item.work, item.details, item.payload))
+        )
     assert rows._decode_list_raw(request, ()) == ()
 
 
 def test_raw_list_cursor_advances_equal_timestamp_uuid():
     _, last = family()
-    request = bindings._list_jobs_raw(models.JobListRequest(
-        after=WorkCursor(created_at=NOW, work_id=UUID(ID)), limit=1
-    ))
+    request = bindings._list_jobs_raw(
+        models.JobListRequest(after=WorkCursor(created_at=NOW, work_id=UUID(ID)), limit=1)
+    )
     result = rows._decode_list_raw(request, (last,))
     assert tuple(item.work.work_id for item in result) == (UUID(OTHER_ID),)
     rows._validate_list_result_raw(request, result)
 
 
-@pytest.mark.parametrize("variant", ["outer_list", "row_list", "row_short", "row_long", "over_limit"])
+@pytest.mark.parametrize(
+    "variant", ["outer_list", "row_list", "row_short", "row_long", "over_limit"]
+)
 def test_raw_list_preflights_all_row_shapes_before_decoding(monkeypatch, variant):
     from modkit_events.persistence import rows as shared_rows
     from modkit_events.persistence.errors import _ValidationReject
@@ -172,8 +175,10 @@ def test_raw_list_rejects_nonadvancing_pages(variant):
         rows._decode_list_raw(request, fetched)
 
 
-@pytest.mark.parametrize("slot,bad", [(3, b"wrong"), (56, None), (57, b"wrong"),
-                                     (60, b"wrong"), (62, "invalid"), (70, b"bad-json")])
+@pytest.mark.parametrize(
+    "slot,bad",
+    [(3, b"wrong"), (56, None), (57, b"wrong"), (60, b"wrong"), (62, "invalid"), (70, b"bad-json")],
+)
 def test_raw_list_corrupt_final_record_rejects_whole_page(slot, bad):
     from modkit_events.persistence.errors import _ValidationReject
 
@@ -186,11 +191,15 @@ def test_raw_list_corrupt_final_record_rejects_whole_page(slot, bad):
 
 
 @pytest.mark.parametrize("boundary", ["decode", "validate"])
-@pytest.mark.parametrize("error", [
-    ValueError("late list primary"), RuntimeError("late list primary"),
-    KeyboardInterrupt("late list primary"),
-    PersistenceError(ErrorCode.DATABASE_FAILURE, unconfirmed=True),
-])
+@pytest.mark.parametrize(
+    "error",
+    [
+        ValueError("late list primary"),
+        RuntimeError("late list primary"),
+        KeyboardInterrupt("late list primary"),
+        PersistenceError(ErrorCode.DATABASE_FAILURE, unconfirmed=True),
+    ],
+)
 def test_raw_list_late_failure_preserves_exact_error_chain(monkeypatch, boundary, error):
     from modkit_events.persistence import rows as shared_rows
 
@@ -252,8 +261,18 @@ def test_raw_list_decodes_all_records_before_page_order_check(monkeypatch):
     assert calls == 3
 
 
-@pytest.mark.parametrize("variant", ["outer_list", "over_limit", "record_type", "duplicate",
-                                     "reverse", "wrong_namespace", "nested_mutable"])
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "outer_list",
+        "over_limit",
+        "record_type",
+        "duplicate",
+        "reverse",
+        "wrong_namespace",
+        "nested_mutable",
+    ],
+)
 def test_raw_list_result_validation_rejects_without_replacement(variant):
     from modkit_events.persistence.errors import _ValidationReject
 

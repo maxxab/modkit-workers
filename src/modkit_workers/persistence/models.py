@@ -1,4 +1,5 @@
 """Immutable worker requests; backend encoding is an explicit pure projection."""
+
 from __future__ import annotations
 
 import math
@@ -102,10 +103,12 @@ class JobInput:
         canonical_scope(self.scope)  # Exact Scope type and all fields revalidated.
         if not isinstance(self.payload, Mapping):
             raise ValueError
-        object.__setattr__(self, 'payload', _logical_json(self.payload))
-        object.__setattr__(self, 'original_available_at', common._instant(self.original_available_at))
+        object.__setattr__(self, "payload", _logical_json(self.payload))
+        object.__setattr__(
+            self, "original_available_at", common._instant(self.original_available_at)
+        )
         if self.deadline is not None:
-            object.__setattr__(self, 'deadline', common._instant(self.deadline))
+            object.__setattr__(self, "deadline", common._instant(self.deadline))
         if self.idempotency_key is not None:
             common._identifier(self.idempotency_key)
         if type(self.replay_policy) is not shared.ReplayPolicy:
@@ -113,7 +116,7 @@ class JobInput:
         common._integer(self.max_attempts, 1, 1000)
         if type(self.protected) is not shared.ProtectedBindingInput:
             raise ValueError
-        object.__setattr__(self, 'protected', replace(self.protected))
+        object.__setattr__(self, "protected", replace(self.protected))
 
     @property
     @_boundary
@@ -147,19 +150,33 @@ def _admission(job: JobInput) -> shared.AdmissionInput:
     # Revalidate/copy all user fields at the prepared-request boundary.
     snapshot = replace(job)
     application, tenant, owner = encode_scope_fields(snapshot.scope)
-    scope = shared.ScopeEvidence(canonical_version=1,
-        canonical=canonical_scope(snapshot.scope), application=application,
-        tenant=tenant, owner=owner)
-    identity = shared.WorkIdentity(work_id=_work_id(snapshot.work_id),
-        kind=shared.WorkKind.JOB, subscription_id=None, namespace='jobs',
-        command_type=snapshot.command_type, scope=scope,
-        idempotency_key=snapshot.idempotency_key)
-    return shared.AdmissionInput(identity=identity, schema_version=snapshot.schema_version,
+    scope = shared.ScopeEvidence(
+        canonical_version=1,
+        canonical=canonical_scope(snapshot.scope),
+        application=application,
+        tenant=tenant,
+        owner=owner,
+    )
+    identity = shared.WorkIdentity(
+        work_id=_work_id(snapshot.work_id),
+        kind=shared.WorkKind.JOB,
+        subscription_id=None,
+        namespace="jobs",
+        command_type=snapshot.command_type,
+        scope=scope,
+        idempotency_key=snapshot.idempotency_key,
+    )
+    return shared.AdmissionInput(
+        identity=identity,
+        schema_version=snapshot.schema_version,
         semantic_input=common.canonical_json(snapshot.payload),
         replay_input=common.encode_mapping_replay(snapshot.payload),
         protected_binding=common.canonical_protected_binding(snapshot.protected).content,
-        replay_policy=snapshot.replay_policy, max_attempts=snapshot.max_attempts,
-        deadline=snapshot.deadline, original_available_at=snapshot.original_available_at)
+        replay_policy=snapshot.replay_policy,
+        max_attempts=snapshot.max_attempts,
+        deadline=snapshot.deadline,
+        original_available_at=snapshot.original_available_at,
+    )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -170,7 +187,7 @@ class JobSubmitRequest:
     def __post_init__(self) -> None:
         if type(self.job) is not JobInput:
             raise ValueError
-        object.__setattr__(self, 'job', replace(self.job))
+        object.__setattr__(self, "job", replace(self.job))
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -190,7 +207,7 @@ class JobFindRequest:
     def __post_init__(self) -> None:
         if type(self.job) is not JobInput:
             raise ValueError
-        object.__setattr__(self, 'job', replace(self.job))
+        object.__setattr__(self, "job", replace(self.job))
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -209,8 +226,10 @@ class JobAcquireRequest:
             if position >= 256 or type(capability) is not shared.Capability:
                 raise ValueError
             value = replace(capability)
-            key = (common._identifier(value.command_type),
-                   common._integer(value.schema_version, 1, 2147483647))
+            key = (
+                common._identifier(value.command_type),
+                common._integer(value.schema_version, 1, 2147483647),
+            )
             if key in keys:
                 raise ValueError
             keys.add(key)
@@ -218,7 +237,7 @@ class JobAcquireRequest:
         if not items:
             raise ValueError
         items.sort(key=lambda value: (common._identifier(value.command_type), value.schema_version))
-        object.__setattr__(self, 'capabilities', tuple(items))
+        object.__setattr__(self, "capabilities", tuple(items))
         common._integer(self.limit, 1, 256)
         common._integer(self.discovery_budget, self.limit, 4096)
         if type(self.lease_seconds) not in (int, float) or not 0 < self.lease_seconds <= 3600:
@@ -226,7 +245,7 @@ class JobAcquireRequest:
         lease = float(self.lease_seconds)
         if not math.isfinite(lease):
             raise ValueError
-        object.__setattr__(self, 'lease_seconds', lease)
+        object.__setattr__(self, "lease_seconds", lease)
         if self.scan_after is not None and type(self.scan_after) is not UUID:
             raise ValueError
 
@@ -242,4 +261,4 @@ class JobListRequest:
         if self.after is not None:
             if type(self.after) is not shared.WorkCursor:
                 raise ValueError
-            object.__setattr__(self, 'after', replace(self.after))
+            object.__setattr__(self, "after", replace(self.after))

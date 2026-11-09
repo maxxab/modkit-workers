@@ -1,4 +1,5 @@
 """Only in-process host control. No child process or service launch."""
+
 from threading import Event
 
 import pytest
@@ -41,6 +42,8 @@ def test_host_exit_codes_truthful(monkeypatch):
     m = module("native_recovery")
     o, lane, app, events = owner(monkeypatch, [page(visited=0, cursor=None, exhausted=True)])
     assert m.run_recovery_host(o, stop_event=Event()) == 0
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     lane.commit_unknown = True
     assert m.run_recovery_host(o, stop_event=Event()) == 70

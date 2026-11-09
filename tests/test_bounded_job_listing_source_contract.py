@@ -14,20 +14,46 @@ SQL = Path(__file__).parents[1] / "src/modkit_workers/persistence/sql/0001_initi
 LEGACY = ("bytea", "timestamptz", "uuid", "int4")
 BOUNDED = LEGACY + ("int8",)
 LARGE_FIELDS = (
-    "intent_evidence", "semantic_input", "replay_input", "protected_binding", "result",
-    "resolution_record_result", "resolution_record_evidence", "resolution_record_binding",
-    "job_protected_binding", "job_semantic_input", "protected_sidecar", "protected_reference",
-    "protected_recovery_metadata", "projection_metadata",
+    "intent_evidence",
+    "semantic_input",
+    "replay_input",
+    "protected_binding",
+    "result",
+    "resolution_record_result",
+    "resolution_record_evidence",
+    "resolution_record_binding",
+    "job_protected_binding",
+    "job_semantic_input",
+    "protected_sidecar",
+    "protected_reference",
+    "protected_recovery_metadata",
+    "projection_metadata",
 )
 SMALL_BOUNDS = {
-    "kind": 3, "subscription_id": 256, "namespace": 256, "command_type": 256,
-    "schema_version_decimal": 4096, "scope_evidence": 781, "scope_application": 256,
-    "scope_tenant": 256, "scope_owner": 256, "idempotency_key": 256,
-    "replay_policy": 16, "state": 14, "success_origin": 10, "completion_result_digest": 32,
-    "resolution_record_operation_kind": 14, "resolution_record_outcome": 19,
-    "resolution_record_result_digest": 32, "resolution_record_reason": 256,
-    "job_application": 256, "job_tenant": 256, "job_owner": 256,
-    "material_state": 7, "protected_codec": 256, "protected_key_version": 256,
+    "kind": 3,
+    "subscription_id": 256,
+    "namespace": 256,
+    "command_type": 256,
+    "schema_version_decimal": 4096,
+    "scope_evidence": 781,
+    "scope_application": 256,
+    "scope_tenant": 256,
+    "scope_owner": 256,
+    "idempotency_key": 256,
+    "replay_policy": 16,
+    "state": 14,
+    "success_origin": 10,
+    "completion_result_digest": 32,
+    "resolution_record_operation_kind": 14,
+    "resolution_record_outcome": 19,
+    "resolution_record_result_digest": 32,
+    "resolution_record_reason": 256,
+    "job_application": 256,
+    "job_tenant": 256,
+    "job_owner": 256,
+    "material_state": 7,
+    "protected_codec": 256,
+    "protected_key_version": 256,
     "protected_cleanup_policy": 20,
 }
 
@@ -64,8 +90,10 @@ def test_bounded_overload_preserves_legacy_and_exact_71_column_abi():
     parameters, declaration, body, _ = bounded()
     assert "DEFAULT" not in parameters.upper() and "=" not in parameters
     assert re.findall(r"(\w+) pg_catalog\.(\w+)", parameters) == [
-        ("p_namespace", "bytea"), ("p_after_created_at", "timestamptz"),
-        ("p_after_work_id", "uuid"), ("p_limit", "int4"),
+        ("p_namespace", "bytea"),
+        ("p_after_created_at", "timestamptz"),
+        ("p_after_work_id", "uuid"),
+        ("p_limit", "int4"),
         ("p_max_page_payload_bytes", "int8"),
     ]
     columns = re.search(r"RETURNS TABLE\((.*?)\n\)", declaration, re.S).group(1)
@@ -87,7 +115,10 @@ def test_bounded_key_page_precedes_one_row_reader_and_early_budget_check():
     assert "ORDER BY page.selected_created_at,page.selected_work_id" in loop
     assert not re.search(r"\b(?:JOIN|e15|w02|job_payloads)\b", loop, re.I)
     assert set(re.findall(r"listed\.(\w+)", loop)) == {
-        "work_id", "created_at", "namespace", "kind",
+        "work_id",
+        "created_at",
+        "namespace",
+        "kind",
     }
     assert body.count("modkit_workers.w02(selected.selected_work_id)") == 1
     assert "IF NOT FOUND" in body
@@ -111,13 +142,15 @@ def test_all_native_variable_caps_and_fourteen_bigint_occurrences_precede_append
     )[0]
     expected = {**SMALL_BOUNDS, **dict.fromkeys(LARGE_FIELDS, 1048576)}
     actual = {
-        name: int(bound) for name, bound in re.findall(
+        name: int(bound)
+        for name, bound in re.findall(
             r"item\.(\w+)(?:, 'UTF8'\))?\) OPERATOR\(pg_catalog\.<=\) (\d+)", cap
         )
     }
     assert actual == expected
     variable = {
-        c.name for c in get_statement("W03").result.columns
+        c.name
+        for c in get_statement("W03").result.columns
         if c.wire_type in (WireType.BYTEA, WireType.TEXT)
     }
     assert set(actual) == variable
@@ -147,8 +180,18 @@ def test_exact_dependency_and_overload_acl_guards_do_not_trust_installer_default
     )[0]
     assert "modkit_workers.w02(uuid)" in guard
     assert hashlib.sha256(w02[2].encode()).hexdigest() in guard
-    for check in ("proowner", "provolatile", "prosecdef", "pronargdefaults", "proargtypes",
-                  "proallargtypes", "proargnames", "proargmodes", "prosrc", "proconfig"):
+    for check in (
+        "proowner",
+        "provolatile",
+        "prosecdef",
+        "pronargdefaults",
+        "proargtypes",
+        "proallargtypes",
+        "proargnames",
+        "proargmodes",
+        "prosrc",
+        "proconfig",
+    ):
         assert check in guard
     definition = bounded()[3]
     suffix = source.split(definition, 1)[1]
@@ -160,7 +203,10 @@ def test_exact_dependency_and_overload_acl_guards_do_not_trust_installer_default
     boundary = suffix.split("DO $workers_bounded_listing_private_boundary$", 1)[1].split(
         "$workers_bounded_listing_private_boundary$;", 1
     )[0]
-    assert "'modkit_workers.w03(bytea,timestamptz,uuid,int4,int8)'::pg_catalog.regprocedure" in boundary
+    assert (
+        "'modkit_workers.w03(bytea,timestamptz,uuid,int4,int8)'::pg_catalog.regprocedure"
+        in boundary
+    )
     assert "COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))" in boundary
     assert "acl.grantee<>p.proowner" in boundary and "acl.grantee<>n.nspowner" in boundary
     assert "ERRCODE='PZ011'" in boundary
@@ -169,7 +215,9 @@ def test_exact_dependency_and_overload_acl_guards_do_not_trust_installer_default
 
 
 def closure():
-    found = functions(files("modkit_events.persistence.sql").joinpath("0001_initial.sql").read_text())
+    found = functions(
+        files("modkit_events.persistence.sql").joinpath("0001_initial.sql").read_text()
+    )
     found.update(functions(SQL.read_text()))
     root = ("modkit_workers.w03", BOUNDED)
     assert root in found, "Bounded overload absent from source closure"
@@ -203,7 +251,9 @@ def test_bounded_signature_aware_closure_has_no_e10_or_mutation():
         body = re.sub(r"--[^\n]*", "", body)
         assert not re.search(
             r"\b(?:INSERT\s+INTO|UPDATE\s+modkit_|DELETE\s+FROM|nextval|setval|"
-            r"FOR\s+UPDATE|LOCK\s+TABLE)\b", body, re.I,
+            r"FOR\s+UPDATE|LOCK\s+TABLE)\b",
+            body,
+            re.I,
         ), key
 
 
@@ -225,8 +275,11 @@ def test_bounded_protocol_params_keep_the_original_business_request():
     request = bindings.list_jobs(models.JobListRequest(after=None, limit=256))
     actual = fixture.bounded_params(request, 2**31)
     assert actual == {
-        "namespace": b"jobs", "after_created_at": None, "after_work_id": None,
-        "limit": 256, "max_page_payload_bytes": 2**31,
+        "namespace": b"jobs",
+        "after_created_at": None,
+        "after_work_id": None,
+        "limit": 256,
+        "max_page_payload_bytes": 2**31,
     }
     assert request.parameters == (b"jobs", None, None, 256)
     assert "%(max_page_payload_bytes)s::int8" in fixture.BOUNDED_LIST
@@ -257,7 +310,9 @@ def test_installation_negative_snapshots_both_but_drops_only_selected_overload()
 
     connection = Connection()
     fixture.rejected(
-        connection, "bounded source", [],
+        connection,
+        "bounded source",
+        [],
         identities=(fixture.BOUNDED_IDENTITY,),
     )
     assert connection.rollbacks == 1
@@ -270,18 +325,25 @@ def test_installation_negative_snapshots_both_but_drops_only_selected_overload()
 def test_named_budget_is_explicit_and_does_not_change_the_business_descriptor():
     source = SQL.parents[1].joinpath("native_store.py").read_text()
     tree = ast.parse(source)
-    wrapper = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "prepare_list_jobs")
-    options = dict(zip(
-        (argument.arg for argument in wrapper.args.kwonlyargs), wrapper.args.kw_defaults
-    ))
+    wrapper = next(
+        n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "prepare_list_jobs"
+    )
+    options = dict(
+        zip((argument.arg for argument in wrapper.args.kwonlyargs), wrapper.args.kw_defaults)
+    )
     assert "max_page_payload_bytes" in options
     assert isinstance(options["max_page_payload_bytes"], ast.Name)
     assert options["max_page_payload_bytes"].id == "DEFAULT_LIST_PAGE_PAYLOAD_BYTES"
-    call = next(n for n in ast.walk(wrapper) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name))
+    call = next(
+        n for n in ast.walk(wrapper) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+    )
     forwarded = next(k.value for k in call.keywords if k.arg == "max_page_payload_bytes")
     assert isinstance(forwarded, ast.Name) and forwarded.id == "max_page_payload_bytes"
-    common = next(n for n in tree.body if isinstance(n, ast.ImportFrom)
-                  and n.module == "modkit_events.persistence.native_profile")
+    common = next(
+        n
+        for n in tree.body
+        if isinstance(n, ast.ImportFrom) and n.module == "modkit_events.persistence.native_profile"
+    )
     assert {"DEFAULT_LIST_PAGE_PAYLOAD_BYTES", "MAX_LIST_PAGE_PAYLOAD_BYTES"} <= {
         alias.name for alias in common.names
     }

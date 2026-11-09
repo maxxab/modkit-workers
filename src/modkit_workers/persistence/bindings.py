@@ -162,9 +162,7 @@ def list_jobs(request: JobListRequest, /) -> common.FrozenRequest:
     )
 
 
-def _job_admission_raw(
-    job: JobInput, /
-) -> tuple[common.AdmissionInput, tuple[object, ...]]:
+def _job_admission_raw(job: JobInput, /) -> tuple[common.AdmissionInput, tuple[object, ...]]:
     """Trusted native builder; caller reserves D/A before entering this function."""
     from collections.abc import Mapping
     from datetime import datetime, timezone
@@ -182,10 +180,30 @@ def _job_admission_raw(
     if type(job) is not JobInput:
         _reject_validation()
     # Fixed references only. Never replace/copy JobInput or traverse payload here.
-    work_id, command, version, scope, payload, protected, original, deadline, key, policy, attempts = (
-        job.work_id, job.command_type, job.schema_version, job.scope, job.payload,
-        job.protected, job.original_available_at, job.deadline, job.idempotency_key,
-        job.replay_policy, job.max_attempts,
+    (
+        work_id,
+        command,
+        version,
+        scope,
+        payload,
+        protected,
+        original,
+        deadline,
+        key,
+        policy,
+        attempts,
+    ) = (
+        job.work_id,
+        job.command_type,
+        job.schema_version,
+        job.scope,
+        job.payload,
+        job.protected,
+        job.original_available_at,
+        job.deadline,
+        job.idempotency_key,
+        job.replay_policy,
+        job.max_attempts,
     )
     uuid = _work_id_raw(work_id)
     command_bytes = common._identifier_raw(command)
@@ -214,27 +232,61 @@ def _job_admission_raw(
     binding = common._canonical_protected_binding_raw(protected).content
     material = common._decode_protected_binding_raw(binding)
     scope_evidence = shared._scope_evidence_raw(
-        canonical_version=1, canonical=canonical_scope,
-        application=application, tenant=tenant, owner=owner,
+        canonical_version=1,
+        canonical=canonical_scope,
+        application=application,
+        tenant=tenant,
+        owner=owner,
     )
     identity = shared._work_identity_raw(
-        work_id=uuid, kind=shared.WorkKind.JOB, subscription_id=None,
-        namespace="jobs", command_type=command, scope=scope_evidence, idempotency_key=key,
+        work_id=uuid,
+        kind=shared.WorkKind.JOB,
+        subscription_id=None,
+        namespace="jobs",
+        command_type=command,
+        scope=scope_evidence,
+        idempotency_key=key,
     )
     admission = shared._admission_input_raw(
-        identity=identity, schema_version=version, semantic_input=semantic,
-        replay_input=replay, protected_binding=binding, replay_policy=policy,
-        max_attempts=attempts, deadline=deadline, original_available_at=original,
+        identity=identity,
+        schema_version=version,
+        semantic_input=semantic,
+        replay_input=replay,
+        protected_binding=binding,
+        replay_policy=policy,
+        max_attempts=attempts,
+        deadline=deadline,
+        original_available_at=original,
     )
     parameters = (
-        uuid, "job", None, b"jobs", command_bytes, canonical_scope, key_bytes,
-        1, version_bytes, application, tenant, owner,
-        common._canonical_intent_raw(admission).content, semantic, replay, binding,
-        policy.value, attempts, deadline, original,
-        material.material_state.value, material.sidecar, material.reference,
+        uuid,
+        "job",
+        None,
+        b"jobs",
+        command_bytes,
+        canonical_scope,
+        key_bytes,
+        1,
+        version_bytes,
+        application,
+        tenant,
+        owner,
+        common._canonical_intent_raw(admission).content,
+        semantic,
+        replay,
+        binding,
+        policy.value,
+        attempts,
+        deadline,
+        original,
+        material.material_state.value,
+        material.sidecar,
+        material.reference,
         None if material.codec is None else common._identifier_raw(material.codec),
         None if material.key_version is None else common._identifier_raw(material.key_version),
-        material.expires_at, material.recovery_metadata, material.cleanup_policy.value,
+        material.expires_at,
+        material.recovery_metadata,
+        material.cleanup_policy.value,
         material.projection_metadata,
     )
     return admission, parameters
@@ -249,7 +301,8 @@ def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
         _reject_validation()
     admission, parameters = _job_admission_raw(request.job)
     return native_profile.freeze_request(
-        _statement("W01"), parameters,
+        _statement("W01"),
+        parameters,
         context=common._return_context_raw(expected=(admission,), readiness=None),
     )
 
@@ -263,7 +316,8 @@ def _read_job_raw(request: JobReadRequest, /) -> common.FrozenRequest:
     if type(request) is not JobReadRequest:
         _reject_validation()
     return native_profile.freeze_request(
-        _statement("W02"), (_work_id_raw(request.work_id),),
+        _statement("W02"),
+        (_work_id_raw(request.work_id),),
         context=common._return_context_raw(),
     )
 
@@ -286,7 +340,8 @@ def _list_jobs_raw(request: JobListRequest, /) -> common.FrozenRequest:
         created_at = common._instant_raw(after.created_at)
         work_id = common._uuid_raw(after.work_id)
     return native_profile.freeze_request(
-        _statement("W03"), (b"jobs", created_at, work_id, limit),
+        _statement("W03"),
+        (b"jobs", created_at, work_id, limit),
         context=common._return_context_raw(),
     )
 
@@ -302,7 +357,8 @@ def _find_jobs_raw(request: JobFindRequest, /) -> common.FrozenRequest:
     parameters = submission_parameters[:7]
     del submission_parameters
     return native_profile.freeze_request(
-        _statement("W04"), parameters,
+        _statement("W04"),
+        parameters,
         context=common._return_context_raw(expected=(admission,), readiness=None),
     )
 

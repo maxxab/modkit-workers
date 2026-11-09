@@ -1,4 +1,5 @@
 """W04 raw consumer checks; no database connections or native qualification."""
+
 from uuid import UUID
 
 import pytest
@@ -25,17 +26,26 @@ def test_admission_extraction_preserves_material_decode_and_error_order(monkeypa
     helper = getattr(bindings, "_job_admission_raw", None)
     assert callable(helper), "missing shared raw admission extraction"
     seen = []
-    for name in ("_canonical_json_raw", "_parse_canonical_json_raw", "_emit_raw",
-                 "_canonical_protected_binding_raw", "_decode_protected_binding_raw",
-                 "_canonical_intent_raw"):
+    for name in (
+        "_canonical_json_raw",
+        "_parse_canonical_json_raw",
+        "_emit_raw",
+        "_canonical_protected_binding_raw",
+        "_decode_protected_binding_raw",
+        "_canonical_intent_raw",
+    ):
         original = getattr(common, name)
+
         def observe(*args, _name=name, _original=original, **kwargs):
             seen.append(_name)
             return _original(*args, **kwargs)
+
         monkeypatch.setattr(common, name, observe)
     helper(logical)
     assert seen.index("_canonical_json_raw") < seen.index("_canonical_protected_binding_raw")
-    assert seen.index("_canonical_protected_binding_raw") < seen.index("_decode_protected_binding_raw")
+    assert seen.index("_canonical_protected_binding_raw") < seen.index(
+        "_decode_protected_binding_raw"
+    )
     assert seen.index("_decode_protected_binding_raw") < seen.index("_canonical_intent_raw")
 
 
@@ -44,8 +54,10 @@ def test_admission_extraction_preserves_unexpected_primary(monkeypatch):
     helper = getattr(bindings, "_job_admission_raw", None)
     assert callable(helper), "missing shared raw admission extraction"
     primary = RuntimeError("intent failure")
+
     def broken(*args, **kwargs):
         raise primary
+
     monkeypatch.setattr(common, "_canonical_intent_raw", broken)
     with pytest.raises(RuntimeError) as caught:
         helper(logical)
@@ -63,8 +75,10 @@ def test_raw_candidate_keeps_validated_work_alias_without_public_copy(monkeypatc
     value = record()
     helper = getattr(observations, "_job_candidate_raw", None)
     assert callable(helper), "missing raw candidate constructor"
+
     def forbidden(*args, **kwargs):
         pytest.fail("raw candidate entered public copy")
+
     monkeypatch.setattr(observations, "replace", forbidden)
     candidate = helper(work=value.work, job=value)
     assert candidate.work is value.work
@@ -77,31 +91,36 @@ def test_raw_identity_rejects_forged_match_and_preserves_candidate_alias():
     helper = getattr(observations, "_job_identity_observation_raw", None)
     assert callable(helper), "missing raw identity constructor"
     candidate = observations._job_candidate_raw(work=value.work, job=value)
-    result = helper(decision=observations.JobIdentityDecision.MATCH,
-                    candidates=(candidate,), original_work_id=ID)
+    result = helper(
+        decision=observations.JobIdentityDecision.MATCH,
+        candidates=(candidate,),
+        original_work_id=ID,
+    )
     assert result.candidates[0] is candidate
     with pytest.raises(_ValidationReject):
-        helper(decision=observations.JobIdentityDecision.MATCH,
-               candidates=(candidate,), original_work_id=OTHER_ID)
+        helper(
+            decision=observations.JobIdentityDecision.MATCH,
+            candidates=(candidate,),
+            original_work_id=OTHER_ID,
+        )
     with pytest.raises(_ValidationReject):
-        helper(decision=observations.JobIdentityDecision.NEW,
-               candidates=(candidate,), original_work_id=None)
+        helper(
+            decision=observations.JobIdentityDecision.NEW,
+            candidates=(candidate,),
+            original_work_id=None,
+        )
 
 
 def test_find_classifier_rechecks_full_context_and_entire_family():
     classify = getattr(rows, "_classify_find_raw", None)
     assert callable(classify), "missing raw context-dependent classifier"
-    expected = common._admission_values_raw(
-        bindings._job_admission_raw(job())[0]
-    )
+    expected = common._admission_values_raw(bindings._job_admission_raw(job())[0])
     candidate = observations._job_candidate_raw(work=record().work, job=record())
     decision, original = classify(expected, (candidate,))
     assert decision is observations.JobIdentityDecision.MATCH
     assert original == ID
     changed = dict(expected, max_attempts=expected["max_attempts"] + 1)
-    assert classify(changed, (candidate,)) == (
-        observations.JobIdentityDecision.CONFLICT, None
-    )
+    assert classify(changed, (candidate,)) == (observations.JobIdentityDecision.CONFLICT, None)
     assert classify(expected, ()) == (observations.JobIdentityDecision.NEW, None)
     with pytest.raises(_ValidationReject):
         classify(expected, (candidate, candidate))
@@ -136,19 +155,36 @@ def test_raw_find_builder_and_decoder_match_pure_job_lookup():
     rows._validate_find_result_raw(request, actual)
     forged = observations._job_identity_observation_raw(
         decision=observations.JobIdentityDecision.CONFLICT,
-        candidates=actual.candidates, original_work_id=None,
+        candidates=actual.candidates,
+        original_work_id=None,
     )
     with pytest.raises(_ValidationReject):
         rows._validate_find_result_raw(request, forged)
 
 
-@pytest.mark.parametrize("field", (
-    "kind", "subscription_id", "namespace", "command_type", "scope_evidence",
-    "idempotency_key", "canonical_version", "schema_version_decimal",
-    "scope_application", "scope_tenant", "scope_owner", "intent_evidence",
-    "semantic_input", "protected_binding", "replay_policy", "max_attempts",
-    "deadline", "original_available_at",
-))
+@pytest.mark.parametrize(
+    "field",
+    (
+        "kind",
+        "subscription_id",
+        "namespace",
+        "command_type",
+        "scope_evidence",
+        "idempotency_key",
+        "canonical_version",
+        "schema_version_decimal",
+        "scope_application",
+        "scope_tenant",
+        "scope_owner",
+        "intent_evidence",
+        "semantic_input",
+        "protected_binding",
+        "replay_policy",
+        "max_attempts",
+        "deadline",
+        "original_available_at",
+    ),
+)
 def test_find_classifier_compares_each_immutable_field(field):
     value = record()
     candidate = observations._job_candidate_raw(work=value.work, job=value)
@@ -156,7 +192,8 @@ def test_find_classifier_compares_each_immutable_field(field):
     # Direct-ID membership remains valid; each immutable mismatch must conflict.
     expected[field] = object()
     assert rows._classify_find_raw(expected, (candidate,)) == (
-        observations.JobIdentityDecision.CONFLICT, None,
+        observations.JobIdentityDecision.CONFLICT,
+        None,
     )
 
 
@@ -175,14 +212,23 @@ def inbox_family():
     original = prepared.expected_submission.context.expected[0]
     event = Event("event", "send", {"value": 1})
     incoming = AdmissionInput(
-        identity=WorkIdentity(work_id=UUID(ID), kind=WorkKind.INBOX,
-                              subscription_id="sub", namespace="jobs",
-                              command_type="send", scope=original.identity.scope,
-                              idempotency_key=None),
-        schema_version=1, semantic_input=common.canonical_event(event).content,
+        identity=WorkIdentity(
+            work_id=UUID(ID),
+            kind=WorkKind.INBOX,
+            subscription_id="sub",
+            namespace="jobs",
+            command_type="send",
+            scope=original.identity.scope,
+            idempotency_key=None,
+        ),
+        schema_version=1,
+        semantic_input=common.canonical_event(event).content,
         replay_input=b'{"event_id":"event","name":"send","schema_version":1,"payload":{"value":1},"metadata":{}}',
-        protected_binding=original.protected_binding, replay_policy=ReplayPolicy.DISABLED,
-        max_attempts=3, deadline=None, original_available_at=NOW,
+        protected_binding=original.protected_binding,
+        replay_policy=ReplayPolicy.DISABLED,
+        max_attempts=3,
+        deadline=None,
+        original_available_at=NOW,
     )
     values = list(full_job_row(desired)[:56])
     values[1], values[2] = "inbox", b"sub"
@@ -209,11 +255,14 @@ def test_raw_find_inbox_uses_real_shared_validation_and_null_half():
 
 def test_raw_find_preserves_unexpected_shared_decoder_primary(monkeypatch):
     from modkit_events.persistence import rows as shared_rows
+
     request = bindings._find_jobs_raw(models.JobFindRequest(job=job()))
     values = full_job_row(job())
     primary = ValueError("unexpected shared decoder failure")
+
     def fail(value):
         raise primary
+
     monkeypatch.setattr(shared_rows, "_decode_work_observation_raw", fail)
     with pytest.raises(ValueError) as caught:
         rows._decode_find_raw(request, (values[:56] + (True,) + values[56:],))
@@ -235,6 +284,7 @@ def test_real_mixed_find_family_and_late_corruption_are_atomic():
     from modkit_events.persistence import native_profile
 
     from modkit_workers.persistence.native_store import _FIND_JOBS, FIND_JOBS_RESULT_CAPACITY
+
     assert native_profile._result_size(request, result, _FIND_JOBS) <= FIND_JOBS_RESULT_CAPACITY
     bad = list(family[1])
     bad[58] = b"different-application"
@@ -256,9 +306,15 @@ def test_raw_find_inbox_never_calls_public_sanitizing_helpers(monkeypatch):
     def forbidden(*args, **kwargs):
         pytest.fail("raw find entered a public sanitizer or copy")
 
-    for name in ("canonical_event", "validate_event_replay", "canonical_json",
-                 "parse_canonical_json", "canonical_intent",
-                 "canonical_protected_binding", "decode_protected_binding"):
+    for name in (
+        "canonical_event",
+        "validate_event_replay",
+        "canonical_json",
+        "parse_canonical_json",
+        "canonical_intent",
+        "canonical_protected_binding",
+        "decode_protected_binding",
+    ):
         monkeypatch.setattr(common, name, forbidden)
     monkeypatch.setattr(bindings, "find_jobs", forbidden)
     monkeypatch.setattr(bindings, "submit", forbidden)
@@ -277,9 +333,16 @@ def test_find_request_stays_job_only_and_result_membership_is_rechecked():
     request = bindings._find_jobs_raw(models.JobFindRequest(job=job()))
     forged = object.__new__(common.FrozenRequest)
     object.__setattr__(forged, "statement", request.statement)
-    object.__setattr__(forged, "parameters", (
-        request.parameters[0], "inbox", b"sub", *request.parameters[3:],
-    ))
+    object.__setattr__(
+        forged,
+        "parameters",
+        (
+            request.parameters[0],
+            "inbox",
+            b"sub",
+            *request.parameters[3:],
+        ),
+    )
     object.__setattr__(forged, "context", request.context)
     with pytest.raises(_ValidationReject):
         native_profile.validate_request(forged, request.statement)
@@ -289,9 +352,7 @@ def test_find_request_stays_job_only_and_result_membership_is_rechecked():
         bindings._find_jobs_raw(logical)
 
     other = full_job_row(job(work_id=OTHER_ID))
-    other_request = bindings._find_jobs_raw(
-        models.JobFindRequest(job=job(work_id=OTHER_ID))
-    )
+    other_request = bindings._find_jobs_raw(models.JobFindRequest(job=job(work_id=OTHER_ID)))
     result = rows._decode_find_raw(other_request, (other[:56] + (True,) + other[56:],))
     with pytest.raises(_ValidationReject):
         rows._validate_find_result_raw(request, result)
@@ -366,7 +427,10 @@ print("PAID_FIND_PREPARATION_COMPLETE")
 """
     result = subprocess.run(
         [sys.executable, "-B", "-c", script],
-        capture_output=True, text=True, timeout=20, env=os.environ.copy(),
+        capture_output=True,
+        text=True,
+        timeout=20,
+        env=os.environ.copy(),
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout == "PAID_FIND_PREPARATION_COMPLETE\n"

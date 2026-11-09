@@ -1,4 +1,5 @@
 """Worker-only composition of real neutral catalog metadata."""
+
 from modkit_events.persistence import catalog as e
 
 from modkit_workers.persistence import catalog as w
@@ -15,7 +16,14 @@ def test_workers_use_neutral_metadata_and_complete_rows():
     assert w.get_statement("W04").result.cardinality is e.CardinalityKind.FIND_TWO
     assert w.get_statement("W05").result.cardinality is e.CardinalityKind.SCAN
     assert tuple(p.name for p in w.get_statement("W05").parameters) == (
-        "namespace", "command_types", "schema_versions", "limit", "lease_seconds", "scan_after", "discovery_budget")
+        "namespace",
+        "command_types",
+        "schema_versions",
+        "limit",
+        "lease_seconds",
+        "scan_after",
+        "discovery_budget",
+    )
     assert w.get_statement("W02").result.columns[:56] == e.get_statement("E15").result.columns
     assert w.get_statement("W01").parameters[:20] == e.get_statement("E03").parameters[:20]
     assert w.get_statement("W01").parameters[20].name == "material_state"
@@ -23,7 +31,9 @@ def test_workers_use_neutral_metadata_and_complete_rows():
 
 
 def test_all_39_have_unique_columns_and_allowlisted_keys():
-    specs = tuple(e.get_statement(f"E{i:02}") for i in range(1, 35)) + tuple(w.get_statement(f"W{i:02}") for i in range(1, 6))
+    specs = tuple(e.get_statement(f"E{i:02}") for i in range(1, 35)) + tuple(
+        w.get_statement(f"W{i:02}") for i in range(1, 6)
+    )
     assert len({s.key for s in specs}) == 39
     for s in specs:
         assert len({p.name for p in s.parameters}) == len(s.parameters)
@@ -42,6 +52,10 @@ def test_worker_transitions_compose_without_copying_neutral_rules():
     from modkit_events.persistence import transitions as e_t
 
     from modkit_workers.persistence import transitions as w_t
+
     assert w_t._WORK_RULES is e_t._WORK_RULES
-    assert tuple(rule.rule_id for rule in w_t._ADMISSION_RULES) == ("submit_runnable", "submit_blocked")
+    assert tuple(rule.rule_id for rule in w_t._ADMISSION_RULES) == (
+        "submit_runnable",
+        "submit_blocked",
+    )
     assert all(rule.operation == "W01" for rule in w_t._ADMISSION_RULES)

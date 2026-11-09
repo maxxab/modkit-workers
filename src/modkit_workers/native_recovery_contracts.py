@@ -2,6 +2,7 @@
 
 Logical occurrence sizes are not native allocations, temporary-byte or RSS caps.
 """
+
 from __future__ import annotations
 
 import math
@@ -102,8 +103,11 @@ class RecoverySnapshot:
     counters_saturated: bool
 
     def __post_init__(self):
-        if (type(self.phase) is not RecoveryPhase or type(self.reason) is not RecoveryReason
-                or type(self.latest_page_outcome) is not RecoveryPageOutcome):
+        if (
+            type(self.phase) is not RecoveryPhase
+            or type(self.reason) is not RecoveryReason
+            or type(self.latest_page_outcome) is not RecoveryPageOutcome
+        ):
             raise ValueError("Invalid recovery snapshot enum")
         for name in self.__slots__[3:13] + ("last_committed_pass_exhausted", "counters_saturated"):
             if type(getattr(self, name)) is not bool:
@@ -114,9 +118,13 @@ class RecoverySnapshot:
         _integer(self.last_committed_visited, 0, 4096)
         for name in self.__slots__[17:21]:
             _integer(getattr(self, name), 0, 1)
-        if (self.last_committed_queued + self.last_committed_expired
-                + self.last_committed_failed + self.last_committed_held
-                > min(1, self.last_committed_visited)):
+        if (
+            self.last_committed_queued
+            + self.last_committed_expired
+            + self.last_committed_failed
+            + self.last_committed_held
+            > min(1, self.last_committed_visited)
+        ):
             raise ValueError("Invalid recovery snapshot cardinality")
         for name in self.__slots__[21:29]:
             _integer(getattr(self, name), 0, UINT64_MAX)
@@ -228,10 +236,16 @@ def _scalar_interpreter_profile():
     gil_disabled = sysconfig.get_config_var("Py_GIL_DISABLED")
     debug = sysconfig.get_config_var("Py_DEBUG")
     gil_enabled = getattr(sys, "_is_gil_enabled", None)
-    if (sys.platform != "linux" or platform.machine() != "x86_64"
-            or type(gil_disabled) is not int or gil_disabled != 0
-            or type(debug) is not int or debug != 0
-            or not callable(gil_enabled) or gil_enabled() is not True):
+    if (
+        sys.platform != "linux"
+        or platform.machine() != "x86_64"
+        or type(gil_disabled) is not int
+        or gil_disabled != 0
+        or type(debug) is not int
+        or debug != 0
+        or not callable(gil_enabled)
+        or gil_enabled() is not True
+    ):
         raise ValueError("Unsupported recovery scalar profile")
     return "cpython-3.13.5-linux-x86_64-gil-scalar-64"
 
@@ -244,18 +258,26 @@ def _summary_profile():
     The dictionary is a pure setup report, not retained per-page material.
     """
     profile_id = _scalar_interpreter_profile()
-    if (struct.calcsize("P") != 8 or hasattr(sys, "gettotalrefcount")
-            or sys.int_info.bits_per_digit != 30 or sys.int_info.sizeof_digit != 4
-            or object.__basicsize__ != 16 or tuple.__basicsize__ != 24
-            or sys.getsizeof(()) != 40 or sys.getsizeof(0) != 28
-            or RecoverySnapshot.__basicsize__ != 264
-            or PendingRecoverySummary.__basicsize__ != 72):
+    if (
+        struct.calcsize("P") != 8
+        or hasattr(sys, "gettotalrefcount")
+        or sys.int_info.bits_per_digit != 30
+        or sys.int_info.sizeof_digit != 4
+        or object.__basicsize__ != 16
+        or tuple.__basicsize__ != 24
+        or sys.getsizeof(()) != 40
+        or sys.getsizeof(0) != 28
+        or RecoverySnapshot.__basicsize__ != 264
+        or PendingRecoverySummary.__basicsize__ != 72
+    ):
         raise ValueError("Unsupported recovery scalar profile")
     # Shallow carrier + GC header, with all referents counted per occurrence.
     u = max(sys.getsizeof(None), sys.getsizeof(True), sys.getsizeof(False))
-    e = max(sys.getsizeof(member) for kind in (
-        RecoveryPhase, RecoveryReason, RecoveryPageOutcome, RecoveryMaterialState
-    ) for member in kind)
+    e = max(
+        sys.getsizeof(member)
+        for kind in (RecoveryPhase, RecoveryReason, RecoveryPageOutcome, RecoveryMaterialState)
+        for member in kind
+    )
     f = sys.getsizeof(0.0)
     if u != 28 or e != 48 or f != 24:
         raise ValueError("Unsupported recovery scalar coefficients")
@@ -271,12 +293,24 @@ def _summary_profile():
     # Caller-owned UUID + its int + borrowed scalar occurrence, before native D.
     # No pending summary exists in this preparation phase.
     cursor_transient = 64 + 2 * j128
-    required = lease + scratch + max(s + c31, s + p + c7, 2 * s + p + c31,
-                                     3 * s + p + c31, 3 * s + c31 + cursor_transient)
+    required = (
+        lease
+        + scratch
+        + max(s + c31, s + p + c7, 2 * s + p + c31, 3 * s + p + c31, 3 * s + c31 + cursor_transient)
+    )
     _integer(required, 1, UINT64_MAX)
-    return {"interpreter_profile_id": profile_id,
-            "interpreter_version": tuple(sys.version_info[:3]), "S": s, "P": p, "C31": c31, "C7": c7, "L": lease, "Q": scratch,
-            "cursor_transient": cursor_transient, "required": required}
+    return {
+        "interpreter_profile_id": profile_id,
+        "interpreter_version": tuple(sys.version_info[:3]),
+        "S": s,
+        "P": p,
+        "C31": c31,
+        "C7": c7,
+        "L": lease,
+        "Q": scratch,
+        "cursor_transient": cursor_transient,
+        "required": required,
+    }
 
 
 def required_recovery_source_material_bytes() -> int:

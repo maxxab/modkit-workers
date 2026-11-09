@@ -1,4 +1,5 @@
 """Explicit inert factory and thin wrapper for the real native job source."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -45,18 +46,25 @@ class JobWorker:
 
 
 def create_job_worker(
-    *, registry: HandlerRegistry, application: DbLocalApplication,
-    config: NativeJobConfig, resources: NativeJobResources,
-    request: AcquireRequest, settings: NativeWorkerSettings,
+    *,
+    registry: HandlerRegistry,
+    application: DbLocalApplication,
+    config: NativeJobConfig,
+    resources: NativeJobResources,
+    request: AcquireRequest,
+    settings: NativeWorkerSettings,
 ) -> JobWorker:
     """Validate pure configuration and bind the actual source without starting it.
 
     Resource proof/adoption, application validate_profile and E33 belong to
     source startup. Exact raw resources remain caller-owned until that adoption.
     """
-    if (type(registry) is not HandlerRegistry or type(config) is not NativeJobConfig
-            or type(resources) is not NativeJobResources
-            or type(settings) is not NativeWorkerSettings):
+    if (
+        type(registry) is not HandlerRegistry
+        or type(config) is not NativeJobConfig
+        or type(resources) is not NativeJobResources
+        or type(settings) is not NativeWorkerSettings
+    ):
         raise InvalidWorkerConfiguration("Expected exact native worker configuration")
     config.__post_init__()
     settings.__post_init__()
@@ -66,18 +74,27 @@ def create_job_worker(
     if checked.limit != 1:
         raise InvalidWorkerConfiguration("Native jobs require exactly one slot")
     for capability in checked.capabilities:
-        if registry.get(capability.command_type, capability.schema_version).kind is not HandlerKind.SYNC:
+        if (
+            registry.get(capability.command_type, capability.schema_version).kind
+            is not HandlerKind.SYNC
+        ):
             raise InvalidWorkerConfiguration("Native jobs require synchronous selected handlers")
-    if (not callable(getattr(application, "validate_profile", None))
-            or not callable(getattr(application, "bind", None))):
+    if not callable(getattr(application, "validate_profile", None)) or not callable(
+        getattr(application, "bind", None)
+    ):
         raise InvalidWorkerConfiguration("Expected application profile and binding hooks")
 
     # Actual source only; never a fake fallback or a partially implemented port.
     from .native_job import JobWorkSource
 
     control = _SourceControl(settings)
-    source = JobWorkSource(registry=registry, application=application, config=config,
-                           resources=resources, control=control)
+    source = JobWorkSource(
+        registry=registry,
+        application=application,
+        config=config,
+        resources=resources,
+        control=control,
+    )
     core = _SupervisorCore(source, control, checked, settings)  # Sole binder.
     worker = object.__new__(JobWorker)
     worker._core = core

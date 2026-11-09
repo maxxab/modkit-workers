@@ -1,4 +1,5 @@
 """Private bounded control lane. No database operations or native imports."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -80,8 +81,13 @@ class _SourceControl:
 
     def bind_renewal(self, callback: Callable, /) -> None:
         with self._cv:
-            if (not callable(callback) or getattr(callback, "__self__", None) is not self._source
-                    or self._source is None or self._renew is not None or self._started):
+            if (
+                not callable(callback)
+                or getattr(callback, "__self__", None) is not self._source
+                or self._source is None
+                or self._renew is not None
+                or self._started
+            ):
                 raise RuntimeError("Renewal binding is one-shot")
             self._renew = callback
 
@@ -100,8 +106,10 @@ class _SourceControl:
             raise RuntimeError("Wrong control execution lane")
 
     def _live(self) -> bool:
-        return all(name in self._lanes and self._lanes[name].is_alive()
-                   for name in ("data", "coordinator", "renewal"))
+        return all(
+            name in self._lanes and self._lanes[name].is_alive()
+            for name in ("data", "coordinator", "renewal")
+        )
 
     def start_renewal(self) -> None:
         with self._cv:
@@ -124,10 +132,16 @@ class _SourceControl:
         """Admit one bound data-lane initialization without granting work authority."""
         with self._cv:
             self._on_lane("data")
-            if (source is not self._source or self._source is None
-                    or not self._started or not self._live()
-                    or self._failure is not None or self._ready or self._lease is not None
-                    or self._startup_admitted):
+            if (
+                source is not self._source
+                or self._source is None
+                or not self._started
+                or not self._live()
+                or self._failure is not None
+                or self._ready
+                or self._lease is not None
+                or self._startup_admitted
+            ):
                 raise RuntimeError("Startup requires unused bound pre-ready control")
             if self._stop:
                 raise _AdmissionClosed("Stop won startup admission")
@@ -179,10 +193,16 @@ class _SourceControl:
         """Validate an already-reserved continuation; ordinary stop is allowed."""
         with self._cv:
             self._on_lane("data")
-            if (source is not self._source or not self._ready or self._lease is None
-                    or self._failure is not None or not self._live()
-                    or reservation is None or reservation is not self._acquisition
-                    or self._work is not None):
+            if (
+                source is not self._source
+                or not self._ready
+                or self._lease is None
+                or self._failure is not None
+                or not self._live()
+                or reservation is None
+                or reservation is not self._acquisition
+                or self._work is not None
+            ):
                 raise RuntimeError("Not a live reserved acquisition")
             return self._lease
 
@@ -207,8 +227,11 @@ class _SourceControl:
             raise ValueError("Expected WorkerReason")
         with self._cv:
             self._on_lane("data")
-            if (reservation is None or reservation is not self._acquisition
-                    or self._failure is not None):
+            if (
+                reservation is None
+                or reservation is not self._acquisition
+                or self._failure is not None
+            ):
                 raise RuntimeError("Refusal requires the exact known acquisition")
             self._acquisition = None
             self._fail_locked(reason)
@@ -257,9 +280,15 @@ class _SourceControl:
     def retire_work(self, work: object, /) -> None:
         with self._cv:
             self._on_lane("data")
-            if (work is not self._work or work is None or self._drain is None
-                    or self._active or self._in_renewal or not self._renewal_known
-                    or self._failure is not None):
+            if (
+                work is not self._work
+                or work is None
+                or self._drain is None
+                or self._active
+                or self._in_renewal
+                or not self._renewal_known
+                or self._failure is not None
+            ):
                 raise RuntimeError("Work is not known settled and quiescent")
             self._work = self._fence = self._drain = None
             self._last_progress = monotonic()
@@ -291,7 +320,9 @@ class _SourceControl:
 
     def wait_failed(self, timeout: float) -> bool:
         with self._cv:
-            return self._cv.wait_for(lambda: self._failure is not None, _seconds(timeout, zero=True))
+            return self._cv.wait_for(
+                lambda: self._failure is not None, _seconds(timeout, zero=True)
+            )
 
     def request_renewal_exit(self) -> None:
         with self._cv:

@@ -1,4 +1,5 @@
 """Real canonical configuration plus test-only resource facts; no DB connections."""
+
 import os
 import subprocess
 import sys
@@ -43,8 +44,13 @@ def run_case(body):
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
     src = str(Path(__file__).parents[1] / "src")
     env["PYTHONPATH"] = src + os.pathsep + env.get("PYTHONPATH", "")
-    result = subprocess.run([sys.executable, "-B", "-c", PREFIX + body],
-                            env=env, capture_output=True, text=True, timeout=15)
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", PREFIX + body],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
@@ -102,7 +108,9 @@ source = object()
 
 
 def test_validation_is_not_adoption_and_adoption_has_one_observable_owner():
-    run_case(RESOURCES + """
+    run_case(
+        RESOURCES
+        + """
 setup._validate_resources(resources, config=config, source=source)
 assert not setup._resources_adopted(resources, source)
 setup._adopt_resources(resources, source)
@@ -112,26 +120,36 @@ rejects(lambda: setup._adopt_resources(resources, object()))
 rejects(lambda: setup._adopt_resources(resources, source))
 resource_domain().trip()
 assert setup._resources_adopted(resources, source)
-""")
+"""
+    )
 
 
-@pytest.mark.parametrize("change", [
-    "object.__setattr__(resources, 'renewal_connection', resources.data_connection)",
-    "object.__setattr__(resources, 'renewal_ledger', resources.data_ledger)",
-    "resources.data_connection.autocommit = True",
-    "resources.data_connection.pgconn.transaction_status = 2",
-    "resources.data_connection.closed = True",
-    "resource_domain().trip()",
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        "object.__setattr__(resources, 'renewal_connection', resources.data_connection)",
+        "object.__setattr__(resources, 'renewal_ledger', resources.data_ledger)",
+        "resources.data_connection.autocommit = True",
+        "resources.data_connection.pgconn.transaction_status = 2",
+        "resources.data_connection.closed = True",
+        "resource_domain().trip()",
+    ],
+)
 def test_invalid_resources_reject_before_ownership_transfer(change):
-    run_case(RESOURCES + change + """
+    run_case(
+        RESOURCES
+        + change
+        + """
 rejects(lambda: setup._validate_resources(resources, config=config, source=source))
 assert not setup._resources_adopted(resources, source)
-""")
+"""
+    )
 
 
 def test_two_adopters_have_exactly_one_winner():
-    run_case(RESOURCES + """
+    run_case(
+        RESOURCES
+        + """
 from threading import Barrier, Thread
 gate=Barrier(3)
 wins=[]
@@ -151,7 +169,8 @@ for t in threads:
     assert not t.is_alive()
 assert len(wins)==1
 assert setup._resources_adopted(resources,wins[0])
-""")
+"""
+    )
 
 
 def test_setup_module_import_never_imports_optional_driver():
@@ -160,6 +179,7 @@ import sys
 assert 'psycopg' not in sys.modules
 assert 'modkit_events.persistence.native_sync' not in sys.modules
 """)
+
 
 def test_receipt_rejects_deletion_and_detects_bypassed_missing_stamp():
     run_case("""
@@ -176,20 +196,28 @@ rejects(lambda: setup._checked_limits(receipt))
 
 
 def test_insufficient_configured_native_capacity_rejects_before_adoption():
-    run_case(RESOURCES.replace("receipt = setup.configure_native_job_profile(limits=limits)",
-        "from dataclasses import replace\nlimits=replace(limits, construction_slots=5)\n"
-        "receipt = setup.configure_native_job_profile(limits=limits)") + """
+    run_case(
+        RESOURCES.replace(
+            "receipt = setup.configure_native_job_profile(limits=limits)",
+            "from dataclasses import replace\nlimits=replace(limits, construction_slots=5)\n"
+            "receipt = setup.configure_native_job_profile(limits=limits)",
+        )
+        + """
 rejects(lambda: setup._validate_resources(resources, config=config, source=source))
 assert not setup._resources_adopted(resources, source)
-""")
+"""
+    )
 
 
 def test_adopted_carrier_cannot_be_replaced_or_tampered():
-    run_case(RESOURCES + """
+    run_case(
+        RESOURCES
+        + """
 from dataclasses import replace
 setup._validate_resources(resources, config=config, source=source)
 setup._adopt_resources(resources, source)
 rejects(lambda: setup._resources_adopted(replace(resources), source))
 object.__setattr__(resources, 'data_connection', Connection())
 rejects(lambda: setup._resources_adopted(resources, source))
-""")
+"""
+    )

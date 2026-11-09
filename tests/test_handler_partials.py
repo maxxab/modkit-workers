@@ -202,5 +202,6 @@ else:
     raise AssertionError("Partial func cycles must not register")
 """.replace("CALL_ENTRYPOINT", repr(call_entrypoint))
     # A regression must fail with a finite child timeout, not hang the whole suite.
-    subprocess.run([sys.executable, "-c", code], check=True, timeout=5,
-                   capture_output=True, text=True)
+    subprocess.run(
+        [sys.executable, "-c", code], check=True, timeout=5, capture_output=True, text=True
+    )

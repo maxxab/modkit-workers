@@ -1,4 +1,5 @@
 """Private import-neutral scheduling contracts, not a native product API."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -89,9 +90,10 @@ class RenewalQuiescence:
     domain_active: bool
 
     def __post_init__(self) -> None:
-        if any(type(value) is not bool for value in (
-            self.quiescent, self.outcome_known, self.domain_active
-        )):
+        if any(
+            type(value) is not bool
+            for value in (self.quiescent, self.outcome_known, self.domain_active)
+        ):
             raise ValueError("Quiescence requires exact booleans")
 
 
@@ -127,15 +129,30 @@ class JobSourceSnapshot:
         if self.reason is not None and type(self.reason) is not WorkerReason:
             raise ValueError("Expected WorkerReason")
         for name in (
-            "resources_adopted", "startup_verified", "admission_closed", "domain_active",
-            "slot_occupied", "native_in_flight", "renewal_in_flight", "cleanup_complete",
-            "unresolved", "scan_exhausted", "scan_progress", "counters_saturated",
+            "resources_adopted",
+            "startup_verified",
+            "admission_closed",
+            "domain_active",
+            "slot_occupied",
+            "native_in_flight",
+            "renewal_in_flight",
+            "cleanup_complete",
+            "unresolved",
+            "scan_exhausted",
+            "scan_progress",
+            "counters_saturated",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError("Expected exact boolean observation")
         for name in (
-            "confirmed_succeeded", "confirmed_failed", "confirmed_cancelled", "confirmed_held",
-            "unknown_outcomes", "acquisition_pages", "renewal_commits", "progress_sequence",
+            "confirmed_succeeded",
+            "confirmed_failed",
+            "confirmed_cancelled",
+            "confirmed_held",
+            "unknown_outcomes",
+            "acquisition_pages",
+            "renewal_commits",
+            "progress_sequence",
         ):
             value = getattr(self, name)
             if type(value) is not int or not 0 <= value <= 2**64 - 1:

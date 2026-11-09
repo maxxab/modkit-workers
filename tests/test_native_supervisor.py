@@ -1,4 +1,5 @@
 """Private coordinator tests with deterministic source fakes, never native I/O."""
+
 from collections import deque
 from dataclasses import replace
 from importlib import import_module, util
@@ -11,8 +12,11 @@ import pytest
 def modules():
     name = "modkit_workers._native_supervisor"
     assert util.find_spec(name) is not None, "private supervisor is not implemented"
-    return (import_module(name), import_module("modkit_workers._native_control"),
-            import_module("modkit_workers._native_control_contracts"))
+    return (
+        import_module(name),
+        import_module("modkit_workers._native_control"),
+        import_module("modkit_workers._native_control_contracts"),
+    )
 
 
 class FakeSource:
@@ -50,9 +54,14 @@ class FakeSource:
         assert self.start_release.wait(4)
         if self.fail_start:
             raise ValueError("fake startup failure")
-        self.update(phase=self.c.JobSourcePhase.IDLE, startup_verified=True,
-                    domain_active=True, resources_adopted=True,
-                    admission_closed=False, last_progress_monotonic=monotonic())
+        self.update(
+            phase=self.c.JobSourcePhase.IDLE,
+            startup_verified=True,
+            domain_active=True,
+            resources_adopted=True,
+            admission_closed=False,
+            last_progress_monotonic=monotonic(),
+        )
 
     def acquire(self, request):
         token = self.control.reserve_acquisition(self)
@@ -63,16 +72,21 @@ class FakeSource:
         work = self.jobs.popleft() if self.jobs else None
         self.control.publish_acquisition(token, work)
         previous = self.snapshot()
-        self.update(native_in_flight=False, slot_occupied=work is not None,
-                    phase=self.c.JobSourcePhase.CLAIMED if work else self.c.JobSourcePhase.IDLE,
-                    acquisition_pages=previous.acquisition_pages + 1,
-                    scan_progress=True, scan_exhausted=work is None,
-                    last_progress_monotonic=monotonic())
+        self.update(
+            native_in_flight=False,
+            slot_occupied=work is not None,
+            phase=self.c.JobSourcePhase.CLAIMED if work else self.c.JobSourcePhase.IDLE,
+            acquisition_pages=previous.acquisition_pages + 1,
+            scan_progress=True,
+            scan_exhausted=work is None,
+            last_progress_monotonic=monotonic(),
+        )
         return () if work is None else (work,)
 
     def execute(self, work):
-        self.leases.append(self.control.require_admission(
-            self, kind=self.c.NativeAdmissionKind.ADMITTED_EXECUTION))
+        self.leases.append(
+            self.control.require_admission(self, kind=self.c.NativeAdmissionKind.ADMITTED_EXECUTION)
+        )
         self.work_ids.append(work)
         self.control.activate(work, object())  # Fake acknowledged E06.
         self.update(phase=self.c.JobSourcePhase.RUNNING)
@@ -86,16 +100,21 @@ class FakeSource:
         assert q.quiescent and q.outcome_known and q.domain_active
         self.calls.append("confirmed_terminal")
         count = self.snapshot().confirmed_succeeded + 1
-        self.update(confirmed_succeeded=count, slot_occupied=False,
-                    phase=self.c.JobSourcePhase.IDLE, last_progress_monotonic=monotonic())
+        self.update(
+            confirmed_succeeded=count,
+            slot_occupied=False,
+            phase=self.c.JobSourcePhase.IDLE,
+            last_progress_monotonic=monotonic(),
+        )
         self.control.retire_work(work)
         if count >= self.target:
             self.finished.set()
 
     def renew(self, work, fence):
         self.control.require_admission(self, kind=self.c.NativeAdmissionKind.RENEWAL)
-        self.update(renewal_commits=self.snapshot().renewal_commits + 1,
-                    last_progress_monotonic=monotonic())
+        self.update(
+            renewal_commits=self.snapshot().renewal_commits + 1, last_progress_monotonic=monotonic()
+        )
         self.renewed.set()
 
     def request_stop(self):
@@ -104,8 +123,11 @@ class FakeSource:
     def shutdown(self):
         self.calls.append("shutdown")
         unresolved = self.snapshot().unresolved or self.control.current_work is not None
-        self.update(cleanup_complete=not unresolved, unresolved=unresolved,
-                    phase=self.c.JobSourcePhase.FAILED if unresolved else self.c.JobSourcePhase.STOPPED)
+        self.update(
+            cleanup_complete=not unresolved,
+            unresolved=unresolved,
+            phase=self.c.JobSourcePhase.FAILED if unresolved else self.c.JobSourcePhase.STOPPED,
+        )
 
     def unblock(self):
         self.start_release.set()
@@ -115,10 +137,12 @@ class FakeSource:
 
 def build(jobs=(), drain_timeout=30, progress_timeout=10, renewal_interval=0.01):
     m, ctrl, c = modules()
-    settings = c.NativeWorkerSettings(renewal_interval_seconds=renewal_interval,
-                                     poll_interval_seconds=0.01,
-                                     drain_timeout_seconds=drain_timeout,
-                                     progress_timeout_seconds=progress_timeout)
+    settings = c.NativeWorkerSettings(
+        renewal_interval_seconds=renewal_interval,
+        poll_interval_seconds=0.01,
+        drain_timeout_seconds=drain_timeout,
+        progress_timeout_seconds=progress_timeout,
+    )
     control = ctrl._SourceControl(settings)
     source = FakeSource(control, c, jobs)
     worker = m._SupervisorCore(source, control, object(), settings)
@@ -249,6 +273,7 @@ def test_source_foreign_thread_call_rejects_while_worker_active():
     finally:
         cleanup(worker, source)
 
+
 def test_stop_between_loop_check_and_reservation_is_clean_no_acquire():
     worker, source, _, _ = build((object(),))
     before, release = Event(), Event()
@@ -293,8 +318,7 @@ def test_configured_drain_deadline_before_e06_retains_unstarted_claim():
 
 
 def test_source_progress_stale_removes_ready_even_with_live_coordinator():
-    worker, source, _, c = build((object(),), progress_timeout=0.02,
-                                 renewal_interval=1.0)
+    worker, source, _, c = build((object(),), progress_timeout=0.02, renewal_interval=1.0)
     source.handler_release.clear()
     try:
         worker.start()
@@ -305,6 +329,7 @@ def test_source_progress_stale_removes_ready_even_with_live_coordinator():
         assert snapshot.reason is c.WorkerReason.PROGRESS_STALE
     finally:
         cleanup(worker, source)
+
 
 def test_confirmed_refusal_reports_not_ready_but_can_cleanly_release_resources():
     worker, source, control, c = build((object(),))
@@ -328,6 +353,7 @@ def test_confirmed_refusal_reports_not_ready_but_can_cleanly_release_resources()
         assert not control.acquisition_in_flight
     finally:
         cleanup(worker, source)
+
 
 def test_clean_stop_waits_for_actual_coordinator_thread_exit():
     worker, source, _, _ = build((object(),))
@@ -353,6 +379,7 @@ def test_clean_stop_waits_for_actual_coordinator_thread_exit():
         release.set()
         cleanup(worker, source)
 
+
 def test_s_s1_control_stop_before_core_event_is_known_nonadmission():
     worker, source, control, c = build((object(),))
     before_acquire, continue_acquire = Event(), Event()
@@ -371,6 +398,7 @@ def test_s_s1_control_stop_before_core_event_is_known_nonadmission():
 
     source.acquire, control.request_stop = acquire, pause_stop
     from threading import Thread
+
     stopper = Thread(target=worker.request_stop)
     try:
         worker.start()
@@ -433,9 +461,9 @@ def test_s_s2_stop_during_ready_publication_never_overwrites_draining(after_publ
         cleanup(worker, source)
 
 
-
 def test_stop_wins_startup_gate_before_core_event_is_published(monkeypatch):
     from threading import Thread
+
     supervisor, control_module, c = modules()
     settings = c.NativeWorkerSettings(renewal_interval_seconds=0.01)
     control = control_module._SourceControl(settings)
@@ -479,7 +507,6 @@ def test_stop_wins_startup_gate_before_core_event_is_published(monkeypatch):
             assert not thread.is_alive()
         original_stop()
         assert core.join(3)
-
 
 
 def test_admitted_startup_drains_after_stop_without_ready_or_claim(monkeypatch):

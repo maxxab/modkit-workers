@@ -1,4 +1,5 @@
 """Real factory composition with explicit test-only native startup seams."""
+
 import os
 import subprocess
 import sys
@@ -33,20 +34,39 @@ def arguments(*, asynchronous=False, limit=1):
 
     class Application:
         called = 0
+
         def validate_profile(self, request):
             self.called += 1
+
         def bind(self, root, context):
             raise AssertionError("construction invoked binding")
 
-    registry = HandlerRegistry([HandlerRegistration(
-        command_type="job", schema_version=1, handler=async_handler if asynchronous else sync,
-        kind=HandlerKind.ASYNC if asynchronous else HandlerKind.SYNC)])
+    registry = HandlerRegistry(
+        [
+            HandlerRegistration(
+                command_type="job",
+                schema_version=1,
+                handler=async_handler if asynchronous else sync,
+                kind=HandlerKind.ASYNC if asynchronous else HandlerKind.SYNC,
+            )
+        ]
+    )
     return dict(
-        registry=registry, application=Application(), config=NativeJobConfig(**config_values()),
-        resources=NativeJobResources(configuration=object(), data_connection=object(),
-            renewal_connection=object(), data_ledger=object(), renewal_ledger=object()),
-        request=AcquireRequest(capabilities=[Capability(command_type="job",schema_version=1)],
-            limit=limit,discovery_budget=max(1,limit)),
+        registry=registry,
+        application=Application(),
+        config=NativeJobConfig(**config_values()),
+        resources=NativeJobResources(
+            configuration=object(),
+            data_connection=object(),
+            renewal_connection=object(),
+            data_ledger=object(),
+            renewal_ledger=object(),
+        ),
+        request=AcquireRequest(
+            capabilities=[Capability(command_type="job", schema_version=1)],
+            limit=limit,
+            discovery_budget=max(1, limit),
+        ),
         settings=NativeWorkerSettings(renewal_interval_seconds=1),
     )
 
@@ -55,6 +75,7 @@ def test_factory_constructs_actual_source_and_core_is_the_only_binder():
     public = factory()
     from modkit_workers.native_contracts import WorkerState
     from modkit_workers.native_job import JobWorkSource
+
     kwargs = arguments()
     worker = public.create_job_worker(**kwargs)
     assert type(worker) is public.JobWorker
@@ -76,12 +97,13 @@ def test_factory_constructs_actual_source_and_core_is_the_only_binder():
 def test_factory_rejects_unsupported_handler_or_multiple_slots(asynchronous, limit):
     public = factory()
     with pytest.raises(ValueError):
-        public.create_job_worker(**arguments(asynchronous=asynchronous,limit=limit))
+        public.create_job_worker(**arguments(asynchronous=asynchronous, limit=limit))
 
 
 def test_factory_rejects_renewal_interval_not_inside_lease():
     public = factory()
     from modkit_workers.native_contracts import NativeWorkerSettings
+
     kwargs = arguments()
     kwargs["settings"] = NativeWorkerSettings(renewal_interval_seconds=30)
     with pytest.raises(ValueError):
@@ -97,15 +119,23 @@ def test_public_worker_cannot_be_constructed_with_unbound_source():
 def test_factory_leaf_import_is_driver_free_without_importing_source():
     factory()
     root = Path(__file__).parents[1]
-    env = dict(os.environ,PYTHONDONTWRITEBYTECODE="1")
-    env["PYTHONPATH"] = str(root/"src") + os.pathsep + env.get("PYTHONPATH","")
-    result = subprocess.run([sys.executable,"-B","-c",
-        "import sys; import modkit_workers.native_worker; "
-        "assert 'psycopg' not in sys.modules; "
-        "assert 'modkit_workers.native_job' not in sys.modules"],
-        env=env,text=True,capture_output=True,timeout=10)
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    env["PYTHONPATH"] = str(root / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "-c",
+            "import sys; import modkit_workers.native_worker; "
+            "assert 'psycopg' not in sys.modules; "
+            "assert 'modkit_workers.native_job' not in sys.modules",
+        ],
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=10,
+    )
     assert result.returncode == 0, result.stdout + result.stderr
-
 
 
 def test_real_factory_startup_poll_and_stop_with_native_io_seams(monkeypatch):

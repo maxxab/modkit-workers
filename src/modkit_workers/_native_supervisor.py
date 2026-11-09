@@ -1,4 +1,5 @@
 """Private three-lane coordinator against a source port, never a native source."""
+
 from __future__ import annotations
 
 from threading import Event, Lock, Thread, current_thread
@@ -25,8 +26,11 @@ class _SupervisorCore:
     """
 
     def __init__(
-        self, source: _NativeJobPort, control: _SourceControl,
-        request: object, settings: NativeWorkerSettings,
+        self,
+        source: _NativeJobPort,
+        control: _SourceControl,
+        request: object,
+        settings: NativeWorkerSettings,
     ):
         if type(settings) is not NativeWorkerSettings or type(control) is not _SourceControl:
             raise ValueError("Expected private control and validated settings")
@@ -75,9 +79,7 @@ class _SupervisorCore:
         self._control.request_stop()
         with self._lock:
             if self._drain_admission_deadline is None:
-                self._drain_admission_deadline = (
-                    monotonic() + self._settings.drain_timeout_seconds
-                )
+                self._drain_admission_deadline = monotonic() + self._settings.drain_timeout_seconds
         self._stop.set()
         try:
             self._source.request_stop()
@@ -88,8 +90,10 @@ class _SupervisorCore:
                 self._state = WorkerState.DRAINING
 
     def stop(self, *, timeout: float | None = None) -> WorkerSnapshot:
-        wait = self._settings.drain_timeout_seconds if timeout is None else _seconds(
-            timeout, zero=True
+        wait = (
+            self._settings.drain_timeout_seconds
+            if timeout is None
+            else _seconds(timeout, zero=True)
         )
         deadline = monotonic() + wait
         self.request_stop()
@@ -147,9 +151,11 @@ class _SupervisorCore:
                         if not self._control.stop_requested or self._control.failure is not None:
                             raise
                     with self._lock:
-                        self._state = (WorkerState.DRAINING
-                                       if self._stop.is_set() or self._control.stop_requested
-                                       else WorkerState.RUNNING)
+                        self._state = (
+                            WorkerState.DRAINING
+                            if self._stop.is_set() or self._control.stop_requested
+                            else WorkerState.RUNNING
+                        )
             self._ready_gate.set()
             while not self._data_done.wait(0.01):
                 source = self._observe_source()
@@ -180,13 +186,18 @@ class _SupervisorCore:
                 self._startup_in_flight = False
                 self._clean = (
                     (self._reason is None or self._control.known_refusal)
-                    and source.cleanup_complete and not source.unresolved
-                    and not source.native_in_flight and not source.slot_occupied
+                    and source.cleanup_complete
+                    and not source.unresolved
+                    and not source.native_in_flight
+                    and not source.slot_occupied
                     and not self._control.acquisition_in_flight
                     and self._control.current_work is None
                 )
-                self._state = (WorkerState.STOPPED if self._clean and self._reason is None
-                               else WorkerState.FAILED)
+                self._state = (
+                    WorkerState.STOPPED
+                    if self._clean and self._reason is None
+                    else WorkerState.FAILED
+                )
             self._finished.set()
 
     def _run_data(self) -> None:
@@ -202,8 +213,11 @@ class _SupervisorCore:
                 try:
                     batch = self._source.acquire(self._request)
                 except _AdmissionClosed:
-                    if (not self._control.stop_requested or self._control.acquisition_in_flight
-                            or self._control.current_work is not None):
+                    if (
+                        not self._control.stop_requested
+                        or self._control.acquisition_in_flight
+                        or self._control.current_work is not None
+                    ):
                         raise
                     break
                 if type(batch) is not tuple or len(batch) > 1:
@@ -228,15 +242,21 @@ class _SupervisorCore:
                     if self._control.current_work is not None:
                         raise RuntimeError("Source returned without confirmed terminal retirement")
                 else:
-                    if self._control.acquisition_in_flight or self._control.current_work is not None:
+                    if (
+                        self._control.acquisition_in_flight
+                        or self._control.current_work is not None
+                    ):
                         raise RuntimeError("Source returned while acquisition is unresolved")
                     self._stop.wait(self._settings.poll_interval_seconds)
         except _AdmissionClosed:
             # Only pre-start stop nonadmission is orderly. Source exceptions
             # after admission or unrelated failures remain real failures.
-            if (started or not self._control.stop_requested
-                    or self._control.failure is not None
-                    or self._control._startup_admitted):
+            if (
+                started
+                or not self._control.stop_requested
+                or self._control.failure is not None
+                or self._control._startup_admitted
+            ):
                 self._record_failure(
                     WorkerReason.EXECUTION_FAILED if started else WorkerReason.STARTUP_REJECTED
                 )
@@ -269,15 +289,25 @@ class _SupervisorCore:
             or now - source_tick > self._settings.progress_timeout_seconds
         )
         ready = (
-            state is WorkerState.RUNNING and self._control.live and source.startup_verified
-            and source.domain_active and not source.unresolved and not stale
+            state is WorkerState.RUNNING
+            and self._control.live
+            and source.startup_verified
+            and source.domain_active
+            and not source.unresolved
+            and not stale
         )
         if wait_expired:
             reason = reason or WorkerReason.DRAIN_TIMEOUT
         elif stale and state is WorkerState.RUNNING:
             reason = reason or WorkerReason.PROGRESS_STALE
         return WorkerSnapshot(
-            state=state, ready=ready, clean_stop=clean, stop_requested=self._stop.is_set(),
-            execution_in_flight=executing, renewal_in_flight=self._control.renewal_in_flight,
-            startup_in_flight=startup, source=source, reason=reason,
+            state=state,
+            ready=ready,
+            clean_stop=clean,
+            stop_requested=self._stop.is_set(),
+            execution_in_flight=executing,
+            renewal_in_flight=self._control.renewal_in_flight,
+            startup_in_flight=startup,
+            source=source,
+            reason=reason,
         )

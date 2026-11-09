@@ -1,4 +1,5 @@
 """Pure bounded owner retention; this module never opens a native connection."""
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -57,15 +58,39 @@ class _RecoveryMaterialLease:
 
 
 def _snapshot_values(s):
-    return (s.phase, s.reason, s.latest_page_outcome, s.ready, s.startup_verified,
-            s.domain_active, s.stop_requested, s.admission_closed, s.native_in_flight,
-            s.cleanup_unresolved, s.unresolved, s.clean_stop, s.has_committed_page,
-            s.last_committed_raw_cursor, s.next_scan_after, s.last_committed_pass_exhausted,
-            s.last_committed_visited, s.last_committed_queued, s.last_committed_expired,
-            s.last_committed_failed, s.last_committed_held, s.committed_pages,
-            s.committed_sweeps, s.committed_visited, s.committed_queued,
-            s.committed_expired, s.committed_failed, s.committed_held,
-            s.progress_sequence, s.progress_age_ms, s.counters_saturated)
+    return (
+        s.phase,
+        s.reason,
+        s.latest_page_outcome,
+        s.ready,
+        s.startup_verified,
+        s.domain_active,
+        s.stop_requested,
+        s.admission_closed,
+        s.native_in_flight,
+        s.cleanup_unresolved,
+        s.unresolved,
+        s.clean_stop,
+        s.has_committed_page,
+        s.last_committed_raw_cursor,
+        s.next_scan_after,
+        s.last_committed_pass_exhausted,
+        s.last_committed_visited,
+        s.last_committed_queued,
+        s.last_committed_expired,
+        s.last_committed_failed,
+        s.last_committed_held,
+        s.committed_pages,
+        s.committed_sweeps,
+        s.committed_visited,
+        s.committed_queued,
+        s.committed_expired,
+        s.committed_failed,
+        s.committed_held,
+        s.progress_sequence,
+        s.progress_age_ms,
+        s.counters_saturated,
+    )
 
 
 def _build_snapshot(values):
@@ -85,7 +110,11 @@ def _project_page(page, *, incoming, discovery_budget):
     Unit tests patch the private lane, not a supported production adapter.
     """
     visited, cursor, exhausted, items = (
-        page.visited, page.next_cursor, page.pass_exhausted, page.items)
+        page.visited,
+        page.next_cursor,
+        page.pass_exhausted,
+        page.items,
+    )
     _integer(visited, 0, discovery_budget)
     if type(exhausted) is not bool or type(items) is not tuple or len(items) > 1:
         raise ValueError("Invalid recovery page")
@@ -107,11 +136,19 @@ def _project_page(page, *, incoming, discovery_budget):
     elif visited != discovery_budget and len(items) != 1:
         raise ValueError("Unexplained recovery termination")
     state = None if not items else items[0].state
-    if state is not None and (type(state) is not str or state not in (
-            "queued", "expired", "failed", "held")):
+    if state is not None and (
+        type(state) is not str or state not in ("queued", "expired", "failed", "held")
+    ):
         raise ValueError("Invalid recovery postimage state")
-    draft = (visited, raw, exhausted, int(state == "queued"), int(state == "expired"),
-             int(state == "failed"), int(state == "held"))
+    draft = (
+        visited,
+        raw,
+        exhausted,
+        int(state == "queued"),
+        int(state == "expired"),
+        int(state == "failed"),
+        int(state == "held"),
+    )
     result = object.__new__(PendingRecoverySummary)
     for index, name in enumerate(PendingRecoverySummary.__slots__):
         object.__setattr__(result, name, draft[index])
@@ -130,9 +167,23 @@ class _NativeRecoveryLane:
     Result graphs are Events-paid until scalar projection returns and its local
     alias is dropped. No native failure triggers rollback, refund or retry here.
     """
-    __slots__ = ("connection", "ledger", "requirements", "execution", "checkout",
-                 "root", "preparation", "ticket", "result", "cleanup", "close_receipt",
-                 "closed", "failed", "root_committed")
+
+    __slots__ = (
+        "connection",
+        "ledger",
+        "requirements",
+        "execution",
+        "checkout",
+        "root",
+        "preparation",
+        "ticket",
+        "result",
+        "cleanup",
+        "close_receipt",
+        "closed",
+        "failed",
+        "root_committed",
+    )
 
     def __init__(self, resources, requirements):
         self.connection, self.ledger = resources.connection, resources.ledger
@@ -154,7 +205,8 @@ class _NativeRecoveryLane:
         self.failed = True
         self.execution = managed.reserve_execution(self.ledger)
         self.checkout = managed.attach_native(
-            self.connection, self.execution, execution_ledger=self.ledger)
+            self.connection, self.execution, execution_ledger=self.ledger
+        )
         self.failed = False
 
     def begin(self):
@@ -190,8 +242,12 @@ class _NativeRecoveryLane:
         _, native = _recovery_api()
         self.failed = True
         self.preparation = native.prepare_readiness(
-            self.execution, "workers", readiness, execution_ledger=self.ledger,
-            capacity=self.requirements.e33_preparation_min)
+            self.execution,
+            "workers",
+            readiness,
+            execution_ledger=self.ledger,
+            capacity=self.requirements.e33_preparation_min,
+        )
         self._consume(self.requirements.e33_result_min, None)
         self.failed = False
         self.commit()
@@ -206,16 +262,25 @@ class _NativeRecoveryLane:
         _, native = _recovery_api()
         self.failed = True
         self.preparation = native.prepare_recovery(
-            self.execution, execution_ledger=self.ledger,
-            capacity=self.requirements.e13_preparation_min, namespace=config.namespace,
-            kind="job", limit=1, scan_after=None if cursor is None else UUID(int=cursor),
-            discovery_budget=config.discovery_budget)
+            self.execution,
+            execution_ledger=self.ledger,
+            capacity=self.requirements.e13_preparation_min,
+            namespace=config.namespace,
+            kind="job",
+            limit=1,
+            scan_after=None if cursor is None else UUID(int=cursor),
+            discovery_budget=config.discovery_budget,
+        )
         cursor = None  # Caller scalar alias ends before result projection/publication.
 
         def project_validated(value):
             # Native execute/read_result already enforce complete canonical Work
             # validation and retained request coupling. No generic SQL decoder.
-            if type(value) is not ScanPage or type(value.items) is not tuple or len(value.items) > 1:
+            if (
+                type(value) is not ScanPage
+                or type(value.items) is not tuple
+                or len(value.items) > 1
+            ):
                 raise ValueError("Expected exact native recovery page")
             for item in value.items:
                 if type(item) is not WorkObservation:
@@ -251,8 +316,13 @@ class _NativeRecoveryLane:
 
     def close(self):
         self._live()
-        if (self.root is not None or self.preparation is not None or self.ticket is not None
-                or self.result is not None or self.checkout is None):
+        if (
+            self.root is not None
+            or self.preparation is not None
+            or self.ticket is not None
+            or self.result is not None
+            or self.checkout is None
+        ):
             raise RuntimeError("Recovery resources are not known quiescent")
         managed, _ = _recovery_api()
         self.failed = True

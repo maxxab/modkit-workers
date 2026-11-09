@@ -1,4 +1,5 @@
 """Pure private contract tests; no native driver imports."""
+
 from dataclasses import FrozenInstanceError
 from importlib import import_module, util
 
@@ -35,11 +36,18 @@ def test_quiescence_requires_exact_booleans():
     with pytest.raises(ValueError):
         c.RenewalQuiescence(1, False, False)
 
-@pytest.mark.parametrize("fields", [
-    {"confirmed_succeeded": -1}, {"renewal_commits": 2**64},
-    {"slot_occupied": 1}, {"phase": "running"}, {"reason": "unknown"},
-    {"last_progress_monotonic": float("nan")},
-])
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"confirmed_succeeded": -1},
+        {"renewal_commits": 2**64},
+        {"slot_occupied": 1},
+        {"phase": "running"},
+        {"reason": "unknown"},
+        {"last_progress_monotonic": float("nan")},
+    ],
+)
 def test_source_snapshot_rejects_unbounded_or_malformed_observation(fields):
     c = contracts()
     with pytest.raises(ValueError):

@@ -1,4 +1,5 @@
 """Protected job observations, never public projections or execution grants."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -61,10 +62,11 @@ class JobRecord:
     @_observation_boundary
     def __post_init__(self) -> None:
         from .rows import _validated_parts
+
         work, details, payload = _validated_parts(self.work, self.details, self.payload)
-        object.__setattr__(self, 'work', work)
-        object.__setattr__(self, 'details', details)
-        object.__setattr__(self, 'payload', payload)
+        object.__setattr__(self, "work", work)
+        object.__setattr__(self, "details", details)
+        object.__setattr__(self, "payload", payload)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -76,14 +78,14 @@ class JobCandidate:
     def __post_init__(self) -> None:
         if type(self.work) is not WorkObservation:
             raise ValueError
-        object.__setattr__(self, 'work', replace(self.work))
-        if self.work.kind == 'job':
+        object.__setattr__(self, "work", replace(self.work))
+        if self.work.kind == "job":
             if type(self.job) is not JobRecord:
                 raise ValueError
             record = replace(self.job)
             if record.work != self.work:
                 raise ValueError
-            object.__setattr__(self, 'job', record)
+            object.__setattr__(self, "job", record)
         elif self.job is not None:
             raise ValueError
 
@@ -99,9 +101,9 @@ class JobAdmissionObservation:
 
 
 class JobIdentityDecision(Enum):
-    NEW = 'new'
-    MATCH = 'match'
-    CONFLICT = 'conflict'
+    NEW = "new"
+    MATCH = "match"
+    CONFLICT = "conflict"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
@@ -112,19 +114,30 @@ class JobIdentityObservation:
 
     @_observation_boundary
     def __post_init__(self) -> None:
-        if type(self.decision) is not JobIdentityDecision or type(self.candidates) is not tuple or len(self.candidates) > 2:
+        if (
+            type(self.decision) is not JobIdentityDecision
+            or type(self.candidates) is not tuple
+            or len(self.candidates) > 2
+        ):
             raise ValueError
         if any(type(item) is not JobCandidate for item in self.candidates):
             raise ValueError
         items = tuple(replace(item) for item in self.candidates)
-        if any(items[index - 1].work.work_id >= items[index].work.work_id for index in range(1, len(items))):
+        if any(
+            items[index - 1].work.work_id >= items[index].work.work_id
+            for index in range(1, len(items))
+        ):
             raise ValueError
-        object.__setattr__(self, 'candidates', items)
+        object.__setattr__(self, "candidates", items)
         if self.decision is JobIdentityDecision.NEW:
             if items or self.original_work_id is not None:
                 raise ValueError
         elif self.decision is JobIdentityDecision.MATCH:
-            if len(items) != 1 or items[0].job is None or _work_id(self.original_work_id) != items[0].work.work_id:
+            if (
+                len(items) != 1
+                or items[0].job is None
+                or _work_id(self.original_work_id) != items[0].work.work_id
+            ):
                 raise ValueError
         elif not items or self.original_work_id is not None:
             raise ValueError
@@ -141,15 +154,24 @@ class JobClaimObservation:
             raise ValueError
         record, fence = replace(self.record), replace(self.fence)
         work = record.work
-        if work.state != 'claimed' or work.dispatch_id is not None or work.cancellation_requested:
+        if work.state != "claimed" or work.dispatch_id is not None or work.cancellation_requested:
             raise ValueError
-        if work.runnable_version is None or work.lease_until is None or work.attempt_count >= work.max_attempts:
+        if (
+            work.runnable_version is None
+            or work.lease_until is None
+            or work.attempt_count >= work.max_attempts
+        ):
             raise ValueError
-        if (fence.work_id, fence.token, fence.ownership_revision, fence.cycle, fence.expected_attempt) != (
-            work.work_id, work.token, work.ownership_revision, work.cycle, work.attempt_count):
+        if (
+            fence.work_id,
+            fence.token,
+            fence.ownership_revision,
+            fence.cycle,
+            fence.expected_attempt,
+        ) != (work.work_id, work.token, work.ownership_revision, work.cycle, work.attempt_count):
             raise ValueError
-        object.__setattr__(self, 'record', record)
-        object.__setattr__(self, 'fence', fence)
+        object.__setattr__(self, "record", record)
+        object.__setattr__(self, "fence", fence)
         # Structural ownership/input only. Even PRESENT material needs application
         # readiness and authorization; ERASED is always nonexecutable.
 
@@ -163,7 +185,11 @@ class DispatchedJobObservation:
 
     @_observation_boundary
     def __post_init__(self) -> None:
-        if type(self.claim) is not JobClaimObservation or type(self.fence) is not shared.Fence or type(self.dispatch_id) is not UUID:
+        if (
+            type(self.claim) is not JobClaimObservation
+            or type(self.fence) is not shared.Fence
+            or type(self.dispatch_id) is not UUID
+        ):
             raise ValueError
         claim, fence = replace(self.claim), replace(self.fence)
         if claim.record.payload.material_state is shared.MaterialState.ERASED:
@@ -172,11 +198,16 @@ class DispatchedJobObservation:
         prior = claim.fence
         if self.attempt != prior.expected_attempt + 1:
             raise ValueError
-        if (fence.work_id, fence.token, fence.ownership_revision, fence.cycle, fence.expected_attempt) != (
-            prior.work_id, prior.token, prior.ownership_revision, prior.cycle, self.attempt):
+        if (
+            fence.work_id,
+            fence.token,
+            fence.ownership_revision,
+            fence.cycle,
+            fence.expected_attempt,
+        ) != (prior.work_id, prior.token, prior.ownership_revision, prior.cycle, self.attempt):
             raise ValueError
-        object.__setattr__(self, 'claim', claim)
-        object.__setattr__(self, 'fence', fence)
+        object.__setattr__(self, "claim", claim)
+        object.__setattr__(self, "fence", fence)
 
 
 # Four concrete semantic cores. Public constructors keep their original boundary
@@ -184,6 +215,7 @@ class DispatchedJobObservation:
 def _invalid(raw):
     if raw:
         from modkit_events.persistence.errors import _reject_validation
+
         _reject_validation()
     raise ValueError
 
@@ -194,6 +226,7 @@ def _details_fields(work_id, application, tenant, owner, binding, *, raw=False):
     (_work_id_raw if raw else _work_id)(work_id)
     if raw:
         from modkit_events.persistence.scope import _scope_raw
+
         _scope_raw(application, tenant, owner)
         binding = common._bytes_raw(binding)
         common._decode_protected_binding_raw(binding)
@@ -205,28 +238,57 @@ def _details_fields(work_id, application, tenant, owner, binding, *, raw=False):
 
 
 _PAYLOAD_FIELDS = (
-    "semantic_input", "material_state", "sidecar", "reference", "codec",
-    "key_version", "expires_at", "recovery_metadata", "cleanup_policy", "projection_metadata",
+    "semantic_input",
+    "material_state",
+    "sidecar",
+    "reference",
+    "codec",
+    "key_version",
+    "expires_at",
+    "recovery_metadata",
+    "cleanup_policy",
+    "projection_metadata",
 )
 
 
 def _payload_values(value):
     return (
-        value.semantic_input, value.material_state, value.sidecar, value.reference,
-        value.codec, value.key_version, value.expires_at, value.recovery_metadata,
-        value.cleanup_policy, value.projection_metadata,
+        value.semantic_input,
+        value.material_state,
+        value.sidecar,
+        value.reference,
+        value.codec,
+        value.key_version,
+        value.expires_at,
+        value.recovery_metadata,
+        value.cleanup_policy,
+        value.projection_metadata,
     )
 
 
-def _payload_fields(semantic, state, sidecar, reference, codec, key, expiry,
-                    recovery, cleanup, projection, *, raw=False):
+def _payload_fields(
+    semantic,
+    state,
+    sidecar,
+    reference,
+    codec,
+    key,
+    expiry,
+    recovery,
+    cleanup,
+    projection,
+    *,
+    raw=False,
+):
     if type(state) is not shared.MaterialState or type(cleanup) is not shared.CleanupPolicy:
         _invalid(raw)
     byte_value = common._bytes_raw if raw else common._bytes
     parse = common._parse_canonical_json_raw if raw else common.parse_canonical_json
     identifier = common._identifier_raw if raw else common._identifier
     semantic, recovery, projection = (
-        byte_value(semantic), byte_value(recovery), byte_value(projection)
+        byte_value(semantic),
+        byte_value(recovery),
+        byte_value(projection),
     )
     sidecar = None if sidecar is None else byte_value(sidecar)
     reference = None if reference is None else byte_value(reference)
@@ -235,6 +297,7 @@ def _payload_fields(semantic, state, sidecar, reference, codec, key, expiry,
     if expiry is not None:
         if raw:
             from datetime import timezone
+
             if type(expiry) is not datetime or expiry.tzinfo is not timezone.utc:
                 _invalid(raw)
         else:
@@ -259,15 +322,14 @@ def _payload_fields(semantic, state, sidecar, reference, codec, key, expiry,
 
 def _admission_fields(work_id, inserted, *, raw=False):
     from .models import _work_id_raw
+
     (_work_id_raw if raw else _work_id)(work_id)
     if type(inserted) is not bool:
         _invalid(raw)
 
 
 def _job_details_raw(work_id, application, tenant, owner, protected_binding, /):
-    binding = _details_fields(
-        work_id, application, tenant, owner, protected_binding, raw=True
-    )
+    binding = _details_fields(work_id, application, tenant, owner, protected_binding, raw=True)
     value = object.__new__(JobDetails)
     object.__setattr__(value, "work_id", work_id)
     object.__setattr__(value, "application", application)
@@ -281,17 +343,40 @@ def _validate_job_details_raw(value, /):
     if type(value) is not JobDetails:
         _invalid(True)
     _details_fields(
-        value.work_id, value.application, value.tenant, value.owner,
-        value.protected_binding, raw=True,
+        value.work_id,
+        value.application,
+        value.tenant,
+        value.owner,
+        value.protected_binding,
+        raw=True,
     )
 
 
-def _job_payload_raw(*, semantic_input, material_state, sidecar, reference, codec,
-                     key_version, expires_at, recovery_metadata, cleanup_policy,
-                     projection_metadata):
+def _job_payload_raw(
+    *,
+    semantic_input,
+    material_state,
+    sidecar,
+    reference,
+    codec,
+    key_version,
+    expires_at,
+    recovery_metadata,
+    cleanup_policy,
+    projection_metadata,
+):
     fields = _payload_fields(
-        semantic_input, material_state, sidecar, reference, codec, key_version,
-        expires_at, recovery_metadata, cleanup_policy, projection_metadata, raw=True,
+        semantic_input,
+        material_state,
+        sidecar,
+        reference,
+        codec,
+        key_version,
+        expires_at,
+        recovery_metadata,
+        cleanup_policy,
+        projection_metadata,
+        raw=True,
     )
     value = object.__new__(JobPayload)
     for name, item in zip(_PAYLOAD_FIELDS, fields):
@@ -307,6 +392,7 @@ def _validate_job_payload_raw(value, /):
 
 def _job_record_raw(*, work, details, payload):
     from .rows import _validated_parts
+
     _validated_parts(work, details, payload, _raw=True)
     value = object.__new__(JobRecord)
     object.__setattr__(value, "work", work)
@@ -317,6 +403,7 @@ def _job_record_raw(*, work, details, payload):
 
 def _validate_job_record_raw(value, /):
     from .rows import _validated_parts
+
     if type(value) is not JobRecord:
         _invalid(True)
     _validated_parts(value.work, value.details, value.payload, _raw=True)
@@ -410,12 +497,20 @@ def _validate_job_claim_raw(value, /):
     _validate_fence_raw(value.fence)
     work, fence = value.record.work, value.fence
     if (
-        work.state != "claimed" or work.dispatch_id is not None or work.cancellation_requested
-        or work.runnable_version is None or work.lease_until is None
+        work.state != "claimed"
+        or work.dispatch_id is not None
+        or work.cancellation_requested
+        or work.runnable_version is None
+        or work.lease_until is None
         or work.attempt_count >= work.max_attempts
-        or (fence.work_id, fence.token, fence.ownership_revision, fence.cycle,
-            fence.expected_attempt) != (work.work_id, work.token, work.ownership_revision,
-                                       work.cycle, work.attempt_count)
+        or (
+            fence.work_id,
+            fence.token,
+            fence.ownership_revision,
+            fence.cycle,
+            fence.expected_attempt,
+        )
+        != (work.work_id, work.token, work.ownership_revision, work.cycle, work.attempt_count)
     ):
         _reject_validation()
 

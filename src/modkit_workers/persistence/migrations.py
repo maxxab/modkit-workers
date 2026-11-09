@@ -3,6 +3,7 @@
 No production manifest is supplied until the reviewed SQL closure exists.
 Importing this module performs no resource reads or database operations.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -163,7 +164,9 @@ def _keys(value: object, expected: set[str]) -> None:
 
 def _parse(raw: bytes) -> tuple[Migration, ...]:
     try:
-        document = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs, parse_constant=_constant)
+        document = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_pairs, parse_constant=_constant
+        )
     except (ValueError, RecursionError):
         raise ValueError("invalid migration manifest") from None
     _keys(document, {"format_version", "package", "migrations"})
@@ -175,8 +178,19 @@ def _parse(raw: bytes) -> tuple[Migration, ...]:
     if type(entries) is not list or len(entries) != 1:
         raise ValueError("invalid migration manifest")
     entry = entries[0]
-    _keys(entry, {"component", "version", "resources", "migration_digest", "depends_on",
-                  "catalog_contract_id", "scope_format_id", "intent_format_id"})
+    _keys(
+        entry,
+        {
+            "component",
+            "version",
+            "resources",
+            "migration_digest",
+            "depends_on",
+            "catalog_contract_id",
+            "scope_format_id",
+            "intent_format_id",
+        },
+    )
     if type(entry["resources"]) is not list or len(entry["resources"]) != 2:
         raise ValueError("invalid migration manifest")
     if type(entry["depends_on"]) is not list or len(entry["depends_on"]) > 1:

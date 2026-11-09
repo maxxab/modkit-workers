@@ -1,4 +1,5 @@
 """Real thread tests of private control; no database."""
+
 from contextlib import contextmanager
 from importlib import import_module, util
 from queue import Queue
@@ -17,6 +18,7 @@ def modules():
 @contextmanager
 def control_harness(renew=None, unblock=None, *, ready=True):
     module, c = modules()
+
     class Source:
         def renew(self, work, fence):
             return renew(work, fence) if renew is not None else None
@@ -129,14 +131,14 @@ def test_blocked_renewal_quiescence_timeout_does_not_stop_callback():
             data(lambda: control.activate(work, fence))
             assert entered.wait(2)
             drain = data(lambda: control.close_renewal(work))
-            q = data(lambda: control.await_renewal_quiescent(
-                drain, deadline_monotonic=monotonic()))
+            q = data(lambda: control.await_renewal_quiescent(drain, deadline_monotonic=monotonic()))
             assert not q.quiescent
             assert control.renewal_in_flight
             assert not completed.is_set()
             release.set()
-            q = data(lambda: control.await_renewal_quiescent(
-                drain, deadline_monotonic=monotonic() + 2))
+            q = data(
+                lambda: control.await_renewal_quiescent(drain, deadline_monotonic=monotonic() + 2)
+            )
             assert q.quiescent and q.outcome_known and q.domain_active
             data(lambda: control.retire_work(work))
     finally:
@@ -145,8 +147,7 @@ def test_blocked_renewal_quiescence_timeout_does_not_stop_callback():
 
 def test_two_jobs_share_lifetime_lease_and_reject_stale_generation():
     with control_harness() as (control, source, data, c):
-        lease = data(lambda: control.require_admission(
-            source, kind=c.NativeAdmissionKind.ACQUIRE))
+        lease = data(lambda: control.require_admission(source, kind=c.NativeAdmissionKind.ACQUIRE))
         old_drain = None
         for _ in range(2):
             work = object()
@@ -154,16 +155,22 @@ def test_two_jobs_share_lifetime_lease_and_reject_stale_generation():
             data(lambda: control.publish_acquisition(token, work))
             data(lambda: control.activate(work, object()))
             drain = data(lambda: control.close_renewal(work))
-            q = data(lambda: control.await_renewal_quiescent(
-                drain, deadline_monotonic=monotonic() + 2))
+            q = data(
+                lambda: control.await_renewal_quiescent(drain, deadline_monotonic=monotonic() + 2)
+            )
             assert q.quiescent and q.outcome_known
             data(lambda: control.retire_work(work))
-            assert data(lambda: control.require_admission(
-                source, kind=c.NativeAdmissionKind.ACQUIRE)) is lease
+            assert (
+                data(lambda: control.require_admission(source, kind=c.NativeAdmissionKind.ACQUIRE))
+                is lease
+            )
             if old_drain is not None:
                 with pytest.raises(RuntimeError):
-                    data(lambda: control.await_renewal_quiescent(
-                        old_drain, deadline_monotonic=monotonic()))
+                    data(
+                        lambda: control.await_renewal_quiescent(
+                            old_drain, deadline_monotonic=monotonic()
+                        )
+                    )
             old_drain = drain
 
 
@@ -182,8 +189,7 @@ def test_callback_failure_revokes_admission_without_false_known_outcome():
         assert entered.wait(2)
         assert control.wait_failed(2)
         drain = data(lambda: control.close_renewal(work))
-        q = data(lambda: control.await_renewal_quiescent(
-            drain, deadline_monotonic=monotonic() + 1))
+        q = data(lambda: control.await_renewal_quiescent(drain, deadline_monotonic=monotonic() + 1))
         assert q.quiescent and not q.outcome_known and not q.domain_active
         with pytest.raises(RuntimeError):
             data(lambda: control.retire_work(work))
@@ -197,6 +203,7 @@ def test_cannot_start_unbound_or_publish_ready_without_live_lanes():
     with pytest.raises(RuntimeError):
         control.publish_ready(object())
 
+
 def test_renewal_callback_must_belong_to_the_bound_source():
     m, c = modules()
     control = m._SourceControl(c.NativeWorkerSettings(renewal_interval_seconds=0.01))
@@ -204,13 +211,18 @@ def test_renewal_callback_must_belong_to_the_bound_source():
     with pytest.raises(RuntimeError):
         control.bind_renewal(lambda work, fence: None)
 
+
 def test_confirmed_refusal_retires_only_local_reservation_and_stops():
     with control_harness() as (control, source, data, c):
         token = data(lambda: control.reserve_acquisition(source))
         with pytest.raises(ValueError):
             data(lambda: control.refuse_acquisition(token, reason="bad"))
         with pytest.raises(RuntimeError):
-            data(lambda: control.refuse_acquisition(object(), reason=c.WorkerReason.CAPACITY_UNAVAILABLE))
+            data(
+                lambda: control.refuse_acquisition(
+                    object(), reason=c.WorkerReason.CAPACITY_UNAVAILABLE
+                )
+            )
         data(lambda: control.refuse_acquisition(token, reason=c.WorkerReason.CAPACITY_UNAVAILABLE))
         assert not control.acquisition_in_flight
         assert control.known_refusal
@@ -226,8 +238,13 @@ def test_unknown_failure_retains_reservation_and_cannot_be_refunded_as_refusal()
         assert control.acquisition_in_flight
         assert not control.known_refusal
         with pytest.raises(RuntimeError):
-            data(lambda: control.refuse_acquisition(token, reason=c.WorkerReason.CAPACITY_UNAVAILABLE))
+            data(
+                lambda: control.refuse_acquisition(
+                    token, reason=c.WorkerReason.CAPACITY_UNAVAILABLE
+                )
+            )
         assert control.acquisition_in_flight
+
 
 def test_reserved_continuation_survives_stop_but_not_failure_or_publication():
     with control_harness() as (control, source, data, c):
@@ -255,7 +272,6 @@ def test_reserved_continuation_rejects_unknown_failed_controller():
 def test_profile_unsupported_has_distinct_stable_reason():
     _, c = modules()
     assert c.WorkerReason.PROFILE_UNSUPPORTED.value == "profile_unsupported"
-
 
 
 def test_startup_is_exact_bound_pre_ready_data_lane_and_once_only():

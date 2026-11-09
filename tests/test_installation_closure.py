@@ -1,4 +1,5 @@
 """Connection-free closure controls; PostgreSQL ACL/native qualification is separate."""
+
 import hashlib
 import json
 import os
@@ -11,7 +12,9 @@ ROOT = Path(__file__).parents[1]
 SQLDIR = ROOT / "src/modkit_workers/persistence/sql"
 ROLES = ("modkit_runtime", "modkit_reconciler", "modkit_operator")
 SIGNATURES = {
-    "modkit_workers.w01(uuid,text,bytea,bytea,bytea,bytea,bytea,int4,bytea,bytea,bytea,bytea,bytea,bytea,bytea,bytea,text,int4,timestamptz,timestamptz,text,bytea,bytea,bytea,bytea,timestamptz,bytea,text,bytea)": ROLES[:1],
+    "modkit_workers.w01(uuid,text,bytea,bytea,bytea,bytea,bytea,int4,bytea,bytea,bytea,bytea,bytea,bytea,bytea,bytea,text,int4,timestamptz,timestamptz,text,bytea,bytea,bytea,bytea,timestamptz,bytea,text,bytea)": ROLES[
+        :1
+    ],
     "modkit_workers.w02(uuid)": ROLES,
     "modkit_workers.w03(bytea,timestamptz,uuid,int4)": ROLES,
     "modkit_workers.w03(bytea,timestamptz,uuid,int4,int8)": ROLES,
@@ -31,7 +34,9 @@ def test_neutral_header_and_only_de6_change():
     assert text.splitlines()[5] == "DO $preflight$"
     normalized = re.sub(
         r"       -- IC-D-E6 BEGIN.*?       -- IC-D-E6 END\n       THEN",
-        OLD_SCHEMA_CHECK, text, flags=re.S,
+        OLD_SCHEMA_CHECK,
+        text,
+        flags=re.S,
     )
     assert hashlib.sha256("\n".join(normalized.splitlines()[5:]).encode()).hexdigest() == (
         BASELINE_NONHEADER_SHA
@@ -47,8 +52,14 @@ def test_de6_requires_exact_presence_and_exclusion_and_effective_access():
     assert len(re.findall(r"\bEXCEPT\b", section)) == 2
     for role in ROLES:
         assert role in section
-    for fragment in ("acldefault('n',owner_oid)", "acl.grantor", "acl.is_grantable",
-                     "has_schema_privilege", "'USAGE'", "'CREATE'"):
+    for fragment in (
+        "acldefault('n',owner_oid)",
+        "acl.grantor",
+        "acl.is_grantable",
+        "has_schema_privilege",
+        "'USAGE'",
+        "'CREATE'",
+    ):
         assert fragment in section
     # Still denies all nonowner access to the private bounded Events E04.
     assert "COALESCE(claim_abi.proacl,pg_catalog.acldefault('f',owner_oid))" in section
@@ -81,15 +92,30 @@ def test_exact_grant_matrix_no_other_grants():
 def test_grant_oracle_covers_effective_defaults_columns_and_private_helpers():
     text = (SQLDIR / "grants_runtime.sql").read_text()
     for fragment in (
-        "pg_catalog.pg_default_acl", "d.defaclnamespace IN (0,workers_oid)",
-        "d.defaclrole=owner_oid", "pg_catalog.pg_auth_members",
-        "pg_catalog.has_schema_privilege", "pg_catalog.has_function_privilege",
-        "pg_catalog.has_table_privilege", "pg_catalog.has_column_privilege",
-        "pg_catalog.has_sequence_privilege", "a.attacl",
-        "p.prosrc", "p.proargnames", "p.proallargtypes", "p.proargmodes",
-        "p.proconfig", "p.proowner", "p.prosecdef", "pg_catalog.sha256",
-        "schema_versions", "pg_catalog.pg_type", "_parse_result",
-        "EXCEPT", "is_grantable", "'PZ011'",
+        "pg_catalog.pg_default_acl",
+        "d.defaclnamespace IN (0,workers_oid)",
+        "d.defaclrole=owner_oid",
+        "pg_catalog.pg_auth_members",
+        "pg_catalog.has_schema_privilege",
+        "pg_catalog.has_function_privilege",
+        "pg_catalog.has_table_privilege",
+        "pg_catalog.has_column_privilege",
+        "pg_catalog.has_sequence_privilege",
+        "a.attacl",
+        "p.prosrc",
+        "p.proargnames",
+        "p.proallargtypes",
+        "p.proargmodes",
+        "p.proconfig",
+        "p.proowner",
+        "p.prosecdef",
+        "pg_catalog.sha256",
+        "schema_versions",
+        "pg_catalog.pg_type",
+        "_parse_result",
+        "EXCEPT",
+        "is_grantable",
+        "'PZ011'",
     ):
         assert fragment in text, fragment
     assert "DO $workers_grants_preflight$" in text
@@ -118,29 +144,36 @@ def verify_pair(workers, events):
         assert aggregate(component, migration["resources"]) == migration["migration_digest"]
     worker = json.loads((workers / "manifest.json").read_text())["migrations"][0]
     event = json.loads((events / "manifest.json").read_text())["migrations"][0]
-    assert worker["depends_on"] == [{
-        "component": "events", "version": 1, "migration_digest": event["migration_digest"]
-    }]
+    assert worker["depends_on"] == [
+        {"component": "events", "version": 1, "migration_digest": event["migration_digest"]}
+    ]
     return worker, event
 
 
-@pytest.mark.skipif(not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
-                    reason="Explicit frozen Events dependency handoff required")
+@pytest.mark.skipif(
+    not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
+    reason="Explicit frozen Events dependency handoff required",
+)
 def test_actual_frozen_pair_and_inert_public_api():
     events = Path(os.environ["MODKIT_FROZEN_EVENTS_SQL"])
     verify_pair(SQLDIR, events)
     from modkit_workers.persistence import migrations
-    migration, = migrations.manifest()
+
+    (migration,) = migrations.manifest()
     for resource in migration.resources:
-        assert migrations.read_sql(migration, resource).encode() == (
-            SQLDIR / resource.path.split("/")[1]
-        ).read_bytes()
+        assert (
+            migrations.read_sql(migration, resource).encode()
+            == (SQLDIR / resource.path.split("/")[1]).read_bytes()
+        )
 
 
-@pytest.mark.skipif(not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
-                    reason="Explicit frozen Events dependency handoff required")
+@pytest.mark.skipif(
+    not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
+    reason="Explicit frozen Events dependency handoff required",
+)
 def test_wrong_well_formed_dependency_is_rejected(tmp_path):
     import shutil
+
     events = Path(os.environ["MODKIT_FROZEN_EVENTS_SQL"])
     own = tmp_path / "workers"
     shutil.copytree(SQLDIR, own, ignore=shutil.ignore_patterns("__pycache__"))
@@ -153,8 +186,13 @@ def test_wrong_well_formed_dependency_is_rejected(tmp_path):
 
 def test_type_oracle_preserves_only_canonical_implicit_topology():
     text = (SQLDIR / "grants_runtime.sql").read_text()
-    for token in ("t.typrelid", "c.reltype=t.oid", "element.typarray=t.oid",
-                  "t.typacl IS NOT NULL", "t.typowner<>owner_oid"):
+    for token in (
+        "t.typrelid",
+        "c.reltype=t.oid",
+        "element.typarray=t.oid",
+        "t.typacl IS NOT NULL",
+        "t.typowner<>owner_oid",
+    ):
         assert token in text
     assert "has_type_privilege" not in text
 
@@ -165,7 +203,8 @@ def test_grant_function_attestation_matches_every_exact_initial_body():
     definitions = re.findall(
         r"CREATE FUNCTION (modkit_workers\.\w+)\((.*?)\)\s*RETURNS TABLE\s*"
         r"\((.*?)\)\s*LANGUAGE(.*?)AS \$body\$(.*?)\$body\$;",
-        initial, re.S,
+        initial,
+        re.S,
     )
     assert len(definitions) == 7
     for name, inputs, outputs, attributes, body in definitions:
@@ -185,8 +224,10 @@ def test_grant_function_attestation_matches_every_exact_initial_body():
         assert ("'s'" if "STABLE" in attributes else "'v'") + ",'" + digest + "'" in grants
 
 
-@pytest.mark.skipif(not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
-                    reason="Explicit frozen Events dependency handoff required")
+@pytest.mark.skipif(
+    not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
+    reason="Explicit frozen Events dependency handoff required",
+)
 def test_missing_and_tampered_real_closure_fail_closed(tmp_path, monkeypatch):
     import shutil
 
@@ -204,15 +245,17 @@ def test_missing_and_tampered_real_closure_fail_closed(tmp_path, monkeypatch):
         migrations.manifest()
 
 
-@pytest.mark.skipif(not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
-                    reason="Explicit frozen Events dependency handoff required")
+@pytest.mark.skipif(
+    not os.environ.get("MODKIT_FROZEN_EVENTS_SQL"),
+    reason="Explicit frozen Events dependency handoff required",
+)
 def test_shared_receipt_uses_events_descriptor_and_six_native_parameters():
     from modkit_events.persistence import migrations as events
 
     from modkit_workers.persistence import migrations as workers
 
-    event, = events.manifest()
-    worker, = workers.manifest()
+    (event,) = events.manifest()
+    (worker,) = workers.manifest()
     assert worker.depends_on[0].migration_digest == event.migration_digest
     text = events.read_owner_receipt(event)
     assert set(re.findall(r"\$(\d+)", text)) == set("123456")

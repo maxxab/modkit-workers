@@ -67,8 +67,12 @@ _FIND_JOBS = WorkersNativeOperation(
     decode_rows=rows._decode_find_raw,
     validate_result=rows._validate_find_result_raw,
     result_types=(
-        JobRecord, JobDetails, JobPayload, JobCandidate,
-        JobIdentityObservation, JobIdentityDecision,
+        JobRecord,
+        JobDetails,
+        JobPayload,
+        JobCandidate,
+        JobIdentityObservation,
+        JobIdentityDecision,
     ),
 )
 
@@ -89,23 +93,33 @@ FIND_JOBS_RESULT_CAPACITY = result_capacity(_FIND_JOBS)
 def prepare_submit(execution, request: JobSubmitRequest, /, *, execution_ledger):
     """Reserve and freeze a W01 submission; this does not execute or commit."""
     from modkit_events.persistence.native_execution import prepare_component
+
     return prepare_component(execution, _SUBMIT, request, execution_ledger=execution_ledger)
 
 
 def prepare_read_job(execution, request: JobReadRequest, /, *, execution_ledger):
     """Reserve and freeze a W02 complete protected-record read."""
     from modkit_events.persistence.native_execution import prepare_component
+
     return prepare_component(execution, _READ_JOB, request, execution_ledger=execution_ledger)
 
 
 def prepare_list_jobs(
-    execution, request: JobListRequest, /, *, execution_ledger,
+    execution,
+    request: JobListRequest,
+    /,
+    *,
+    execution_ledger,
     max_page_payload_bytes=DEFAULT_LIST_PAGE_PAYLOAD_BYTES,
 ):
     """Prepare a complete page with an explicit aggregate BYTEA allowance."""
     from modkit_events.persistence.native_execution import prepare_component
+
     return prepare_component(
-        execution, _LIST_JOBS, request, execution_ledger=execution_ledger,
+        execution,
+        _LIST_JOBS,
+        request,
+        execution_ledger=execution_ledger,
         max_page_payload_bytes=max_page_payload_bytes,
     )
 
@@ -113,24 +127,41 @@ def prepare_list_jobs(
 def prepare_find_jobs(execution, request: JobFindRequest, /, *, execution_ledger):
     """Prepare a complete comparison-only lookup; never submit or claim work."""
     from modkit_events.persistence.native_execution import prepare_component
+
     return prepare_component(execution, _FIND_JOBS, request, execution_ledger=execution_ledger)
 
 
 def prepare_acquire(
-    execution, request: JobAcquireRequest, /, *, execution_ledger,
+    execution,
+    request: JobAcquireRequest,
+    /,
+    *,
+    execution_ledger,
     max_page_payload_bytes=DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES,
 ):
     """Prepare an atomic complete claim page with an all-variable-byte budget."""
     from modkit_events.persistence.native_execution import prepare_component
+
     return prepare_component(
-        execution, _ACQUIRE, request, execution_ledger=execution_ledger,
+        execution,
+        _ACQUIRE,
+        request,
+        execution_ledger=execution_ledger,
         max_page_payload_bytes=max_page_payload_bytes,
     )
 
 
 __all__ = (
-    "prepare_acquire", "DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES", "MAX_ACQUIRE_PAGE_PAYLOAD_BYTES",
-    "prepare_submit", "prepare_read_job", "prepare_list_jobs", "prepare_find_jobs",
-    "SUBMIT_RESULT_CAPACITY", "READ_JOB_RESULT_CAPACITY", "FIND_JOBS_RESULT_CAPACITY",
-    "DEFAULT_LIST_PAGE_PAYLOAD_BYTES", "MAX_LIST_PAGE_PAYLOAD_BYTES",
+    "prepare_acquire",
+    "DEFAULT_ACQUIRE_PAGE_PAYLOAD_BYTES",
+    "MAX_ACQUIRE_PAGE_PAYLOAD_BYTES",
+    "prepare_submit",
+    "prepare_read_job",
+    "prepare_list_jobs",
+    "prepare_find_jobs",
+    "SUBMIT_RESULT_CAPACITY",
+    "READ_JOB_RESULT_CAPACITY",
+    "FIND_JOBS_RESULT_CAPACITY",
+    "DEFAULT_LIST_PAGE_PAYLOAD_BYTES",
+    "MAX_LIST_PAGE_PAYLOAD_BYTES",
 )

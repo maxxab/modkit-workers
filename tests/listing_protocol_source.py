@@ -141,19 +141,26 @@ def run_bounded_listing(connect, *, lease_reference, protocol):
         fetched, expected = listed(16777216)
         exact = sum(
             0 if row[index] is None else len(row[index])
-            for row in fetched for index in PAGE_PAYLOAD_POSITIONS
+            for row in fetched
+            for index in PAGE_PAYLOAD_POSITIONS
         )
         assert exact > 1 and len(expected) == 3
         for budget in (exact, 16777216, 2**31, 3758096384):
             assert listed(budget)[1] == expected
         primary = h.expected_error(
-            c, {**sql, "submit": BOUNDED_LIST}, h.prepared(jobs[0]), "PZ013",
+            c,
+            {**sql, "submit": BOUNDED_LIST},
+            h.prepared(jobs[0]),
+            "PZ013",
             raw=bounded_params(request, exact - 1),
         )
         assert primary.diag.message_primary == "W03 page payload budget exceeded"
         for budget in (None, 0, -1, 3758096385):
             h.expected_error(
-                c, {**sql, "submit": BOUNDED_LIST}, h.prepared(jobs[0]), "PZ006",
+                c,
+                {**sql, "submit": BOUNDED_LIST},
+                h.prepared(jobs[0]),
+                "PZ006",
                 raw=bounded_params(request, budget),
             )
         c.rollback()

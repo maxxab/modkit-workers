@@ -1,4 +1,5 @@
 """Deterministic private-seam doubles; never native/runtime qualification."""
+
 from contextlib import contextmanager
 from threading import Event
 from types import SimpleNamespace
@@ -77,9 +78,12 @@ class Lane:
 
 
 def page(*, visited, cursor, exhausted, state=None):
-    return SimpleNamespace(visited=visited, next_cursor=None if cursor is None else UUID(int=cursor),
-                          pass_exhausted=exhausted,
-                          items=() if state is None else (SimpleNamespace(state=state),))
+    return SimpleNamespace(
+        visited=visited,
+        next_cursor=None if cursor is None else UUID(int=cursor),
+        pass_exhausted=exhausted,
+        items=() if state is None else (SimpleNamespace(state=state),),
+    )
 
 
 def owner(monkeypatch, pages):
@@ -89,7 +93,9 @@ def owner(monkeypatch, pages):
     events = []
     lane = Lane(pages, events)
     app = Application(events)
-    resources = c.NativeRecoveryResources(configuration=object(), connection=object(), ledger=object())
+    resources = c.NativeRecoveryResources(
+        configuration=object(), connection=object(), ledger=object()
+    )
     monkeypatch.setattr(setup, "_recheck_profile", lambda *args: None)
     monkeypatch.setattr(setup, "_validate_resources", lambda *args: None)
     monkeypatch.setattr(setup, "_adopt_resources", lambda *args: events.append("adopt"))
@@ -98,15 +104,18 @@ def owner(monkeypatch, pages):
     ticks = [0.0]
     monkeypatch.setattr(m, "_clock", lambda: ticks[0])
     monkeypatch.setattr(m, "_wait", lambda event, seconds: ticks.__setitem__(0, ticks[0] + seconds))
-    result = m.create_job_recovery(config=config(discovery_budget=2), resources=resources,
-                                  application=app)
+    result = m.create_job_recovery(
+        config=config(discovery_budget=2), resources=resources, application=app
+    )
     lane.owner = result
     return result, lane, app, events
 
 
 def test_empty_progress_and_exhaustion_commit_cursor(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=2, cursor=9, exhausted=False),
-                                             page(visited=0, cursor=9, exhausted=True)])
+    o, lane, app, events = owner(
+        monkeypatch,
+        [page(visited=2, cursor=9, exhausted=False), page(visited=0, cursor=9, exhausted=True)],
+    )
     result = o.run(stop_event=Event())
     c = module()
     assert [e for e in events if isinstance(e, tuple)] == [("scan", None), ("scan", 9)]
@@ -122,7 +131,9 @@ def test_empty_progress_and_exhaustion_commit_cursor(monkeypatch):
 
 
 def test_unknown_commit_does_not_publish_or_cleanup(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     lane.commit_unknown = True
     result = o.run(stop_event=Event())
     assert result.committed_pages == 0 and not result.has_committed_page
@@ -134,7 +145,9 @@ def test_unknown_commit_does_not_publish_or_cleanup(monkeypatch):
 
 @pytest.mark.parametrize("where", ["authority", "release"])
 def test_committed_cleanup_failure_preserves_counts(monkeypatch, where):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     if where == "authority":
         app.exit_fails = True
     else:
@@ -155,19 +168,28 @@ def test_authority_denial_precedes_root(monkeypatch):
 
 
 def test_observer_during_io_has_no_pending_graph_escape(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="queued")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="queued")]
+    )
     snapshots = []
     lane.after_scan = lambda: snapshots.append(o.snapshot())
     result = o.run(stop_event=Event())
     assert snapshots[0].committed_pages == 0 and result.committed_pages == 1
-    assert all(type(getattr(result, name)) in (bool, int, type(None)) or
-               type(getattr(result, name)).__module__.endswith("native_recovery_contracts")
-               for name in result.__slots__)
+    assert all(
+        type(getattr(result, name)) in (bool, int, type(None))
+        or type(getattr(result, name)).__module__.endswith("native_recovery_contracts")
+        for name in result.__slots__
+    )
 
 
-@pytest.mark.parametrize("bad", [page(visited=0, cursor=None, exhausted=False),
-    page(visited=1, cursor=1, exhausted=False, state="cancelled"),
-    page(visited=1, cursor=1, exhausted=True, state="held")])
+@pytest.mark.parametrize(
+    "bad",
+    [
+        page(visited=0, cursor=None, exhausted=False),
+        page(visited=1, cursor=1, exhausted=False, state="cancelled"),
+        page(visited=1, cursor=1, exhausted=True, state="held"),
+    ],
+)
 def test_malformed_page_fails_closed(monkeypatch, bad):
     o, lane, app, events = owner(monkeypatch, [bad])
     result = o.run(stop_event=Event())
@@ -184,7 +206,9 @@ def test_stop_before_run_no_adoption(monkeypatch):
 
 
 def test_unknown_root_retains_authority_lifetime(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     lane.commit_unknown = True
     result = o.run(stop_event=Event())
     assert "authority-enter" in events and "authority-exit" not in events
@@ -192,12 +216,16 @@ def test_unknown_root_retains_authority_lifetime(monkeypatch):
 
 
 def test_live_domain_stop_removes_readiness(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     m = module("native_recovery")
     observed = []
+
     def stop_domain():
         monkeypatch.setattr(m, "_domain_active", lambda: False)
         observed.append(o.snapshot())
+
     lane.after_scan = stop_domain
     result = o.run(stop_event=Event())
     assert not observed[0].domain_active and not observed[0].ready
@@ -213,7 +241,9 @@ def test_stop_during_profile_prevents_adoption(monkeypatch):
 
 
 def test_non_none_commit_is_not_success(monkeypatch):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     lane.commit = lambda: True
     result = o.run(stop_event=Event())
     assert result.committed_pages == 0 and result.unresolved
@@ -237,6 +267,7 @@ def test_exported_scalar_snapshot_is_independent(monkeypatch):
 
 def test_public_snapshot_rejects_non_scalar_values(monkeypatch):
     from dataclasses import replace
+
     o, lane, app, events = owner(monkeypatch, [])
     with pytest.raises(ValueError):
         replace(o.snapshot(), committed_pages=True)
@@ -251,13 +282,17 @@ def test_large_finite_timeout_preserves_configuration_contract():
 @pytest.mark.parametrize("elapsed,code", [(29.0, 0), (30.0, 70), (31.0, 70)])
 @pytest.mark.parametrize("stage", ["scan", "commit", "close"])
 def test_authoritative_drain_deadline(monkeypatch, elapsed, code, stage):
-    o, lane, app, events = owner(monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")])
+    o, lane, app, events = owner(
+        monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
+    )
     m = module("native_recovery")
     clock = [0.0]
     monkeypatch.setattr(m, "_clock", lambda: clock[0])
+
     def overrun():
         o.request_stop()
         clock[0] = elapsed
+
     if stage == "scan":
         lane.after_scan = overrun
     elif stage == "commit":
@@ -276,17 +311,21 @@ def test_authoritative_drain_deadline(monkeypatch, elapsed, code, stage):
 
 @pytest.mark.parametrize("stage", ["scan", "commit", "wait"])
 def test_owner_clock_regression_is_sticky(monkeypatch, stage):
-    o, lane, app, events = owner(monkeypatch, [page(visited=2, cursor=7, exhausted=False),
-                                             page(visited=0, cursor=7, exhausted=True)])
+    o, lane, app, events = owner(
+        monkeypatch,
+        [page(visited=2, cursor=7, exhausted=False), page(visited=0, cursor=7, exhausted=True)],
+    )
     m = module("native_recovery")
     clock = [2.0]
     monkeypatch.setattr(m, "_clock", lambda: clock[0])
     if stage == "scan":
         lane.after_scan = lambda: (clock.__setitem__(0, 1.0), o.request_stop())
     elif stage == "commit":
+
         def regressed_commit():
             clock[0] = 1.0
             o.request_stop()
+
         lane.commit = regressed_commit
     else:
         monkeypatch.setattr(m, "_wait", lambda *args: (clock.__setitem__(0, 1.0), o.request_stop()))
@@ -301,9 +340,11 @@ def test_final_export_fault_prevents_host_success(monkeypatch):
     m = module("native_recovery")
     monkeypatch.setattr(m, "_clock", lambda: 2.0)
     original = m.JobRecoveryOwner.snapshot
+
     def export(self):
         monkeypatch.setattr(m, "_clock", lambda: 1.0)
         return original(self)
+
     monkeypatch.setattr(m.JobRecoveryOwner, "snapshot", export)
     assert m.run_recovery_host(o, stop_event=Event()) == 70
     for _ in range(2):
@@ -328,9 +369,11 @@ def test_clock_sample_compare_publication_share_owner_lock(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [])
     m = module("native_recovery")
     sampled = []
+
     def clock():
         sampled.append(getattr(o._lock, "_is_owned", lambda: False)())
         return 2.0
+
     monkeypatch.setattr(m, "_clock", clock)
     o._observe_time()
     o.snapshot()
@@ -341,6 +384,7 @@ def test_clock_sample_compare_publication_share_owner_lock(monkeypatch):
 
 class NativeAPI:
     """Structural interface double; no driver or registry code is imported."""
+
     def __init__(self):
         self.events = []
         self.fail = None
@@ -389,8 +433,9 @@ def real_lane(monkeypatch):
     assert hasattr(lifecycle, "_NativeRecoveryLane"), "S2 native lane is absent"
     api = NativeAPI()
     monkeypatch.setattr(lifecycle, "_recovery_api", lambda: (api, api))
-    requirements = SimpleNamespace(e13_preparation_min=101, e13_result_min=202,
-        e33_preparation_min=303, e33_result_min=404)
+    requirements = SimpleNamespace(
+        e13_preparation_min=101, e13_result_min=202, e33_preparation_min=303, e33_result_min=404
+    )
     resources = SimpleNamespace(connection=object(), ledger=object())
     lane = lifecycle._NativeRecoveryLane(resources, requirements)
     return lane, api
@@ -398,6 +443,7 @@ def real_lane(monkeypatch):
 
 def native_page():
     from modkit_events.persistence.observations import ScanPage
+
     return ScanPage(items=(), visited=0, next_cursor=None, pass_exhausted=True)
 
 
@@ -417,20 +463,47 @@ def test_s2_lane_exact_serial_issuance_and_cleanup(monkeypatch):
     assert names.count("start_root") == names.count("release_root") == 2
     assert names.index("prepare_readiness") < names.index("prepare_recovery")
     recovery = next(e[2] for e in api.events if e[0] == "prepare_recovery")
-    assert recovery == dict(execution_ledger=lane.ledger, capacity=101, namespace=b"jobs",
-        kind="job", limit=1, scan_after=UUID(int=7), discovery_budget=128)
+    assert recovery == dict(
+        execution_ledger=lane.ledger,
+        capacity=101,
+        namespace=b"jobs",
+        kind="job",
+        limit=1,
+        scan_after=UUID(int=7),
+        discovery_budget=128,
+    )
     assert [e[1][1] for e in api.events if e[0] == "reserve_result"] == [404, 202]
-    tail = names[names.index("retire"):]
-    assert tail == ["retire", "prepare_cleanup", "reserve_cleanup", "pin_cleanup",
-        "physical-close", "acknowledge_physical_close", "release_cleanup",
-        "detach_terminal", "dispose_execution"]
+    tail = names[names.index("retire") :]
+    assert tail == [
+        "retire",
+        "prepare_cleanup",
+        "reserve_cleanup",
+        "pin_cleanup",
+        "physical-close",
+        "acknowledge_physical_close",
+        "release_cleanup",
+        "detach_terminal",
+        "dispose_execution",
+    ]
     assert next(e[1][1] for e in api.events if e[0] == "reserve_cleanup") == 4096
     assert lane.closed and lane.execution is lane.checkout is lane.root is None
 
 
-@pytest.mark.parametrize("failure", ["admit", "reserve_result", "execute", "read_result",
-    "release_result", "release_ticket", "release_preparation", "commit",
-    "acknowledge_commit_result", "release_root"])
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "admit",
+        "reserve_result",
+        "execute",
+        "read_result",
+        "release_result",
+        "release_ticket",
+        "release_preparation",
+        "commit",
+        "acknowledge_commit_result",
+        "release_root",
+    ],
+)
 def test_s2_lane_failure_retains_no_retry_or_cleanup(monkeypatch, failure):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -462,17 +535,30 @@ def test_s2_projection_failure_keeps_result_charged(monkeypatch):
     lane.attach()
     lane.begin()
     api.payload = native_page()
+
     def reject(value):
         raise ValueError("projection failed")
+
     with pytest.raises(ValueError):
         lane.scan(config(), None, reject)
     assert lane.result is not None
     assert "release_result" not in [e[0] for e in api.events]
 
 
-@pytest.mark.parametrize("failure", ["retire", "prepare_cleanup", "reserve_cleanup",
-    "pin_cleanup", "physical-close", "acknowledge_physical_close", "release_cleanup",
-    "detach_terminal", "dispose_execution"])
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "retire",
+        "prepare_cleanup",
+        "reserve_cleanup",
+        "pin_cleanup",
+        "physical-close",
+        "acknowledge_physical_close",
+        "release_cleanup",
+        "detach_terminal",
+        "dispose_execution",
+    ],
+)
 def test_s2_cleanup_unknown_stops_without_replacement(monkeypatch, failure):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -502,18 +588,23 @@ def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
     c = module()
     api = NativeAPI()
     api.payload = native_page()
-    req = SimpleNamespace(e13_preparation_min=101, e13_result_min=202,
-                          e33_preparation_min=303, e33_result_min=404)
+    req = SimpleNamespace(
+        e13_preparation_min=101, e13_result_min=202, e33_preparation_min=303, e33_result_min=404
+    )
     monkeypatch.setattr(lifecycle, "_recovery_api", lambda: (api, api))
     monkeypatch.setattr(setup, "_recheck_profile", lambda *args: req)
     monkeypatch.setattr(setup, "_validate_resources", lambda *args: None)
     monkeypatch.setattr(setup, "_adopt_resources", lambda *args: None)
     monkeypatch.setattr(m, "_domain_active", lambda: True)
     monkeypatch.setattr(m, "_clock", lambda: 0.0)
-    resources = c.NativeRecoveryResources(configuration=object(), connection=object(), ledger=object())
+    resources = c.NativeRecoveryResources(
+        configuration=object(), connection=object(), ledger=object()
+    )
+
     class App:
         def validate_profile(self, namespace):
             assert namespace == b"jobs"
+
         @contextmanager
         def authorize_root(self, connection, namespace):
             assert connection is resources.connection and namespace == b"jobs"
@@ -521,29 +612,33 @@ def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
             yield
             api.call("authority-exit")
             o.request_stop()
+
     o = m.create_job_recovery(config=config(), resources=resources, application=App())
     assert m.run_recovery_host(o, stop_event=Event()) == 0
     names = [e[0] for e in api.events]
     assert names.index("authority-enter") < names.index("prepare_recovery")
-    assert names.index("authority-exit") > max(i for i, n in enumerate(names)
-                                               if n == "acknowledge_commit_result")
+    assert names.index("authority-exit") > max(
+        i for i, n in enumerate(names) if n == "acknowledge_commit_result"
+    )
     assert o.snapshot().committed_pages == 1 and o.snapshot().clean_stop
     o.dispose()
 
 
-
 def test_s2_result_alias_dropped_before_release(monkeypatch):
     import sys
+
     lane, api = real_lane(monkeypatch)
     lane.attach()
     lane.begin()
     api.payload = native_page()
+
     def release(result, *, execution_ledger):
         # Only the test-native registry's field plus getrefcount's argument.
         # Any adapter page/frame alias would add another occurrence.
         refs = sys.getrefcount(api.payload)  # Outside pytest assertion rewrite temporaries.
         assert refs == 2
         api.call("release_result", result, execution_ledger=execution_ledger)
+
     api.release_result = release
     lane.scan(config(), None, lambda value: None)
     assert lane.result is None
