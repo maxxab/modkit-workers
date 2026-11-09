@@ -2,15 +2,29 @@
 from threading import Event
 
 import pytest
-from test_native_recovery_contracts import config, module
+from test_native_recovery_contracts import config, module, profile_double
 from test_native_recovery_owner import owner, page
 
 
-def test_production_capability_is_unavailable_before_setup():
+def test_invalid_limits_precede_dependency_checks(monkeypatch):
     setup = module("native_recovery_setup")
-    with pytest.raises(setup.RecoveryUnavailable):
+    monkeypatch.setattr(setup, "_profile_api", lambda: pytest.fail("profile lookup"))
+    with pytest.raises(ValueError, match="exact complete lifecycle limits"):
         setup.preflight_native_recovery(config(), limits=object())
     assert not setup._attempted
+
+
+def test_unavailable_profile_does_not_consume_setup(monkeypatch):
+    setup, limits, events = profile_double(monkeypatch)
+
+    def unavailable():
+        raise setup.RecoveryUnavailable("Supported recovery profile unavailable")
+
+    monkeypatch.setattr(setup, "_profile_api", unavailable)
+    with pytest.raises(setup.RecoveryUnavailable, match="profile unavailable"):
+        setup.preflight_native_recovery(config(), limits=limits)
+    assert not setup._attempted
+    assert events == []
 
 
 def test_wrong_namespace_precedes_deferred_import(monkeypatch):
