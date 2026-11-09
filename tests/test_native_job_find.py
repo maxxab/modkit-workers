@@ -162,7 +162,12 @@ def test_find_classifier_compares_each_immutable_field(field):
 
 def inbox_family():
     from modkit_events.models import Event
-    from modkit_events.persistence.models import AdmissionInput, ReplayPolicy, WorkIdentity, WorkKind
+    from modkit_events.persistence.models import (
+        AdmissionInput,
+        ReplayPolicy,
+        WorkIdentity,
+        WorkKind,
+    )
     from test_job_persistence_contracts import NOW
 
     desired = job(max_attempts=3)
@@ -228,6 +233,7 @@ def test_real_mixed_find_family_and_late_corruption_are_atomic():
     assert result.candidates[1].job is not None
     assert result == rows.decode_find(bindings.find_jobs(logical), family)
     from modkit_events.persistence import native_profile
+
     from modkit_workers.persistence.native_store import _FIND_JOBS, FIND_JOBS_RESULT_CAPACITY
     assert native_profile._result_size(request, result, _FIND_JOBS) <= FIND_JOBS_RESULT_CAPACITY
     bad = list(family[1])
