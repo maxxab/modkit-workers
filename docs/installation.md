@@ -1,9 +1,10 @@
 # Explicit Workers installation closure
 
 This source candidate includes immutable initial/grants resources and an inert
-manifest. It is **not installation-ready**: source controls are connection-free,
-not PostgreSQL execution, restricted-role ACL qualification, actual wheel/sdist
-installation, or full runtime evidence. Canonical production trees remain gated.
+manifest. It is **not database-installation-ready**: connection-free source
+controls and the bounded package checks below do not prove PostgreSQL execution,
+restricted-role ACL qualification or full runtime behavior. Canonical production
+trees remain gated.
 
 ## Trusted caller and roles
 
@@ -98,14 +99,31 @@ Workers wrappers and Events-owned execution lifecycle. Reconciler recovery uses
 E33 followed by E13(bytea,text,int4,uuid,int4), not W01/W05. Test each lawful path
 as its real restricted role with actual data and denied paths, not merely as owner.
 
-Remaining gates: independent complete source review and pure QA; actual supported
-wheel/sdist/rebuilt-wheel byte identity and origin checks; real restricted-role
-PostgreSQL installation/ACL/parameter/native qualification; main canonical release.
+### Bounded package checkpoint, 9 November 2026
+
+Saved, independently reviewed evidence for Workers source commit 5c07a89
+includes 740 passing source tests and 96 subtests, with no skips. The selected
+clean installed pair passed nine Workers base modules (232 tests, 58 subtests)
+and three disjoint seam/resource modules (40 tests, 8 subtests), with distribution,
+receipt and loaded-origin checks. These are selected package tests, not the full
+source suite repeated against an installed package or native database tests.
+
+The reviewed unpublished artifact checkpoint also includes wheel/sdist inventory,
+direct/rebuilt-wheel byte identity, dependency resolution and origin checks.
+Its acceptance is tied to those exact saved artifacts and tool inputs, not every
+interpreter, optional dependency or later archive. Documentation changes after
+that checkpoint require refreshed artifact evidence before publication; they do
+not invalidate unchanged source-test evidence.
+
 Accepted unpublished candidate metadata selects Events0.2.0 and Workers0.1.0,
-with Workers requiring Events>=0.2,<0.3. Actual dependency resolution and installed
-artifact qualification remain pending, as do native backend and platform gates.
-This installation-checkpoint candidate is NOT_RELEASE_QUALIFIED; all outstanding
-Events final-release requirements remain mandatory. No --no-deps or source
-PYTHONPATH workaround counts as artifact acceptance. Windows resource transport
-remains unsupported.
-No database/container/network/build/install operation is part of these source tests.
+with Workers requiring Events>=0.2,<0.3. Remaining gates include real
+restricted-role PostgreSQL installation, ACLs, parameter transport, native
+adapters, recovery/process-loss scenarios, optional drivers, the interpreter/
+platform matrix, CI and coordinated Events-first release. No native success is
+inferred from source tests, package installation or historical fixture disposal.
+
+This candidate remains NOT_RELEASE_QUALIFIED; outstanding Events final-release
+requirements remain mandatory. No --no-deps or source PYTHONPATH workaround
+counts as artifact acceptance. Windows resource transport remains unsupported.
+No database/container/network/build/install operation is part of the
+connection-free source tests.

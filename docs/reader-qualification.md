@@ -12,13 +12,18 @@ The initial source preserves the previously reviewed W01 body and dependency
 preflight, then adds the E15/E17 reader dependency guard, W02/W04, and a postflight
 that rejects unexpected non-owner default grants. It neither changes installer
 defaults nor grants runtime permissions. Applications own installation and work
-transactions. The production manifest and grants resource remain absent:
-manifest() intentionally fails until the full migration/grants qualification is
-complete. Do not deploy this NOT_READY resource.
+transactions. That reader-only checkpoint preceded the installation-closure
+candidate, which now includes the initial SQL, grants resource and verified
+manifest. The inert manifest()/read_sql() API validates those resources; it does
+not apply SQL or attest to a successful database installation. See
+[installation closure](installation.md) for the current boundary and remaining
+gates. Do not deploy this NOT_READY candidate.
 
-## Bounded evidence
+## Historical reader-only bounded evidence
 
-PostgreSQL 18.1 and psycopg 3.3.8 in an isolated Linux disposable container:
+The following evidence covers the earlier staged reader SQL, not the complete
+current installation closure. It used PostgreSQL 18.1 and psycopg 3.3.8 in an
+isolated Linux disposable container:
 - Both missing reader functions produced genuine 42883 RED failures before installation.
 - Exact staged reader SQL/preflight installed successfully.
 - Native fixture covered absent records, protected payloads, direct/key matches,
@@ -39,7 +44,11 @@ start a server, install a package, or claim release readiness.
 ## Remaining qualification
 
 Foreign inbox collision coverage needs a real separately scoped E03 producer.
-Lifecycle/concurrent writer coverage, all three adapter recipes, runtime grant
-acceptance, final Events/Workers migration digests, W05 and the full PostgreSQL
-matrix remain open. W03's separate bounded evidence and limits are documented in
-[job listing](job-listing.md). E10 QA remains outside this reader qualification.
+Lifecycle/concurrent writer coverage, all three adapter recipes, real runtime
+grant acceptance and the full PostgreSQL matrix remain open. Exact current
+Events/Workers migration digests are present and checked as inert resources;
+successful database installation of that combined closure remains unqualified.
+W03 and W05 have separate bounded evidence and limits in
+[job listing](job-listing.md) and [job acquisition](job-acquisition.md).
+Those results do not qualify the complete installation or PostgreSQL matrix.
+E10 QA remains outside this reader qualification.

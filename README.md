@@ -48,7 +48,9 @@ native evidence, including a real two-session producer-visibility regression and
 maximum 256-claim/4096-visited pages with small fixture payloads.
 
 See docs/package-layout.md for resource framing, ordering, caller receipts and limits.
-No build/install/release, Redis, or full 84-cell PostgreSQL conformance qualification is claimed.
+The [installation guide](docs/installation.md#bounded-package-checkpoint-9-november-2026)
+records the bounded package and selected installed-test checkpoint. It does not
+qualify the native installation, release, Redis or full 84-cell PostgreSQL matrix.
 
 ## Resume checkpoint
 
