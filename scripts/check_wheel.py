@@ -47,6 +47,7 @@ PORTABLE_TESTS = (
     "test_native_worker_factory.py",
     "test_package_exports.py",
     "test_source_batch.py",
+    "test_scalar_profile_gate.py",
     "test_worker_contracts.py",
     "test_worker_startup.py",
 )
@@ -206,7 +207,12 @@ def main():
         )
         tests = temp / "tests"
         tests.mkdir()
-        for name in (*PORTABLE_TESTS, "test_migration_resources.py", "_resource_fixtures.py"):
+        for name in (
+            *PORTABLE_TESTS,
+            "test_migration_resources.py",
+            "_resource_fixtures.py",
+            "_scalar_test_support.py",
+        ):
             shutil.copyfile(root / "tests" / name, tests / name)
         shutil.copyfile(root / "scripts/check_installation.py", temp / "check_installation.py")
         (temp / "expected.json").write_text(
@@ -219,6 +225,7 @@ def main():
         env["PYTHONPATH"] = str(tests)
         (tests / "conftest.py").write_text(
             "import sys, sysconfig\nfrom pathlib import Path\n"
+            "pytest_plugins = ['_scalar_test_support']\n"
             "def pytest_sessionfinish(session, exitstatus):\n"
             "    site = Path(sysconfig.get_path('purelib')).resolve()\n"
             "    for name, module in tuple(sys.modules.items()):\n"
@@ -232,6 +239,7 @@ def main():
             "pytest",
             "-p",
             "pytest_asyncio.plugin",
+            "--require-scalar-cases",
             "-q",
             *("tests/" + name for name in selected_tests(os.name)),
             "--junitxml=installed.xml",

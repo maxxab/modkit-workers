@@ -27,6 +27,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = ["requires_scalar_profile: acceptance requires the declared real scalar host"]
 
 [tool.ruff]
 line-length = 100

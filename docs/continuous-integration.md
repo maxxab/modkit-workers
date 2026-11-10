@@ -60,3 +60,28 @@ Use `python scripts/check_source.py --events-root PATH` for source tests and
 `python scripts/check_wheel.py WORKERS_WHEEL EVENTS_WHEEL --events-root PATH`
 for a fresh installed pair. PATH must be a clean checkout of the exact dependency
 commit. No native readiness or full Windows acceptance follows from these checks.
+
+
+## Hosted platform corrections
+
+The first hosted run exposed three test/CI assumptions, not a native-profile
+extension: its private standards checkout was unavailable to the repository token,
+macOS aliases its temporary directory, and newer Python 3.13 patches are outside
+the finite scalar recovery contract. Standards now uses the already public,
+immutable Events checkout and verifies its exact commit. Test-owned temporary
+roots are canonicalized once, with alias and escape regressions.
+
+The scalar contract remains unchanged: CPython 3.12 retains its existing scope;
+3.13 scalar acceptance requires exact Linux x86_64 GIL-enabled 3.13.5. Only tests
+whose configuration or scalar material depends on that real host are explicitly
+marked. The CI plugin deselects these individual acceptance cases on unsupported
+hosts and reports the count. Other tests, including simulated boundary checks and
+the mandatory actual-host acceptance/refusal check, remain selected. No whole
+module is excluded and no failed test is converted into a skip. Supported lanes
+must contain profile-dependent cases; both exact Linux lanes remain required.
+The installed lane copies the same test metadata and checks the installed package
+outside the checkout. Zero-error/failure/skip enforcement remains unchanged.
+
+Broad unsupported rows are portable/refusal evidence, not full scalar acceptance.
+Actual hosted results remain the authority for platform qualification. None of
+these checks starts PostgreSQL, Redis or a native recovery operation.

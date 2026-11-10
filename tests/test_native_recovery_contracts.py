@@ -76,11 +76,13 @@ def test_no_namespace_coercion_hooks():
         ("source_material_bytes", 1),
     ],
 )
+@pytest.mark.requires_scalar_profile
 def test_config_bounds(field, value):
     with pytest.raises(ValueError):
         config(**{field: value})
 
 
+@pytest.mark.requires_scalar_profile
 def test_numeric_profile_and_exact_shapes():
     c = module()
     value = config()
@@ -108,6 +110,7 @@ def test_saturation_and_age_boundaries():
         c._age_ms(2.0, 1.0)
 
 
+@pytest.mark.requires_scalar_profile
 def test_material_requires_known_disposal():
     c = module()
     lifecycle = module("_native_recovery_lifecycle")
@@ -124,6 +127,7 @@ def test_material_requires_known_disposal():
         lease.require()
 
 
+@pytest.mark.requires_scalar_profile
 def test_supported_scalar_sizes_cover_actual_leafs():
     import sys
 
@@ -184,6 +188,7 @@ def profile_double(monkeypatch):
     return setup, limits, events
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_preflight_full_vector_then_verify(monkeypatch):
     setup, limits, events = profile_double(monkeypatch)
     assert setup.preflight_native_recovery(config(), limits=limits) is None
@@ -191,6 +196,7 @@ def test_s2_preflight_full_vector_then_verify(monkeypatch):
 
 
 @pytest.mark.parametrize("index", range(17))
+@pytest.mark.requires_scalar_profile
 def test_s2_every_minimum_precedes_driver(monkeypatch, index):
     from dataclasses import fields, replace
 
@@ -202,6 +208,7 @@ def test_s2_every_minimum_precedes_driver(monkeypatch, index):
     assert events == [] and not setup._attempted
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_factory_profile_recheck_before_material(monkeypatch):
     m = module("native_recovery")
     setup = module("native_recovery_setup")
@@ -224,6 +231,7 @@ def test_s2_factory_profile_recheck_before_material(monkeypatch):
     assert called == ["recheck"]
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_driver_failure_precedes_configuration(monkeypatch):
     setup, limits, events = profile_double(monkeypatch)
     api = setup._profile_api()
@@ -237,6 +245,7 @@ def test_s2_driver_failure_precedes_configuration(monkeypatch):
     assert not setup._attempted
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_preflight_cannot_reset_attempted_setup(monkeypatch):
     setup, limits, events = profile_double(monkeypatch)
     monkeypatch.setattr(setup, "_attempted", True)
@@ -245,6 +254,7 @@ def test_s2_preflight_cannot_reset_attempted_setup(monkeypatch):
     assert events == []
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_configuration_receipt_fresh_once_only_adoption(monkeypatch):
     import sys
     from types import ModuleType, SimpleNamespace
@@ -296,6 +306,7 @@ def test_s2_configuration_receipt_fresh_once_only_adoption(monkeypatch):
         setup._recheck_profile(config(), resources)
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_cursor_transient_fits_existing_summary_phase():
     import sys
     from uuid import UUID
@@ -309,6 +320,7 @@ def test_s2_cursor_transient_fits_existing_summary_phase():
 
 
 @pytest.mark.parametrize("child", ["admitted_live", "checkouts"])
+@pytest.mark.requires_scalar_profile
 def test_s2_parent_cell_minima_reject_before_driver(monkeypatch, child):
     from dataclasses import replace
 

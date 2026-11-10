@@ -111,6 +111,7 @@ def owner(monkeypatch, pages):
     return result, lane, app, events
 
 
+@pytest.mark.requires_scalar_profile
 def test_empty_progress_and_exhaustion_commit_cursor(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch,
@@ -130,6 +131,7 @@ def test_empty_progress_and_exhaustion_commit_cursor(monkeypatch):
         o.snapshot()
 
 
+@pytest.mark.requires_scalar_profile
 def test_unknown_commit_does_not_publish_or_cleanup(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -144,6 +146,7 @@ def test_unknown_commit_does_not_publish_or_cleanup(monkeypatch):
 
 
 @pytest.mark.parametrize("where", ["authority", "release"])
+@pytest.mark.requires_scalar_profile
 def test_committed_cleanup_failure_preserves_counts(monkeypatch, where):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -159,6 +162,7 @@ def test_committed_cleanup_failure_preserves_counts(monkeypatch, where):
     assert "rollback-ack" not in events and "close" not in events
 
 
+@pytest.mark.requires_scalar_profile
 def test_authority_denial_precedes_root(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [page(visited=0, cursor=None, exhausted=True)])
     app.reject = True
@@ -167,6 +171,7 @@ def test_authority_denial_precedes_root(monkeypatch):
     assert not result.ready
 
 
+@pytest.mark.requires_scalar_profile
 def test_observer_during_io_has_no_pending_graph_escape(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="queued")]
@@ -190,12 +195,14 @@ def test_observer_during_io_has_no_pending_graph_escape(monkeypatch):
         page(visited=1, cursor=1, exhausted=True, state="held"),
     ],
 )
+@pytest.mark.requires_scalar_profile
 def test_malformed_page_fails_closed(monkeypatch, bad):
     o, lane, app, events = owner(monkeypatch, [bad])
     result = o.run(stop_event=Event())
     assert result.committed_pages == 0 and not result.ready
 
 
+@pytest.mark.requires_scalar_profile
 def test_stop_before_run_no_adoption(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [])
     o.request_stop()
@@ -205,6 +212,7 @@ def test_stop_before_run_no_adoption(monkeypatch):
         o.run(stop_event=Event())
 
 
+@pytest.mark.requires_scalar_profile
 def test_unknown_root_retains_authority_lifetime(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -215,6 +223,7 @@ def test_unknown_root_retains_authority_lifetime(monkeypatch):
     assert result.native_in_flight and result.unresolved
 
 
+@pytest.mark.requires_scalar_profile
 def test_live_domain_stop_removes_readiness(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -232,6 +241,7 @@ def test_live_domain_stop_removes_readiness(monkeypatch):
     assert result.committed_pages == 0 and result.unresolved
 
 
+@pytest.mark.requires_scalar_profile
 def test_stop_during_profile_prevents_adoption(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [])
     app.validate_profile = lambda namespace: o.request_stop()
@@ -240,6 +250,7 @@ def test_stop_during_profile_prevents_adoption(monkeypatch):
     assert result.clean_stop
 
 
+@pytest.mark.requires_scalar_profile
 def test_non_none_commit_is_not_success(monkeypatch):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -249,6 +260,7 @@ def test_non_none_commit_is_not_success(monkeypatch):
     assert result.committed_pages == 0 and result.unresolved
 
 
+@pytest.mark.requires_scalar_profile
 def test_factory_revalidates_forged_namespace_before_hooks():
     m = module("native_recovery")
     value = config()
@@ -257,6 +269,7 @@ def test_factory_revalidates_forged_namespace_before_hooks():
         m.create_job_recovery(config=value, resources=object(), application=object())
 
 
+@pytest.mark.requires_scalar_profile
 def test_exported_scalar_snapshot_is_independent(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [page(visited=0, cursor=None, exhausted=True)])
     before = o.snapshot()
@@ -265,6 +278,7 @@ def test_exported_scalar_snapshot_is_independent(monkeypatch):
     assert result.committed_pages == 1 and result is not before
 
 
+@pytest.mark.requires_scalar_profile
 def test_public_snapshot_rejects_non_scalar_values(monkeypatch):
     from dataclasses import replace
 
@@ -275,12 +289,14 @@ def test_public_snapshot_rejects_non_scalar_values(monkeypatch):
         replace(o.snapshot(), phase="NEW")
 
 
+@pytest.mark.requires_scalar_profile
 def test_large_finite_timeout_preserves_configuration_contract():
     assert config(progress_timeout_seconds=100000.0).progress_timeout_seconds == 100000.0
 
 
 @pytest.mark.parametrize("elapsed,code", [(29.0, 0), (30.0, 70), (31.0, 70)])
 @pytest.mark.parametrize("stage", ["scan", "commit", "close"])
+@pytest.mark.requires_scalar_profile
 def test_authoritative_drain_deadline(monkeypatch, elapsed, code, stage):
     o, lane, app, events = owner(
         monkeypatch, [page(visited=1, cursor=7, exhausted=False, state="held")]
@@ -310,6 +326,7 @@ def test_authoritative_drain_deadline(monkeypatch, elapsed, code, stage):
 
 
 @pytest.mark.parametrize("stage", ["scan", "commit", "wait"])
+@pytest.mark.requires_scalar_profile
 def test_owner_clock_regression_is_sticky(monkeypatch, stage):
     o, lane, app, events = owner(
         monkeypatch,
@@ -335,6 +352,7 @@ def test_owner_clock_regression_is_sticky(monkeypatch, stage):
     assert result.committed_pages == (0 if stage == "scan" else 1)
 
 
+@pytest.mark.requires_scalar_profile
 def test_final_export_fault_prevents_host_success(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [page(visited=0, cursor=None, exhausted=True)])
     m = module("native_recovery")
@@ -354,6 +372,7 @@ def test_final_export_fault_prevents_host_success(monkeypatch):
         assert result.committed_pages == 1
 
 
+@pytest.mark.requires_scalar_profile
 def test_status_postcandidate_sample_fault_is_authoritative(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [])
     m = module("native_recovery")
@@ -365,6 +384,7 @@ def test_status_postcandidate_sample_fault_is_authoritative(monkeypatch):
     assert result.unresolved and not result.clean_stop
 
 
+@pytest.mark.requires_scalar_profile
 def test_clock_sample_compare_publication_share_owner_lock(monkeypatch):
     o, lane, app, events = owner(monkeypatch, [])
     m = module("native_recovery")
@@ -447,6 +467,7 @@ def native_page():
     return ScanPage(items=(), visited=0, next_cursor=None, pass_exhausted=True)
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_lane_exact_serial_issuance_and_cleanup(monkeypatch):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -504,6 +525,7 @@ def test_s2_lane_exact_serial_issuance_and_cleanup(monkeypatch):
         "release_root",
     ],
 )
+@pytest.mark.requires_scalar_profile
 def test_s2_lane_failure_retains_no_retry_or_cleanup(monkeypatch, failure):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -530,6 +552,7 @@ def test_s2_unknown_commit_never_releases_root(monkeypatch):
     assert lane.root is not None
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_projection_failure_keeps_result_charged(monkeypatch):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -571,6 +594,7 @@ def test_s2_cleanup_unknown_stops_without_replacement(monkeypatch, failure):
     assert len(api.events) == count and not lane.closed
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_noncanonical_page_never_releases_result(monkeypatch):
     lane, api = real_lane(monkeypatch)
     lane.attach()
@@ -581,6 +605,7 @@ def test_s2_noncanonical_page_never_releases_result(monkeypatch):
     assert lane.result is not None and lane.failed
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
     lifecycle = module("_native_recovery_lifecycle")
     setup = module("native_recovery_setup")
@@ -624,6 +649,7 @@ def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
     o.dispose()
 
 
+@pytest.mark.requires_scalar_profile
 def test_s2_result_alias_dropped_before_release(monkeypatch):
     import sys
 

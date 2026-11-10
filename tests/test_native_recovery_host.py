@@ -7,6 +7,7 @@ from test_native_recovery_contracts import config, module, profile_double
 from test_native_recovery_owner import owner, page
 
 
+@pytest.mark.requires_scalar_profile
 def test_invalid_limits_precede_dependency_checks(monkeypatch):
     setup = module("native_recovery_setup")
     monkeypatch.setattr(setup, "_profile_api", lambda: pytest.fail("profile lookup"))
@@ -15,6 +16,7 @@ def test_invalid_limits_precede_dependency_checks(monkeypatch):
     assert not setup._attempted
 
 
+@pytest.mark.requires_scalar_profile
 def test_unavailable_profile_does_not_consume_setup(monkeypatch):
     setup, limits, events = profile_double(monkeypatch)
 
@@ -28,6 +30,7 @@ def test_unavailable_profile_does_not_consume_setup(monkeypatch):
     assert events == []
 
 
+@pytest.mark.requires_scalar_profile
 def test_wrong_namespace_precedes_deferred_import(monkeypatch):
     setup = module("native_recovery_setup")
     value = config()
@@ -38,6 +41,7 @@ def test_wrong_namespace_precedes_deferred_import(monkeypatch):
     assert not setup._attempted
 
 
+@pytest.mark.requires_scalar_profile
 def test_host_exit_codes_truthful(monkeypatch):
     m = module("native_recovery")
     o, lane, app, events = owner(monkeypatch, [page(visited=0, cursor=None, exhausted=True)])
