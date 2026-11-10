@@ -40,24 +40,24 @@ workflow, pinned dependency, source-only test inventory and this document. No
 production source changes are planned. The existing package/finite-profile lanes
 remain required and do not gain service access.
 
-- [ ] Add failing offline controls for fixed CI context/target, clean-server
+- [x] Add failing offline controls for fixed CI context/target, clean-server
   refusal, the exact dependency digest, the seven Worker signatures and ACLs,
   and entry refusal before driver import. Preserve the empty-service regression.
-- [ ] Implement the fixed fixture guard/bootstrap, then verify Workers SQL fails
+- [x] Implement the fixed fixture guard/bootstrap, then verify Workers SQL fails
   without Events under a correctly selected owner with CREATE and no-login flags.
   Require the intended PZ011 namespace/dependency error, acknowledged transaction
   rollback and an independent observer confirming no residual schema.
-- [ ] Install Events SQL/grants and its six-field owner receipt in a transaction.
+- [x] Install Events SQL/grants and its six-field owner receipt in a transaction.
   Then install Workers SQL/grants and its receipt, prove intentional rollback,
   uncommitted isolation and acknowledged commit. Use Events' unchanged shared
   receipt template with Workers values; never rewrite packaged SQL placeholders.
-- [ ] Compare the actual Workers catalog with all seven exact signatures and
+- [x] Compare the actual Workers catalog with all seven exact signatures and
   security attributes, not merely a count. Check the complete three-role execute
   matrix, actual receipt/W02 reads, forbidden table/schema/function access and
   owner/bootstrap role-switch refusal. This does not test all job semantics.
-- [ ] Build and audit both wheels from verified source, install outside both
+- [x] Build and audit both wheels from verified source, install outside both
   checkouts, and run the checker using isolated exact Python 3.13.5/psycopg3.3.8.
-- [ ] Run focused/full offline, lint/format/type, build/private-file checks;
+- [x] Run focused/full offline, lint/format/type, build/private-file checks;
   independently review the executable scope before publication. Commit and push,
   then inspect exact-commit hosted results and preserve failed evidence honestly.
 
@@ -103,3 +103,27 @@ Workers; the checker incorrectly expected only Workers. The corrected assertion
 requires the exact ordered pair, while `events` still requires only Events.
 Focused controls accept this contract and reject missing, reversed, additional or
 wrong receipts. Product SQL and wheel bytes are unchanged by this checker fix.
+
+
+## Verified hosted result
+
+All ten jobs passed for commit `deec70d39473dabfa3724a1a416aca0fcf04d2fd` in
+[run 42774247014](https://github.com/maxxab/modkit-workers/actions/runs/42774247014):
+the nine package/standards jobs and the fresh PostgreSQL 17 composition job.
+The database log confirms missing-Events refusal, full installation/grants/receipt
+rollback with Events preserved, committed isolation checks, exact E33 profiles and
+read/deny checks for runtime, reconciler and operator roles.
+
+The qualified Workers migration aggregate is
+`ac59c791bcd5841929b4048818df492b2cf0af70855a617698c4f953a98815f4`.
+The locally rebuilt matching Workers wheel SHA-256 is
+`8b021822a21c1f4daa757e77a83d46f01e7cdc999132ede8cdfceb9231000f87`;
+Events stays pinned at `9362f0d318c762283f70b18c4f2907f1fda39f8b`.
+Local final source verification passed 800 tests and 98 subtests, with 88 scalar
+cases selected, no skips and three existing FutureWarnings. The five new readiness
+controls passed independently. Earlier failed runs remain part of the evidence.
+
+This closes only the stated installed-pair installation, receipt and ACL gate.
+Managed native transport, job execution/recovery/fault cases, optional service
+combinations, deployment, ERP integration and release readiness remain unqualified
+by this lane. The older operational packets and grants are not reused.
