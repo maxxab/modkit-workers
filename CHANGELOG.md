@@ -65,6 +65,10 @@
 - **recovery:** separate invalid limits from unavailable profiles ([7196c8131e9f](https://github.com/maxxab/modkit-workers/commit/7196c8131e9fc77e6658f70fd86d7bb8fe9136d5))
 - **persistence:** verify explicit reader installation resources ([7a1612f21924](https://github.com/maxxab/modkit-workers/commit/7a1612f21924312b0c3d8d0bb8c86a82a9c41ded))
 
+### CI/CD
+
+- **packaging:** verify pinned source and installed package pairs ([e1378564188f](https://github.com/maxxab/modkit-workers/commit/e1378564188fd18c6c171f2caf8e84c1d2da234f))
+
 ### Maintenance
 
 - import unqualified Workers scaffold baseline ([340fa57dbbda](https://github.com/maxxab/modkit-workers/commit/340fa57dbbda1e1d58da73431daa54fb85a9bde3))
