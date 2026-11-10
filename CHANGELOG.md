@@ -37,6 +37,7 @@
 - **sql:** avoid role alias collision in grant guards ([7960e43676a9](https://github.com/maxxab/modkit-workers/commit/7960e43676a98f4ed10bce89347bec05b491a142))
 - **ci:** verify composed readiness receipt profiles ([7eeff49d0711](https://github.com/maxxab/modkit-workers/commit/7eeff49d071140d507d7dc844a580eb105588e53))
 - **ci:** classify native transport controls as source-only ([356d05cc6c06](https://github.com/maxxab/modkit-workers/commit/356d05cc6c064cb93104d366cb441bb9c2f282f0))
+- **workers:** refuse incomplete transport inventories ([096bb31c4e20](https://github.com/maxxab/modkit-workers/commit/096bb31c4e20dd12ba7c35e0ab16e69dd70e31d1))
 
 ### Documentation
 
