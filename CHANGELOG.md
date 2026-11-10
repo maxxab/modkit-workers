@@ -61,6 +61,7 @@
 - **qualification:** reconcile package evidence and native gates ([9f72c32fa377](https://github.com/maxxab/modkit-workers/commit/9f72c32fa377e46f134c86abc2141bcfb00a3169))
 - **qualification:** record fresh installed Workers checks ([68111ed099a2](https://github.com/maxxab/modkit-workers/commit/68111ed099a2dac3f9776838bfff334793e6e144))
 - **ci:** record verified package matrix result ([45506294e41d](https://github.com/maxxab/modkit-workers/commit/45506294e41dc60c6af2475fd832210e7f6b024d))
+- **qualification:** record passing PostgreSQL composition gate ([c792df1de037](https://github.com/maxxab/modkit-workers/commit/c792df1de037ee5caabeadfae60188fb513ff72c))
 
 ### Testing
 
