@@ -75,6 +75,7 @@
 - **recovery:** cover nonempty paid observation lifetimes ([5b96355b0b48](https://github.com/maxxab/modkit-workers/commit/5b96355b0b48a9561e094e76071abd16c2323f16))
 - **recovery:** preserve history across later page faults ([e22e2e52d33e](https://github.com/maxxab/modkit-workers/commit/e22e2e52d33e846ee8a27dccb6ed05dd390fddd4))
 - **recovery:** verify pinned Events preflight contract ([cadc1a67b658](https://github.com/maxxab/modkit-workers/commit/cadc1a67b65802ab6f07f863698d50272d867db6))
+- **transport:** prepare inert native schedule and offline refusal controls ([2a2e6cc9bec7](https://github.com/maxxab/modkit-workers/commit/2a2e6cc9bec7baf542e0b55273a8550e4c0ecb08))
 
 ### CI/CD
 
