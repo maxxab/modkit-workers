@@ -60,6 +60,7 @@ SOURCE_ONLY_TESTS = (
     "test_reader_case_data.py",
     "test_reader_source_contract.py",
     "test_ci_checks.py",
+    "test_postgres_ci.py",
 )
 
 

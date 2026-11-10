@@ -6,8 +6,9 @@ Use conventional GitHub Actions with immutable action and dependency source pins
 The Events checkout is verified before building; its exact migration dependency is
 checked against Workers before tests. CI installs local wheels in a new environment
 outside both checkouts, then checks origins, metadata, package bytes, resources and
-portable behavior. No database service, role/grant change or recovery execution is
-part of this work.
+portable behavior. These package lanes do not start databases or run recovery.
+A separate [synthetic PostgreSQL composition lane](postgresql-ci.md) has its own
+fixed fixture, authorization and qualification scope.
 
 A source-only job cannot prove packaged behavior. A second custom native launcher
 would add unnecessary complexity. The chosen approach therefore combines ordinary

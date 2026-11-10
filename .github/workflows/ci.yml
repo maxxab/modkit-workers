@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: maxxab/modkit-events
-          ref: ef84ecbe3fdc65c7922ea954e619c1743efc7f67
+          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
           path: .ci-standards
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$HEAD"
-          test "$(git -C .ci-standards rev-parse HEAD)" = ef84ecbe3fdc65c7922ea954e619c1743efc7f67
+          test "$(git -C .ci-standards rev-parse HEAD)" = 9362f0d318c762283f70b18c4f2907f1fda39f8b
           if [ "$EVENT_NAME" = pull_request ]; then
             BASE=$(git merge-base "$PR_BASE" "$HEAD")
           elif [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: maxxab/modkit-events
-          ref: ef84ecbe3fdc65c7922ea954e619c1743efc7f67
+          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
           path: .ci-events
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -97,3 +97,69 @@ jobs:
         env:
           EXPECTED_PROFILE: ${{ matrix.profile }}
         run: python scripts/check_wheel.py dist/*.whl dependency-dist/*.whl --events-root .ci-events --expect-profile "$EXPECTED_PROFILE"
+
+  postgres-composition:
+    name: Fresh PostgreSQL 17 Workers composition
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        # Official 17.11-bookworm image, immutable multi-platform manifest.
+        image: postgres:17.11-bookworm@sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994
+        env:
+          POSTGRES_USER: modkit_ci_bootstrap
+          POSTGRES_DB: modkit_workers_ci
+          # Public disposable fixture value, never a real account credential.
+          POSTGRES_PASSWORD: modkit-ci-public-fixture-only
+          POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --encoding=UTF8 --locale=C
+        ports: ['127.0.0.1:5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U modkit_ci_bootstrap -d modkit_workers_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      MODKIT_POSTGRES_TEST: workers-composition-v1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13.5'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: maxxab/modkit-events
+          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
+          path: .ci-events
+          persist-credentials: false
+      - name: Build and audit the exact installed pair
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/check_source.py --events-root .ci-events --check-dependency-only
+          python -m build --wheel .ci-events --outdir dependency-dist
+          python -m build --wheel
+          python - <<'PY_AUDIT'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from check_wheel import audit_wheel
+          own = list(Path("dist").glob("*.whl"))
+          events = list(Path("dependency-dist").glob("*.whl"))
+          assert len(own) == len(events) == 1
+          audit_wheel(Path.cwd(), own[0], "0.1.0")
+          audit_wheel(Path(".ci-events"), events[0], "0.2.0", "modkit_events")
+          PY_AUDIT
+      - name: Check a fresh outside-checkout installed package
+        shell: bash
+        run: |
+          set -euo pipefail
+          STAGE="$RUNNER_TEMP/workers-postgres-ci"
+          mkdir "$STAGE"
+          python -m venv "$STAGE/venv"
+          "$STAGE/venv/bin/python" -m pip install --no-deps --no-index dist/*.whl dependency-dist/*.whl
+          "$STAGE/venv/bin/python" -m pip install 'psycopg[binary]==3.3.8'
+          cp scripts/check_postgres.py "$STAGE/check_postgres.py"
+          cp scripts/ci_dependency.json "$STAGE/ci_dependency.json"
+          cd "$STAGE"
+          "$STAGE/venv/bin/python" -I -B check_postgres.py

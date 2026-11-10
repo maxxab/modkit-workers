@@ -131,7 +131,8 @@ def test_workflow_keeps_reviewed_events_commit_and_finite_profiles():
     assert "'3.12.3'" in workflow and "'3.13.5'" in workflow
     assert "--expect-profile" in workflow
     assert "contents: read" in workflow
-    assert "services:" not in workflow
+    package = workflow.split("  package:\n", 1)[1].split("  postgres-composition:\n", 1)[0]
+    assert "services:" not in package
 
 
 def test_standards_uses_public_verified_dependency_without_extra_credentials():
