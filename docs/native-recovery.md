@@ -145,6 +145,13 @@ host, native connection, fixture, socket, database, service or broker. Bytecode
 writes and plugin autoload are disabled; a separate unused pycache prefix avoids
 reading retained excluded bytecode. pytest cacheprovider and Ruff caches are off.
 
+Connection-free adapter regressions also use complete canonical WorkObservation
+postimages for queued, expired, failed and held, not only empty pages. They check
+that page, tuple, item and payload aliases end before result release, counters and
+cursor remain unpublished until COMMITTED, and unknown acknowledgment retains the
+root and authority without cleanup or disposal. These interface-double tests do
+not prove that SQL produced those postimages or that native reservations settled.
+
 Independent source review/QA must compare exact scalar/profile/lifetime paths
 and tests against the accepted design. The native positive capability/adapter,
 M/R pre-issue enforcement, actual root/commit/close, supported driver profile,

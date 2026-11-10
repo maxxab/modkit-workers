@@ -461,10 +461,80 @@ def real_lane(monkeypatch):
     return lane, api
 
 
-def native_page():
-    from modkit_events.persistence.observations import ScanPage
+def native_page(state=None):
+    from datetime import datetime, timedelta, timezone
 
-    return ScanPage(items=(), visited=0, next_cursor=None, pass_exhausted=True)
+    from modkit_events.persistence import bindings as b
+    from modkit_events.persistence import models as models
+    from modkit_events.persistence.observations import ScanPage, WorkObservation
+    from modkit_events.persistence.scope import Scope, canonical_scope
+
+    if state is None:
+        return ScanPage(items=(), visited=0, next_cursor=None, pass_exhausted=True)
+    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    material = models.ProtectedBindingInput(
+        material_state=models.MaterialState.ABSENT,
+        codec=None,
+        key_version=None,
+        expires_at=None,
+        cleanup_policy=models.CleanupPolicy.RETAIN,
+        sidecar=None,
+        reference=None,
+        content_binding=b"",
+        recovery_metadata=b"",
+        projection_metadata={},
+    )
+    admission = models.AdmissionInput(
+        identity=models.WorkIdentity(
+            work_id=UUID(int=7),
+            kind=models.WorkKind.JOB,
+            subscription_id=None,
+            namespace="jobs",
+            command_type="task",
+            scope=models.ScopeEvidence(
+                canonical_version=1,
+                canonical=canonical_scope(Scope("recovery-test")),
+                application=b"recovery-test",
+                tenant=None,
+                owner=None,
+            ),
+            idempotency_key=None,
+        ),
+        schema_version=1,
+        semantic_input=b.canonical_json({"source": "recovery-lifetime"}),
+        replay_input=b'{"source":"recovery-lifetime"}',
+        protected_binding=b.canonical_protected_binding(material).content,
+        replay_policy=models.ReplayPolicy.DISABLED,
+        max_attempts=3,
+        deadline=now + timedelta(seconds=1) if state == "expired" else None,
+        original_available_at=now,
+    )
+    fields = b._admission_values(admission)
+    fields.update(
+        schema_version_decimal=b"1",
+        runnable_version=1,
+        state=state,
+        cancellation_requested=False,
+        token=None,
+        ownership_revision=2,
+        lease_until=None,
+        available_at=now,
+        cycle=1,
+        attempt_count={"queued": 0, "expired": 0, "failed": 3, "held": 1}[state],
+        dispatch_id=UUID(int=8) if state == "held" else None,
+        result=None,
+        created_at=now,
+        updated_at=now + timedelta(seconds=2),
+        success_origin=None,
+        completion_guard_id=None,
+        final_fence_at=None,
+        completion_result_digest=None,
+        resolution_operation_id=None,
+        terminal_resolution_operation_id=None,
+        resolution=None,
+    )
+    work = WorkObservation(**fields)
+    return ScanPage(items=(work,), visited=1, next_cursor=work.work_id, pass_exhausted=False)
 
 
 @pytest.mark.requires_scalar_profile
@@ -553,11 +623,12 @@ def test_s2_unknown_commit_never_releases_root(monkeypatch):
 
 
 @pytest.mark.requires_scalar_profile
-def test_s2_projection_failure_keeps_result_charged(monkeypatch):
+@pytest.mark.parametrize("state", [None, "queued", "expired", "failed", "held"])
+def test_s2_projection_failure_keeps_result_charged(monkeypatch, state):
     lane, api = real_lane(monkeypatch)
     lane.attach()
     lane.begin()
-    api.payload = native_page()
+    api.payload = native_page(state)
 
     def reject(value):
         raise ValueError("projection failed")
@@ -606,13 +677,15 @@ def test_s2_noncanonical_page_never_releases_result(monkeypatch):
 
 
 @pytest.mark.requires_scalar_profile
-def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
+@pytest.mark.parametrize("state", [None, "queued", "expired", "failed", "held"])
+@pytest.mark.parametrize("committed", [True, False])
+def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch, state, committed):
     lifecycle = module("_native_recovery_lifecycle")
     setup = module("native_recovery_setup")
     m = module("native_recovery")
     c = module()
     api = NativeAPI()
-    api.payload = native_page()
+    api.payload = native_page(state)
     req = SimpleNamespace(
         e13_preparation_min=101, e13_result_min=202, e33_preparation_min=303, e33_result_min=404
     )
@@ -625,6 +698,31 @@ def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
     resources = c.NativeRecoveryResources(
         configuration=object(), connection=object(), ledger=object()
     )
+
+    original_acknowledge = api.acknowledge_commit_result
+    acknowledged = []
+
+    def acknowledge(receipt, **kwargs):
+        recovering = any(event[0] == "prepare_recovery" for event in api.events)
+        if recovering:
+            before = o.snapshot()
+            assert_unpublished_summary(before)
+            assert before.latest_page_outcome is c.RecoveryPageOutcome.PENDING
+            api.outcome = api.CommitOutcome.COMMITTED if committed else object()
+        outcome = original_acknowledge(receipt, **kwargs)
+        if recovering:
+            acknowledged.append(committed)
+        return outcome
+
+    api.acknowledge_commit_result = acknowledge
+
+    def release(result, *, execution_ledger):
+        if any(event[0] == "prepare_recovery" for event in api.events):
+            assert o._pending is not None
+            assert_no_adapter_graph_aliases(api, state)
+        api.call("release_result", result, execution_ledger=execution_ledger)
+
+    api.release_result = release
 
     class App:
         def validate_profile(self, namespace):
@@ -639,30 +737,89 @@ def test_s2_owner_drives_real_lane_authority_through_ack(monkeypatch):
             o.request_stop()
 
     o = m.create_job_recovery(config=config(), resources=resources, application=App())
-    assert m.run_recovery_host(o, stop_event=Event()) == 0
+    assert m.run_recovery_host(o, stop_event=Event()) == (0 if committed else 70)
+    # The owner catches callback failures, so UNKNOWN alone is not this oracle.
+    assert acknowledged == [committed]
     names = [e[0] for e in api.events]
     assert names.index("authority-enter") < names.index("prepare_recovery")
+    result = o.snapshot()
+    if not committed:
+        assert "authority-exit" not in names and "retire" not in names
+        assert o._authority is not None and o._lane.root is not None
+        assert_unpublished_summary(result)
+        assert result.latest_page_outcome is c.RecoveryPageOutcome.UNKNOWN
+        assert result.unresolved and not result.clean_stop
+        with pytest.raises(RuntimeError, match="quiescent"):
+            o.dispose()
+        return
     assert names.index("authority-exit") > max(
         i for i, n in enumerate(names) if n == "acknowledge_commit_result"
     )
-    assert o.snapshot().committed_pages == 1 and o.snapshot().clean_stop
+    assert result.committed_pages == 1 and result.clean_stop
+    assert result.committed_visited == (0 if state is None else 1)
+    assert result.last_committed_raw_cursor == (None if state is None else 7)
+    assert result.next_scan_after == (None if state is None else 7)
+    assert result.committed_sweeps == int(state is None)
+    assert (
+        result.committed_queued,
+        result.committed_expired,
+        result.committed_failed,
+        result.committed_held,
+    ) == {
+        None: (0, 0, 0, 0),
+        "queued": (1, 0, 0, 0),
+        "expired": (0, 1, 0, 0),
+        "failed": (0, 0, 1, 0),
+        "held": (0, 0, 0, 1),
+    }[state]
     o.dispose()
 
 
-@pytest.mark.requires_scalar_profile
-def test_s2_result_alias_dropped_before_release(monkeypatch):
+def assert_unpublished_summary(snapshot):
+    assert not snapshot.has_committed_page
+    assert snapshot.last_committed_raw_cursor is snapshot.next_scan_after is None
+    assert not snapshot.last_committed_pass_exhausted
+    assert (
+        snapshot.committed_pages,
+        snapshot.committed_sweeps,
+        snapshot.committed_visited,
+        snapshot.committed_queued,
+        snapshot.committed_expired,
+        snapshot.committed_failed,
+        snapshot.committed_held,
+        snapshot.last_committed_visited,
+        snapshot.last_committed_queued,
+        snapshot.last_committed_expired,
+        snapshot.last_committed_failed,
+        snapshot.last_committed_held,
+    ) == (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+
+def assert_no_adapter_graph_aliases(api, state):
     import sys
 
+    # Only the test-native registry's field plus getrefcount's argument.
+    # Any adapter page/frame alias would add another occurrence.
+    refs = sys.getrefcount(api.payload)  # Outside pytest assertion rewrite temporaries.
+    assert refs == 2
+    if state is not None:
+        # No validation-loop item, tuple, or payload alias may outlive B.
+        item_refs = sys.getrefcount(api.payload.items[0])
+        tuple_refs = sys.getrefcount(api.payload.items)
+        payload_refs = sys.getrefcount(api.payload.items[0].semantic_input)
+        assert item_refs == tuple_refs == payload_refs == 2
+
+
+@pytest.mark.requires_scalar_profile
+@pytest.mark.parametrize("state", [None, "queued", "expired", "failed", "held"])
+def test_s2_result_alias_dropped_before_release(monkeypatch, state):
     lane, api = real_lane(monkeypatch)
     lane.attach()
     lane.begin()
-    api.payload = native_page()
+    api.payload = native_page(state)
 
     def release(result, *, execution_ledger):
-        # Only the test-native registry's field plus getrefcount's argument.
-        # Any adapter page/frame alias would add another occurrence.
-        refs = sys.getrefcount(api.payload)  # Outside pytest assertion rewrite temporaries.
-        assert refs == 2
+        assert_no_adapter_graph_aliases(api, state)
         api.call("release_result", result, execution_ledger=execution_ledger)
 
     api.release_result = release
