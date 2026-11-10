@@ -54,7 +54,8 @@ passed. The installed pair ran 702 tests and 96 subtests with no failures or ski
 both pre/post installed origin, byte and dependency checks passed. Build, Twine,
 formatting, lint, both explicit consumer-type files and the sdist private-document exclusion regression passed.
 Three existing Python 3.13 FutureWarnings about partial callable descriptors
-were reported, not suppressed. Hosted matrix verification remains pending.
+were reported, not suppressed. This initial local checkpoint preceded the hosted
+corrections and final result recorded below.
 
 Use `python scripts/check_source.py --events-root PATH` for source tests and
 `python scripts/check_wheel.py WORKERS_WHEEL EVENTS_WHEEL --events-root PATH`
@@ -85,3 +86,21 @@ outside the checkout. Zero-error/failure/skip enforcement remains unchanged.
 Broad unsupported rows are portable/refusal evidence, not full scalar acceptance.
 Actual hosted results remain the authority for platform qualification. None of
 these checks starts PostgreSQL, Redis or a native recovery operation.
+
+
+## Verified package CI result
+
+All nine jobs passed for commit `0c4933364cd474998327f7b7d361e475fa34a9fa`:
+[hosted run 42760874019](https://github.com/maxxab/modkit-workers/actions/runs/42760874019).
+This includes standards, Linux/macOS/Windows 3.12 and 3.13, and exact Linux 3.12.3
+and 3.13.5. Each platform passed its declared source and installed-wheel contract;
+unsupported scalar hosts ran portable/refusal checks, not scalar acceptance.
+
+Local final source checks on actual CPython 3.13.5 passed 776 tests and 98 subtests,
+with 88 scalar cases selected and no skips. The final fresh installed pair on
+CPython 3.12.14 passed 717 tests and 98 subtests, with the same 88 scalar cases and
+no skips. A controlled version simulation checked unsupported-host deselection;
+it was not a new interpreter/platform qualification. Build, Twine, private-file
+exclusion and both explicit consumer-type checks passed. The package wheel hashes
+above remain unchanged. Genuine PostgreSQL installation/ACL, native recovery,
+optional services, downstream ERP integration and release gates remain separate.
