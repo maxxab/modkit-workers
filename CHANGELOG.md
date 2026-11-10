@@ -29,6 +29,7 @@
 - **qualification:** guard native admission before runtime effects ([49867221bdb8](https://github.com/maxxab/modkit-workers/commit/49867221bdb8cdfb1df927e706b58b8432407435))
 - **qualification:** enable reviewed exact-release CLI boundary ([893d5caa3c72](https://github.com/maxxab/modkit-workers/commit/893d5caa3c722774ab6d9c44e67e6efdafc9ff6f))
 - **packaging:** preserve Workers resource bytes on Windows checkouts ([91b1adb02728](https://github.com/maxxab/modkit-workers/commit/91b1adb0272848f6113f87e91466c4f323676714))
+- **installation:** bind corrected Events return ABI ([607d7ab3b725](https://github.com/maxxab/modkit-workers/commit/607d7ab3b72527786e969c902964de1ad7b6aa5a))
 
 ### Documentation
 
