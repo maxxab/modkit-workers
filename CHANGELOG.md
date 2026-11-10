@@ -32,6 +32,7 @@
 - **installation:** bind corrected Events return ABI ([607d7ab3b725](https://github.com/maxxab/modkit-workers/commit/607d7ab3b72527786e969c902964de1ad7b6aa5a))
 - **ci:** use public pinned standards tooling ([d038e37d9356](https://github.com/maxxab/modkit-workers/commit/d038e37d93567aec51259647ec23c73f2e02e421))
 - **tests:** canonicalize owned temporary resource roots ([c669274ea21f](https://github.com/maxxab/modkit-workers/commit/c669274ea21f495be575c0175a3d49446b617731))
+- **ci:** separate finite scalar acceptance from portable refusal ([0d4a62361121](https://github.com/maxxab/modkit-workers/commit/0d4a62361121351e6c40dc239429152881012b69))
 
 ### Documentation
 
