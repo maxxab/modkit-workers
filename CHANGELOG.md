@@ -57,6 +57,7 @@
 - **handoff:** preserve stopped workers checkpoint and uncertain disposal ([12de6b95f474](https://github.com/maxxab/modkit-workers/commit/12de6b95f4740c9d6fe18b7df99fe76c6f625daf))
 - **qualification:** reconcile package evidence and native gates ([9f72c32fa377](https://github.com/maxxab/modkit-workers/commit/9f72c32fa377e46f134c86abc2141bcfb00a3169))
 - **qualification:** record fresh installed Workers checks ([68111ed099a2](https://github.com/maxxab/modkit-workers/commit/68111ed099a2dac3f9776838bfff334793e6e144))
+- **ci:** record verified package matrix result ([45506294e41d](https://github.com/maxxab/modkit-workers/commit/45506294e41dc60c6af2475fd832210e7f6b024d))
 
 ### Testing
 
