@@ -250,6 +250,17 @@ def denied(connection, psycopg, statement):
         assert error.sqlstate == "42501", error.sqlstate
 
 
+def check_readiness_receipts(connection, event_values, worker_values):
+    for profile, expected in (
+        ("events", [event_values]),
+        ("workers", [event_values, worker_values]),
+    ):
+        assert (
+            connection.execute("SELECT * FROM modkit_events.e33(%s)", (profile,)).fetchall()
+            == expected
+        )
+
+
 def restricted_checks(psycopg, event_values, worker_values):
     for login, role in LOGIN_ROLES.items():
         if role not in {"modkit_runtime", "modkit_reconciler", "modkit_operator"}:
@@ -263,10 +274,7 @@ def restricted_checks(psycopg, event_values, worker_values):
                     assert connection.execute(
                         "SELECT has_function_privilege(current_user,%s,'EXECUTE')", (oid,)
                     ).fetchone() == (allowed,)
-                for values in (event_values, worker_values):
-                    assert connection.execute(
-                        "SELECT * FROM modkit_events.e33(%s)", (values[0],)
-                    ).fetchall() == [values]
+                check_readiness_receipts(connection, event_values, worker_values)
                 assert (
                     connection.execute(
                         "SELECT * FROM modkit_workers.w02('00000000-0000-0000-0000-000000000001'::uuid)"

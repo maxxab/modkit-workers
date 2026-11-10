@@ -232,3 +232,32 @@ def test_workflow_has_only_the_reviewed_disposable_composition_scope():
     assert 'python" -I -B check_postgres.py' in job
     for forbidden in ("secrets.", "volumes:", "upload-artifact", "retry", "ssh", "kubectl"):
         assert forbidden not in job
+
+
+@pytest.mark.parametrize("failure", [None, "missing-events", "reversed", "extra", "wrong-events"])
+def test_readiness_profiles_require_ordered_component_receipts(failure):
+    from types import SimpleNamespace
+
+    module = load_script()
+    event = ("events", 1, b"e" * 32, "modkit-pg-ab-2", "MKSC-1", "MKPF-1")
+    worker = ("workers", 1, b"w" * 32, "modkit-pg-ab-2", "MKSC-1", "MKPF-1")
+    rows = {"events": [event], "workers": [event, worker]}
+    if failure == "missing-events":
+        rows["workers"] = [worker]
+    elif failure == "reversed":
+        rows["workers"] = [worker, event]
+    elif failure == "extra":
+        rows["workers"] = [event, worker, worker]
+    elif failure == "wrong-events":
+        rows["events"] = [worker]
+
+    def execute(statement, parameters):
+        assert statement == "SELECT * FROM modkit_events.e33(%s)"
+        return SimpleNamespace(fetchall=lambda: rows[parameters[0]])
+
+    connection = SimpleNamespace(execute=execute)
+    if failure is None:
+        module.check_readiness_receipts(connection, event, worker)
+    else:
+        with pytest.raises(AssertionError):
+            module.check_readiness_receipts(connection, event, worker)

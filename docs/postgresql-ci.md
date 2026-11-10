@@ -94,3 +94,12 @@ PL/pgSQL record last populated with only an `oid` field. PostgreSQL resolved
 postflight now use the distinct `checked_role` SQL alias. The privilege predicates
 are unchanged; the resource hash and migration aggregate reflect this correction.
 The complete hosted installation regression must still pass before qualification.
+
+[Run 42773252132](https://github.com/maxxab/modkit-workers/actions/runs/42773252132)
+passed the full installation/grants/receipt rollback and committed observer checks.
+The remaining failure was in the checker: E33 takes a readiness profile, not a
+component filter. The `workers` profile correctly returns Events followed by
+Workers; the checker incorrectly expected only Workers. The corrected assertion
+requires the exact ordered pair, while `events` still requires only Events.
+Focused controls accept this contract and reject missing, reversed, additional or
+wrong receipts. Product SQL and wheel bytes are unchanged by this checker fix.
