@@ -78,6 +78,7 @@
 - **recovery:** verify pinned Events preflight contract ([cadc1a67b658](https://github.com/maxxab/modkit-workers/commit/cadc1a67b65802ab6f07f863698d50272d867db6))
 - **transport:** prepare inert native schedule and offline refusal controls ([2a2e6cc9bec7](https://github.com/maxxab/modkit-workers/commit/2a2e6cc9bec7baf542e0b55273a8550e4c0ecb08))
 - **workers:** add measured native transport adapter ([ced5ebb050f5](https://github.com/maxxab/modkit-workers/commit/ced5ebb050f5671a406e31e023e7cce54b557147))
+- **workers:** isolate transport origin budget probe ([822e77194935](https://github.com/maxxab/modkit-workers/commit/822e7719493587ae4e33caffe0e900e1822c1799))
 
 ### CI/CD
 
