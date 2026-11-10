@@ -285,6 +285,34 @@ class Source4(unittest.TestCase):
         except ModuleNotFoundError:
             self.fail("released anchored POSIX/Z1 backend is missing")
 
+    def test_owned_sandbox_accepts_temporary_base_alias(self):
+        import os
+        from unittest.mock import patch
+
+        from _resource_fixtures import Sandbox
+
+        real = self.sandbox.base / "alias-target"
+        real.mkdir()
+        alias = self.sandbox.base / "temp-alias"
+        alias.symlink_to(real, target_is_directory=True)
+        with patch.dict(os.environ, MODKIT_RESOURCE_TEST_BASE=str(alias)):
+            nested = Sandbox(COMPONENT)
+        try:
+            self.assertEqual(nested.base, nested.base.resolve())
+            self.assertTrue(nested.base.is_relative_to(real))
+            self.assertEqual((nested.base / "root-link").resolve(), nested.root)
+        finally:
+            nested.close()
+        self.assertTrue(real.is_dir())
+        self.assertEqual(list(real.iterdir()), [])
+
+    def test_owned_sandbox_rejects_target_escape(self):
+        for target in ("../outside", str(self.sandbox.base.parent)):
+            with self.subTest(target=target):
+                with self.assertRaisesRegex(ValueError, "fixture target must remain in sandbox"):
+                    self.sandbox.link("escape", target)
+        self.assertFalse((self.sandbox.base / "escape").exists())
+
     def test_posix_locator_and_leaf_policy(self):
         if self.sandbox.link_error is not None:
             self.skipTest("BLOCKED link fixture: " + str(self.sandbox.link_error))

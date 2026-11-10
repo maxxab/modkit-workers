@@ -74,7 +74,7 @@ class Sandbox:
         self.temporary = tempfile.TemporaryDirectory(
             prefix="modkit-resource-test-", dir=os.environ.get("MODKIT_RESOURCE_TEST_BASE")
         )
-        self.base = Path(self.temporary.name)
+        self.base = Path(self.temporary.name).resolve()
         self.component = component
         self.files = {
             "0001_initial.sql": b"-- TEST ONLY ordinary \xc3\xa9\r\n",
