@@ -1,0 +1,98 @@
+name: Package CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: maxxab/development-standards
+          ref: c09229b2c59e8d72236220313f35250ce3c7e2f9
+          path: .ci-standards
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Validate commits and changelog
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD"
+          if [ "$EVENT_NAME" = pull_request ]; then
+            BASE=$(git merge-base "$PR_BASE" "$HEAD")
+          elif [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
+            BASE=$BEFORE
+          else
+            MESSAGE=$(mktemp)
+            trap 'rm -f "$MESSAGE"' EXIT
+            for COMMIT in $(git rev-list --reverse --topo-order "$HEAD"); do
+              git show -s --format=%B "$COMMIT" > "$MESSAGE"
+              python .ci-standards/standards.py validate-message "$MESSAGE"
+            done
+            BASE=$HEAD
+          fi
+          python .ci-standards/standards.py check --base "$BASE" --head "$HEAD"
+  package:
+    name: ${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.contract }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.12', '3.13']
+        include:
+          - os: ubuntu-latest
+            contract: full offline
+          - os: macos-latest
+            contract: full offline
+          - os: windows-latest
+            contract: portable and backend refusal
+          - os: ubuntu-22.04
+            python: '3.12.3'
+            contract: finite profile, no live SQL
+            profile: cpython-3.12.3-linux-64-recovery-v1
+          - os: ubuntu-22.04
+            python: '3.13.5'
+            contract: finite profile, no live SQL
+            profile: cpython-3.13.5-linux-x86_64-gil-release-recovery-v1
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: maxxab/modkit-events
+          ref: ef84ecbe3fdc65c7922ea954e619c1743efc7f67
+          path: .ci-events
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -r requirements-dev.txt "psycopg[binary]==3.3.8" hatchling==1.33.0
+      - run: python scripts/check_source.py --events-root .ci-events --check-dependency-only
+      - run: python -m build --wheel .ci-events --outdir dependency-dist
+      - name: Install pinned Events wheel
+        shell: bash
+        run: python -m pip install --no-index dependency-dist/*.whl
+      - run: python scripts/check_source.py --events-root .ci-events
+      - run: python -m ruff check src tests scripts
+      - run: python -m ruff format --check src tests scripts
+      - name: Check explicit consumer types
+        env:
+          MYPYPATH: src
+        run: python -m mypy tests/typecheck_job_bindings.py tests/typecheck_native_ports.py --follow-imports=silent --warn-unused-ignores
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - run: python tests/check_sdist_contents.py
+      - name: Installed pair and explicit platform contract
+        shell: bash
+        env:
+          EXPECTED_PROFILE: ${{ matrix.profile }}
+        run: python scripts/check_wheel.py dist/*.whl dependency-dist/*.whl --events-root .ci-events --expect-profile "$EXPECTED_PROFILE"
