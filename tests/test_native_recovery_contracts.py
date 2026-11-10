@@ -491,3 +491,89 @@ def test_profile_312_existing_platform_scope_preserved(monkeypatch):
     p = c._summary_profile()
     assert p["interpreter_profile_id"] == "cpython-3.12-scalar-64"
     assert p["interpreter_version"] == (3, 12, 99) and p["required"] == 6212
+
+
+@pytest.mark.requires_scalar_profile
+def test_pinned_events_recovery_preflight_contract_without_driver_import(monkeypatch):
+    """Real dependency records/minima, with only driver fact inspection replaced."""
+    import builtins
+    import sys
+    from dataclasses import fields, replace
+
+    from modkit_events.persistence import managed_lifecycle, recovery_profile
+    from modkit_events.persistence.errors import ErrorCode, PersistenceError
+
+    setup = module("native_recovery_setup")
+    candidate = config()
+    driver_checks = []
+    original_import = builtins.__import__
+
+    def checked_import(name, globals=None, locals=None, fromlist=(), level=0):
+        assert not name.startswith("psycopg"), "optional driver import during source preflight"
+        assert not any(
+            item in ("native_execution", "native_sync")
+            for item in (name.rsplit(".", 1)[-1], *(fromlist or ()))
+        ), "native I/O module import during source preflight"
+        return original_import(name, globals, locals, fromlist, level)
+
+    def driver_facts():
+        driver_checks.append("inspected")
+        # Deliberately simulated, not positive driver/capability qualification.
+        return "3.3.8", 180006, "binary"
+
+    monkeypatch.setattr(builtins, "__import__", checked_import)
+    monkeypatch.setattr(recovery_profile, "_verify_driver", driver_facts)
+    monkeypatch.setattr(
+        managed_lifecycle,
+        "configure_managed_registry",
+        lambda **kwargs: pytest.fail("preflight configured the shared registry"),
+    )
+    assert setup._profile_api() is recovery_profile
+    assert setup._limits_type() is managed_lifecycle.LifecycleLimits
+    assert not setup._attempted
+    if sys.platform != "linux" or tuple(sys.version_info[:3]) not in ((3, 12, 3), (3, 13, 5)):
+        # The scalar source profile is broader than the actual Events native
+        # profile. A real dependency refusal must precede even simulated facts.
+        generous = managed_lifecycle.LifecycleLimits(
+            **{field.name: 2**32 for field in fields(managed_lifecycle.LifecycleLimits)}
+        )
+        with pytest.raises(PersistenceError) as caught:
+            setup.preflight_native_recovery(candidate, limits=generous)
+        assert caught.value.code is ErrorCode.PROFILE_REJECTED
+        assert not caught.value.unconfirmed and driver_checks == []
+        assert not setup._attempted
+        return
+
+    requirements = recovery_profile.recovery_requirements(readiness=candidate.readiness)
+    assert type(requirements) is recovery_profile.RecoveryRequirements
+    assert requirements.readiness is candidate.readiness
+    assert requirements.namespace == b"jobs" and requirements.kind == "job"
+    assert requirements.page_limit == 1 and requirements.required_profile == "workers"
+    assert tuple(x.component for x in requirements.readiness.components) == ("events", "workers")
+    limits = requirements.lifecycle_minimum
+    assert type(limits) is managed_lifecycle.LifecycleLimits
+    assert (
+        limits.prepare_bytes
+        == limits.prepare_bytes_per_execution
+        == max(requirements.e13_preparation_min, requirements.e33_preparation_min)
+    )
+    assert (
+        limits.result_bytes
+        == limits.result_bytes_per_ticket
+        == max(requirements.e13_result_min, requirements.e33_result_min)
+    )
+    assert setup.preflight_native_recovery(candidate, limits=limits) is None
+    assert driver_checks == ["inspected"] and not setup._attempted
+    # Real17-field minima must all reject before inspecting optional driver facts.
+    for field in fields(limits):
+        small = replace(limits, **{field.name: getattr(limits, field.name) - 1})
+        with pytest.raises(ValueError):
+            setup.preflight_native_recovery(candidate, limits=small)
+        assert driver_checks == ["inspected"], field.name
+        assert not setup._attempted
+    # Use the real verifier's rejection path after its real equality/type checks.
+    monkeypatch.setattr(recovery_profile, "_verify_driver", recovery_profile._reject_validation)
+    with pytest.raises(PersistenceError) as caught:
+        setup.preflight_native_recovery(candidate, limits=limits)
+    assert caught.value.code is ErrorCode.PROFILE_REJECTED
+    assert not caught.value.unconfirmed and not setup._attempted

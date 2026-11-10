@@ -159,6 +159,13 @@ a committed page with unresolved cleanup, preserve prior committed counters and
 cursor, and check retained handles, authority, material and refusal of restart or
 disposal. These checks use in-memory interfaces, not real transport faults.
 
+A separate source integration check uses the actual pinned Events requirements,
+lifecycle record types, capacity calculation and profile verifier. Only optional
+driver fact inspection is simulated; native modules and registry configuration
+are forbidden in that check. Exact supported finite hosts exercise all 17 real
+minima; broader scalar hosts must refuse before driver inspection. This does not
+certify an installed driver or admit native resources.
+
 Independent source review/QA must compare exact scalar/profile/lifetime paths
 and tests against the accepted design. The native positive capability/adapter,
 M/R pre-issue enforcement, actual root/commit/close, supported driver profile,
