@@ -72,6 +72,7 @@
 - **workers:** qualify acquisition upper bounds ([e35dde96a9c0](https://github.com/maxxab/modkit-workers/commit/e35dde96a9c0a7007ac6bc94bef59e6a92169785))
 - **recovery:** separate invalid limits from unavailable profiles ([7196c8131e9f](https://github.com/maxxab/modkit-workers/commit/7196c8131e9fc77e6658f70fd86d7bb8fe9136d5))
 - **persistence:** verify explicit reader installation resources ([7a1612f21924](https://github.com/maxxab/modkit-workers/commit/7a1612f21924312b0c3d8d0bb8c86a82a9c41ded))
+- **recovery:** cover nonempty paid observation lifetimes ([5b96355b0b48](https://github.com/maxxab/modkit-workers/commit/5b96355b0b48a9561e094e76071abd16c2323f16))
 
 ### CI/CD
 
