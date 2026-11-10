@@ -26,6 +26,7 @@
 - **persistence:** bind corrected Events grant inventory (`ee80d784c307`)
 - **persistence:** bind Events grant condition correction (`075b9c0df28e`)
 - **types:** model validated worker lifetimes and port variance (`5c07a893135e`)
+- **qualification:** guard native admission before runtime effects (`49867221bdb8`)
 
 ### Documentation
 
