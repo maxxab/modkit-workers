@@ -825,13 +825,23 @@ def test_aggregate_budget_stops_before_next_oversized_read(tmp_path, monkeypatch
             def run():
                 actual._import("modkit_events")
         else:
-            monkeypatch.setattr(adapter.sys, "path", [str(site)])
+            # Only this budget probe needs a closed target-module inventory.
+            # Use a private sys proxy; never clear the interpreter's modules or
+            # let unrelated full-suite imports short-circuit the budget guard.
+            modules = {
+                name: module
+                for name, module in adapter.sys.modules.items()
+                if name != "modkit_events" and not name.startswith("modkit_events.")
+            }
             for name, path in (("modkit_events", first), ("modkit_events.extra", target)):
-                monkeypatch.setitem(
-                    adapter.sys.modules,
-                    name,
-                    SimpleNamespace(__file__=str(path), __spec__=SimpleNamespace(origin=str(path))),
+                modules[name] = SimpleNamespace(
+                    __file__=str(path), __spec__=SimpleNamespace(origin=str(path))
                 )
+            monkeypatch.setattr(
+                adapter,
+                "sys",
+                SimpleNamespace(**{**vars(adapter.sys), "path": [str(site)], "modules": modules}),
+            )
 
             def run():
                 adapter._check_origins("modkit_events", site, files)
@@ -846,3 +856,41 @@ def test_aggregate_budget_stops_before_next_oversized_read(tmp_path, monkeypatch
     assert target not in reads
     if operation != "wheel":
         assert reads == [first]
+
+
+def test_budget_origin_probe_coexists_with_unrelated_loaded_module(tmp_path, monkeypatch):
+    adapter = load()
+    outside = str(tmp_path / "unrelated.py")
+    sentinel = SimpleNamespace(__file__=outside, __spec__=SimpleNamespace(origin=outside))
+    modules = dict(adapter.sys.modules)
+    modules["modkit_events.persistence.unrelated_test_sentinel"] = sentinel
+    real_modules = adapter.sys.modules
+    proxy = SimpleNamespace(**{**vars(adapter.sys), "modules": modules})
+    monkeypatch.setattr(adapter, "sys", proxy)
+    monkeypatch.setattr(real_modules[__name__], "load", lambda: adapter)
+    test_aggregate_budget_stops_before_next_oversized_read(tmp_path, monkeypatch, "origins")
+    assert real_modules is __import__("sys").modules
+    assert "modkit_events.persistence.unrelated_test_sentinel" not in real_modules
+    # The probe's private filtering must not weaken production validation when
+    # an unrelated loaded origin is actually presented to that validator.
+    assert modules["modkit_events.persistence.unrelated_test_sentinel"] is sentinel
+    first = tmp_path / "site/modkit_events/__init__.py"
+    original_mapping = {
+        "modkit_events": SimpleNamespace(
+            __file__=str(first), __spec__=SimpleNamespace(origin=str(first))
+        ),
+        "modkit_events.persistence.unrelated_test_sentinel": sentinel,
+    }
+    monkeypatch.setattr(
+        adapter,
+        "sys",
+        SimpleNamespace(
+            **{**vars(proxy), "path": [str(tmp_path / "site")], "modules": original_mapping}
+        ),
+    )
+    with pytest.raises(ValueError, match="preloaded import origin or bytes refused"):
+        adapter._check_origins(
+            "modkit_events",
+            tmp_path / "site",
+            {first: hashlib.sha256(first.read_bytes()).hexdigest()},
+        )
