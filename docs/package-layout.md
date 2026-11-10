@@ -1,5 +1,55 @@
 # modkit-workers package layout and readiness
 
+## Cloud qualification checkpoint: 2026-11-10
+
+The current source wheel was freshly built from Workers
+`44b144b93c0127a7c3a171a3d5b56bd7499e93b7` and paired with Events
+`43f89e34896b4a0e7441b0a6002f370fd3575ade` on Linux CPython 3.12.14.
+The Workers wheel SHA256 is
+`2d1090533cde9de45bb7ad570b6067a253f440e7736136dce6b66fce171dea0f`.
+The Events wheel SHA256 is
+`d51055f0a51c0740c206ff583ff4458e2736730f0a6a044f2745c5b31a26eb70`.
+The Workers source archive SHA256 is
+`f0e87c9a98f2b8293e8453a0eee10a699cbc3793218451269ed1e01b3ae513a3`.
+These identify the tested snapshot, not a published release or subsequent documentation.
+
+Strict physical archive and inventory checks matched all 38 wheel members and
+100 source-archive members to the tracked source and declared package metadata.
+Private document trees were excluded; RECORD hashes and Twine checks passed.
+The declared Events dependency resolved from the two local wheels into a fresh,
+outside-checkout environment, and `pip check` passed. Actual installed module
+origins, resource bytes, migration digests and the exact Events dependency were
+verified before and after behavioral tests.
+
+Thirty installed behavior modules passed 702 tests plus 96 subtests, with no
+failures or skips. Seven separate source-oracle modules passed 38 checks against
+explicit installed Events SQL. The source-only lane emitted two harmless async
+configuration warnings because the async plugin was not loaded for those checks.
+Test copies came from the audited source archive; no checkout package source was
+available in the installed lane. The parent test interpreter had a live-effect
+audit guard; six finite Python child-script sites were reviewed separately. The
+hook is not inherited by children and is not an all-process sandbox. In-process
+doubles and owned temporary resource fixtures were used. No database or Redis
+service was contacted and no native fixture was created. The receipt includes the exact
+artifact, test, tooling and guard hashes; independent result review is accepted.
+
+The wheel is byte-identical to the earlier artifact with the same hash, but this
+is a fresh installation receipt, not a relabeling of historical source evidence.
+An independently reviewed LF checkout fix at `91b1adb0272848f6113f87e91466c4f323676714`
+prevents Git CRLF conversion from invalidating SQL digest checks. Its isolated Git
+regression reproduced the corrupt checkout before the fix and exact original
+bytes afterward. The product Python and SQL bytes are unchanged.
+
+Remaining gates include other required interpreters/platforms, genuine optional
+driver and service behavior, PostgreSQL installation/least-privilege/native
+transport, remaining recovery faults and downstream ERP integration. The finite
+recovery-profile acceptance gates remain unchanged. A cloud checkout and copied
+historical evidence do not establish native runtime authority, current absence,
+identical host capability or route. Old uncertain outcomes remain UNKNOWN and
+consumed grants remain consumed. Flutter readiness is not yet claimed.
+
+## Historical preparation notes
+
 This is NEW unpublished source preparation, not a qualified distribution.
 Typed source lives under src/modkit_workers; py.typed marks annotations, not completed type checking.
 Root and namespace initializers do not load optional adapters or apply migrations.
