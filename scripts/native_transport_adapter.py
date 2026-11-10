@@ -124,9 +124,14 @@ def _record(raw, payload, record):
 
 def _tree(root):
     _require(root.is_dir() and not root.is_symlink(), "distribution directory refused")
+
+    def refuse_scan(error):
+        # os.walk otherwise hides scandir errors and returns a partial inventory.
+        raise ValueError("distribution scan refused") from None
+
     files = set()
     entries = 0
-    for base, directories, names in os.walk(root, followlinks=False):
+    for base, directories, names in os.walk(root, followlinks=False, onerror=refuse_scan):
         entries += len(directories) + len(names)
         _require(entries <= MAX_FILES, "distribution entry bound exceeded")
         for name in directories + names:

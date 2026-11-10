@@ -135,6 +135,27 @@ def test_wheel_provenance_refusals(tmp_path, damage):
         adapter._verify_wheel(wheel, digest, "modkit_events", "0.2.0", site)
 
 
+@pytest.mark.parametrize("directory", ["modkit_events", "modkit_events-0.2.0.dist-info"])
+def test_incomplete_distribution_scan_refuses_wheel_provenance(tmp_path, monkeypatch, directory):
+    adapter = load()
+    wheel, site, digest = wheel_fixture(tmp_path)
+    hidden = site / directory / "unreadable"
+    hidden.mkdir()
+    (hidden / "unverified.py").write_bytes(b"# must not disappear from the inventory\n")
+    scandir = adapter.os.scandir
+
+    def interrupted_scan(path):
+        if Path(path) == hidden:
+            raise PermissionError("offline inaccessible directory")
+        return scandir(path)
+
+    # Permission bits alone are not portable, particularly under privileged CI.
+    # Keep the real walker and provenance checker, failing only its OS boundary.
+    monkeypatch.setattr(adapter.os, "scandir", interrupted_scan)
+    with pytest.raises(ValueError, match="distribution scan refused"):
+        adapter._verify_wheel(wheel, digest, "modkit_events", "0.2.0", site)
+
+
 def test_shadowed_import_refused(tmp_path, monkeypatch):
     adapter = load()
     wheel, site, digest = wheel_fixture(tmp_path)
