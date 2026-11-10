@@ -461,7 +461,7 @@ def real_lane(monkeypatch):
     return lane, api
 
 
-def native_page(state=None):
+def native_page(state=None, *, work_id=7):
     from datetime import datetime, timedelta, timezone
 
     from modkit_events.persistence import bindings as b
@@ -486,7 +486,7 @@ def native_page(state=None):
     )
     admission = models.AdmissionInput(
         identity=models.WorkIdentity(
-            work_id=UUID(int=7),
+            work_id=UUID(int=work_id),
             kind=models.WorkKind.JOB,
             subscription_id=None,
             namespace="jobs",
@@ -825,3 +825,158 @@ def test_s2_result_alias_dropped_before_release(monkeypatch, state):
     api.release_result = release
     lane.scan(config(), None, lambda value: None)
     assert lane.result is None
+
+
+@pytest.mark.requires_scalar_profile
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "start_root",
+        "prepare_recovery",
+        "admit",
+        "reserve_result",
+        "execute",
+        "read_result",
+        "release_result",
+        "release_ticket",
+        "release_preparation",
+        "commit",
+        "acknowledge_commit_result",
+        "unknown_acknowledgment",
+        "release_root",
+        "authority_exit",
+    ],
+)
+def test_s2_later_fault_preserves_acknowledged_history(monkeypatch, failure):
+    """Faulted work must not erase an earlier page or masquerade as committed."""
+    lifecycle = module("_native_recovery_lifecycle")
+    setup = module("native_recovery_setup")
+    m = module("native_recovery")
+    c = module()
+    api = NativeAPI()
+    req = SimpleNamespace(
+        e13_preparation_min=101, e13_result_min=202, e33_preparation_min=303, e33_result_min=404
+    )
+    monkeypatch.setattr(lifecycle, "_recovery_api", lambda: (api, api))
+    monkeypatch.setattr(setup, "_recheck_profile", lambda *args: req)
+    monkeypatch.setattr(setup, "_validate_resources", lambda *args: None)
+    monkeypatch.setattr(setup, "_adopt_resources", lambda *args: None)
+    monkeypatch.setattr(m, "_domain_active", lambda: True)
+    ticks = [0.0]
+    monkeypatch.setattr(m, "_clock", lambda: ticks[0])
+    monkeypatch.setattr(m, "_wait", lambda event, seconds: ticks.__setitem__(0, ticks[0] + seconds))
+    resources = c.NativeRecoveryResources(
+        configuration=object(), connection=object(), ledger=object()
+    )
+    entries, acknowledgments, injected = [], [], []
+    original_call = api.call
+
+    def call(name, *args, **kwargs):
+        if len(entries) == 2 and name == failure:
+            original_call(name, *args, **kwargs)
+            injected.append(name)
+            raise RuntimeError("injected second-page fault")
+        return original_call(name, *args, **kwargs)
+
+    api.call = call
+    original_acknowledge = api.acknowledge_commit_result
+
+    def acknowledge(receipt, **kwargs):
+        outcome = original_acknowledge(receipt, **kwargs)
+        if entries:
+            if len(entries) == 2 and failure == "unknown_acknowledgment":
+                injected.append(failure)
+                return object()
+            acknowledgments.append(len(entries))
+        return outcome
+
+    api.acknowledge_commit_result = acknowledge
+
+    class App:
+        def validate_profile(self, namespace):
+            assert namespace == b"jobs"
+
+        @contextmanager
+        def authorize_root(self, connection, namespace):
+            assert connection is resources.connection and namespace == b"jobs"
+            entries.append(len(entries) + 1)
+            assert len(entries) <= 2, "An unresolved page was retried"
+            api.payload = native_page(
+                "queued" if len(entries) == 1 else "held",
+                work_id=7 if len(entries) == 1 else 11,
+            )
+            api.call("authority_enter")
+            yield
+            api.call("authority_exit")
+
+    o = m.create_job_recovery(config=config(), resources=resources, application=App())
+    assert m.run_recovery_host(o, stop_event=Event()) == 70
+    # These outside-run facts reject false passes from caught harness failures.
+    assert entries == [1, 2]
+    assert injected == [failure]
+    committed_second = failure in ("release_root", "authority_exit")
+    assert acknowledgments == ([1, 2] if committed_second else [1])
+    result = o.snapshot()
+    assert result.has_committed_page and result.committed_queued == 1
+    assert result.committed_pages == result.committed_visited == (2 if committed_second else 1)
+    assert result.committed_held == int(committed_second)
+    assert result.committed_expired == result.committed_failed == result.committed_sweeps == 0
+    assert (
+        result.last_committed_raw_cursor
+        == result.next_scan_after
+        == (11 if committed_second else 7)
+    )
+    assert result.last_committed_visited == 1 and not result.last_committed_pass_exhausted
+    assert result.last_committed_queued == int(not committed_second)
+    assert result.last_committed_held == int(committed_second)
+    assert result.last_committed_expired == result.last_committed_failed == 0
+    assert result.latest_page_outcome is (
+        c.RecoveryPageOutcome.COMMITTED if committed_second else c.RecoveryPageOutcome.UNKNOWN
+    )
+    assert result.unresolved and not result.clean_stop and not result.ready
+    assert result.cleanup_unresolved is committed_second
+    names = [event[0] for event in api.events]
+    assert names.count("authority_enter") == 2
+    assert names.count("authority_exit") == (2 if committed_second else 1)
+    assert "retire" not in names and "physical-close" not in names
+    assert o._lane.failed is (failure != "authority_exit")
+    assert o._material.state is c.RecoveryMaterialState.HELD
+    assert (o._lane.root is not None) is (failure not in ("start_root", "authority_exit"))
+    assert (o._lane.preparation is not None) is (
+        failure
+        in (
+            "admit",
+            "reserve_result",
+            "execute",
+            "read_result",
+            "release_result",
+            "release_ticket",
+            "release_preparation",
+        )
+    )
+    assert (o._lane.ticket is not None) is (
+        failure
+        in (
+            "reserve_result",
+            "execute",
+            "read_result",
+            "release_result",
+            "release_ticket",
+        )
+    )
+    assert (o._lane.result is not None) is (
+        failure
+        in (
+            "execute",
+            "read_result",
+            "release_result",
+        )
+    )
+    if failure != "release_root":
+        assert o._authority is not None
+    count = len(api.events)
+    with pytest.raises(RuntimeError, match="quiescent"):
+        o.dispose()
+    with pytest.raises(RuntimeError, match="once-only"):
+        o.run(stop_event=Event())
+    assert len(api.events) == count

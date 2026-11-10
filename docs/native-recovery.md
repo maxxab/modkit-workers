@@ -152,6 +152,13 @@ cursor remain unpublished until COMMITTED, and unknown acknowledgment retains th
 root and authority without cleanup or disposal. These interface-double tests do
 not prove that SQL produced those postimages or that native reservations settled.
 
+Second-page fault regressions first acknowledge a nonempty queued page, then
+inject failures from root creation through statement release, commit, acknowledgment,
+root release and authority exit. They distinguish an unresolved second page from
+a committed page with unresolved cleanup, preserve prior committed counters and
+cursor, and check retained handles, authority, material and refusal of restart or
+disposal. These checks use in-memory interfaces, not real transport faults.
+
 Independent source review/QA must compare exact scalar/profile/lifetime paths
 and tests against the accepted design. The native positive capability/adapter,
 M/R pre-issue enforcement, actual root/commit/close, supported driver profile,
