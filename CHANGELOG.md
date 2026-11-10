@@ -74,6 +74,7 @@
 - **persistence:** verify explicit reader installation resources ([7a1612f21924](https://github.com/maxxab/modkit-workers/commit/7a1612f21924312b0c3d8d0bb8c86a82a9c41ded))
 - **recovery:** cover nonempty paid observation lifetimes ([5b96355b0b48](https://github.com/maxxab/modkit-workers/commit/5b96355b0b48a9561e094e76071abd16c2323f16))
 - **recovery:** preserve history across later page faults ([e22e2e52d33e](https://github.com/maxxab/modkit-workers/commit/e22e2e52d33e846ee8a27dccb6ed05dd390fddd4))
+- **recovery:** verify pinned Events preflight contract ([cadc1a67b658](https://github.com/maxxab/modkit-workers/commit/cadc1a67b65802ab6f07f863698d50272d867db6))
 
 ### CI/CD
 
