@@ -57,6 +57,7 @@ SOURCE_ONLY_TESTS = (
     "test_bounded_job_listing_source_contract.py",
     "test_installation_closure.py",
     "test_native_acquisition_source.py",
+    "test_native_transport.py",
     "test_reader_case_data.py",
     "test_reader_source_contract.py",
     "test_ci_checks.py",
