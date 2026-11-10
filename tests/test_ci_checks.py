@@ -134,6 +134,20 @@ def test_workflow_keeps_reviewed_events_commit_and_finite_profiles():
     assert "services:" not in workflow
 
 
+def test_standards_uses_public_verified_dependency_without_extra_credentials():
+    import json
+
+    workflow = (SCRIPTS.parent / ".github/workflows/ci.yml").read_text()
+    standards = workflow.split("  standards:\n", 1)[1].split("  package:\n", 1)[0]
+    pin = json.loads((SCRIPTS / "ci_dependency.json").read_text())
+    assert "repository: maxxab/modkit-events" in standards
+    assert "ref: " + pin["commit"] in standards
+    assert "git -C .ci-standards rev-parse HEAD" in standards
+    assert "python .ci-standards/.development-standards/standards.py check" in standards
+    assert "maxxab/development-standards" not in standards
+    assert "secrets." not in standards and "token:" not in standards
+
+
 def mode_wheel(artifact, kind):
     with zipfile.ZipFile(artifact) as archive:
         entries = [(entry, archive.read(entry)) for entry in archive.infolist()]

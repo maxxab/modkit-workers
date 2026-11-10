@@ -12,8 +12,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          repository: maxxab/development-standards
-          ref: c09229b2c59e8d72236220313f35250ce3c7e2f9
+          repository: maxxab/modkit-events
+          ref: ef84ecbe3fdc65c7922ea954e619c1743efc7f67
           path: .ci-standards
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -28,6 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$HEAD"
+          test "$(git -C .ci-standards rev-parse HEAD)" = ef84ecbe3fdc65c7922ea954e619c1743efc7f67
           if [ "$EVENT_NAME" = pull_request ]; then
             BASE=$(git merge-base "$PR_BASE" "$HEAD")
           elif [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
@@ -37,11 +38,11 @@ jobs:
             trap 'rm -f "$MESSAGE"' EXIT
             for COMMIT in $(git rev-list --reverse --topo-order "$HEAD"); do
               git show -s --format=%B "$COMMIT" > "$MESSAGE"
-              python .ci-standards/standards.py validate-message "$MESSAGE"
+              python .ci-standards/.development-standards/standards.py validate-message "$MESSAGE"
             done
             BASE=$HEAD
           fi
-          python .ci-standards/standards.py check --base "$BASE" --head "$HEAD"
+          python .ci-standards/.development-standards/standards.py check --base "$BASE" --head "$HEAD"
   package:
     name: ${{ matrix.os }} / ${{ matrix.python }} / ${{ matrix.contract }}
     strategy:
