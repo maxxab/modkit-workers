@@ -68,3 +68,20 @@ rollback and ACL scope. It does not qualify managed native transport, runtime jo
 semantics, fault/recovery scenarios, optional service combinations, deployment,
 ERP integration or release readiness. Old UNKNOWN outcomes and consumed grants
 remain unchanged. No real PostgreSQL result is claimed until the hosted job passes.
+
+
+## First hosted execution and correction
+
+[Run 42770801673](https://github.com/maxxab/modkit-workers/actions/runs/42770801673)
+passed all nine package/standards jobs. The new PostgreSQL job passed fresh fixture
+setup and the missing-Events refusal, then failed while parsing the packaged
+Workers grants script. Both preflight and postflight used an unparenthesized CASE
+expression in an IF condition; PL/pgSQL treated the inner THEN as the end of the
+condition. Parenthesizing each complete CASE expression preserves the same ACL
+checks and permits parsing. The manifest resource hash and aggregate are updated
+for these exact bytes. No grants or function contracts are weakened.
+
+The same hosted PostgreSQL composition job is the end-to-end regression. Offline
+parser red/green checks reproduce the syntax failure and verify the narrow grammar
+correction; they do not replace actual PostgreSQL 17 execution. A new hosted result
+is required before claiming this installation gate passes.

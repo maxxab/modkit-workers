@@ -174,14 +174,14 @@ BEGIN
         END IF;
         FOR role_row IN SELECT oid FROM pg_catalog.pg_roles
           WHERE rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator') LOOP
-            IF CASE WHEN object_row.relkind='S' THEN
+            IF (CASE WHEN object_row.relkind='S' THEN
                 pg_catalog.has_sequence_privilege(role_row.oid,object_row.oid,'SELECT,USAGE,UPDATE')
                ELSE pg_catalog.has_table_privilege(role_row.oid,object_row.oid,
                        'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
                  OR EXISTS (SELECT 1 FROM pg_catalog.pg_attribute AS a
                     WHERE a.attrelid=object_row.oid AND a.attnum>0 AND NOT a.attisdropped
                       AND pg_catalog.has_column_privilege(role_row.oid,object_row.oid,a.attnum,
-                          'SELECT,INSERT,UPDATE,REFERENCES')) END THEN
+                          'SELECT,INSERT,UPDATE,REFERENCES')) END) THEN
                 RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe effective Events data access';
             END IF;
         END LOOP;
@@ -420,14 +420,14 @@ BEGIN
         END IF;
         FOR role_row IN SELECT oid FROM pg_catalog.pg_roles
           WHERE rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator') LOOP
-            IF CASE WHEN object_row.relkind='S' THEN
+            IF (CASE WHEN object_row.relkind='S' THEN
                 pg_catalog.has_sequence_privilege(role_row.oid,object_row.oid,'SELECT,USAGE,UPDATE')
                ELSE pg_catalog.has_table_privilege(role_row.oid,object_row.oid,
                        'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
                  OR EXISTS (SELECT 1 FROM pg_catalog.pg_attribute AS a
                     WHERE a.attrelid=object_row.oid AND a.attnum>0 AND NOT a.attisdropped
                       AND pg_catalog.has_column_privilege(role_row.oid,object_row.oid,a.attnum,
-                          'SELECT,INSERT,UPDATE,REFERENCES')) END THEN
+                          'SELECT,INSERT,UPDATE,REFERENCES')) END) THEN
                 RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe effective Events data access';
             END IF;
         END LOOP;
