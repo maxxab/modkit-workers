@@ -193,9 +193,9 @@ BEGIN
         IF object_row.proowner<>owner_oid OR EXISTS (
             SELECT 1 FROM pg_catalog.aclexplode(COALESCE(object_row.proacl,
               pg_catalog.acldefault('f',owner_oid))) AS acl WHERE acl.grantee<>owner_oid
-        ) OR EXISTS (SELECT 1 FROM pg_catalog.pg_roles AS role_row
-            WHERE role_row.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
-              AND pg_catalog.has_function_privilege(role_row.oid,object_row.oid,'EXECUTE')) THEN
+        ) OR EXISTS (SELECT 1 FROM pg_catalog.pg_roles AS checked_role
+            WHERE checked_role.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
+              AND pg_catalog.has_function_privilege(checked_role.oid,object_row.oid,'EXECUTE')) THEN
             RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe Events private function access';
         END IF;
     END LOOP;
@@ -439,9 +439,9 @@ BEGIN
         IF object_row.proowner<>owner_oid OR EXISTS (
             SELECT 1 FROM pg_catalog.aclexplode(COALESCE(object_row.proacl,
               pg_catalog.acldefault('f',owner_oid))) AS acl WHERE acl.grantee<>owner_oid
-        ) OR EXISTS (SELECT 1 FROM pg_catalog.pg_roles AS role_row
-            WHERE role_row.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
-              AND pg_catalog.has_function_privilege(role_row.oid,object_row.oid,'EXECUTE')) THEN
+        ) OR EXISTS (SELECT 1 FROM pg_catalog.pg_roles AS checked_role
+            WHERE checked_role.rolname IN ('modkit_runtime','modkit_reconciler','modkit_operator')
+              AND pg_catalog.has_function_privilege(checked_role.oid,object_row.oid,'EXECUTE')) THEN
             RAISE EXCEPTION USING ERRCODE='PZ011',MESSAGE='unsafe Events private function access';
         END IF;
     END LOOP;

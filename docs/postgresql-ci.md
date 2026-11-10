@@ -85,3 +85,12 @@ The same hosted PostgreSQL composition job is the end-to-end regression. Offline
 parser red/green checks reproduce the syntax failure and verify the narrow grammar
 correction; they do not replace actual PostgreSQL 17 execution. A new hosted result
 is required before claiming this installation gate passes.
+
+The follow-up [run 42771956699](https://github.com/maxxab/modkit-workers/actions/runs/42771956699)
+passed the corrected syntax boundary but exposed a name collision: the private
+function ACL subquery used `role_row` as a table alias, also the name of a
+PL/pgSQL record last populated with only an `oid` field. PostgreSQL resolved
+`role_row.rolname` to that record and raised UndefinedColumn. Both preflight and
+postflight now use the distinct `checked_role` SQL alias. The privilege predicates
+are unchanged; the resource hash and migration aggregate reflect this correction.
+The complete hosted installation regression must still pass before qualification.

@@ -12,10 +12,10 @@
         },
         {
           "path": "workers/grants_runtime.sql",
-          "sha256": "55f2b0a1fc5bbc4f4a3f319f6e5db3022de222f91621867ce5099a0f33d3bb3d"
+          "sha256": "3e93fbb52d68ddbaded47a53bea64a629b749c65813ce431ee8a8537063c09c2"
         }
       ],
-      "migration_digest": "6872015f0c6e89f69a5fd757886efe2199047222bda19cd287f601cbb0baf879",
+      "migration_digest": "ac59c791bcd5841929b4048818df492b2cf0af70855a617698c4f953a98815f4",
       "depends_on": [
         {
           "component": "events",
