@@ -23,6 +23,9 @@
 - **workers:** bound partial-backed handler inspection (`936c25352bd4`)
 - **workers:** exclude private documents from source archives (`56e60ed1d35a`)
 - **workers:** preserve typed binding results (`244389c19704`)
+- **persistence:** bind corrected Events grant inventory (`ee80d784c307`)
+- **persistence:** bind Events grant condition correction (`075b9c0df28e`)
+- **types:** model validated worker lifetimes and port variance (`5c07a893135e`)
 
 ### Documentation
 
@@ -33,6 +36,19 @@
 - **workers:** preserve reviewed W01 target proposal (`81136786d471`)
 - **workers:** record bounded acquisition qualification (`2cc278e057db`)
 - **workers:** record bounded native qualification (`d40bc393006c`)
+- **handoff:** record resumed Workers qualification (`48bb6a69469d`)
+- **handoff:** preserve corrected installation dependency and ownership (`5e347afd3ede`)
+- **handoff:** preserve post-reboot native qualification preparation (`c88bde549665`)
+- **handoff:** record Redis review and continuation checkpoint (`c9b20f46bbd6`)
+- **handoff:** record reviewed native packet and installed controls (`dd4e8e03eb5a`)
+- **handoff:** preserve failed native attempt and fixture ownership (`4f66ec51bfd4`)
+- **handoff:** record corrected dependency and pending fixture disposal (`24395b84ea7d`)
+- **handoff:** record approved failed-fixture disposal (`c9e31ef0683c`)
+- **handoff:** preserve verified offline shared-slot integration (`149bd2e8e3d3`)
+- **handoff:** bind composed source checks and next native scope (`ebacd35971a1`)
+- **handoff:** preserve verified typing checkpoint and continuation (`e888140a3280`)
+- **handoff:** preserve stopped workers checkpoint and uncertain disposal (`12de6b95f474`)
+- **qualification:** reconcile package evidence and native gates (`9f72c32fa377`)
 
 ### Testing
 
@@ -41,8 +57,14 @@
 - **workers:** compare pinned W01 Python contracts (`da529d0c7951`)
 - **workers:** harden bounded runtime discovery (`29a334582ccb`)
 - **workers:** qualify acquisition upper bounds (`e35dde96a9c0`)
+- **recovery:** separate invalid limits from unavailable profiles (`7196c8131e9f`)
+- **persistence:** verify explicit reader installation resources (`7a1612f21924`)
 
 ### Maintenance
 
 - import unqualified Workers scaffold baseline (`340fa57dbbda`)
 - **workers:** clear baseline lint without changing contracts (`c35f20f68d70`)
+- checkpoint reviewed native recovery (`89dad081294e`)
+- preserve installation closure checkpoint (`6f8f9d56ef90`)
+- **tests:** normalize native job-find import layout (`cdbb7480fb72`)
+- apply canonical Python formatting (`9a7f9d0ba466`)
