@@ -1,0 +1,21 @@
+{
+  "kind": "bounded_pure_comparison_receipt",
+  "run_number": 2,
+  "status": "PASS_BOUNDED_PURE_SLICE_ONLY",
+  "candidate_pins": {
+    "pure_payload.py": "bc36d25100816153a016b5e327f5a95a9754bd3b9f10d2f48c9625875ec53ee2",
+    "compare_pure.py": "920b66822afb711b1a943c57e603debccb3425c5c39aec97f53a436d33e3d42f",
+    "source-manifest.json": "2d60de305534f359f6a0f838f6e3709ca0402d04bd73e6b804ecacbb3c6a38cc",
+    "README.md": "fae86c3e5629923dcde239c5d60ddc7951556d2d89f8bf313ab1190f2caf469e"
+  },
+  "tool_result": {
+    "chunk_id": "9569b6",
+    "wall_time_seconds": 1.930678264,
+    "exit_code": 0,
+    "original_token_count": 69,
+    "output": "pure_payload.py: OK\ncompare_pure.py: OK\nsource-manifest.json: OK\nREADME.md: OK\n{\"cases\": 84, \"native_SQL_target\": \"NOT_RUN\", \"negative_controls\": 6, \"result_sha256\": \"7fe50c5cc596c813cf122d52ad4d7af2e60bb7771e43f2f85b112d9ad5820860\", \"status\": \"PASS_BOUNDED_PURE_SLICE_ONLY\"}\n"
+  },
+  "interpretation": "All 84 required output records matched between original and current pinned Events with identical pinned Workers; all six comparator controls detected differences. Post-run source pin checks passed. No product implementation was changed.",
+  "native_target_fixture_SQL": "NOT_RUN",
+  "full_project_suite": "NOT_RUN_FOR_THIS_HARNESS_ONLY_CHANGE"
+}

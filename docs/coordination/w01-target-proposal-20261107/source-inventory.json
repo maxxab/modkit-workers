@@ -1,0 +1,794 @@
+{
+  "baseline_commit": "da529d0c7951d6cded7ef64584fe30d29cb59dae",
+  "input_count": 190,
+  "inputs": {
+    "/home/faris/modkit-events/src/modkit_events/__init__.py": {
+      "sha256": "2d25cfce98ade125c603024fca351c8c2a2bbac11c8727aa23fb6214fda8d4d0",
+      "size": 2007
+    },
+    "/home/faris/modkit-events/src/modkit_events/_failure_reporting.py": {
+      "sha256": "a51a84e6ed590e0898f1923e660d5731bc2cdf3af5fa17c33e6f1df82d31bbf0",
+      "size": 781
+    },
+    "/home/faris/modkit-events/src/modkit_events/adapters/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "/home/faris/modkit-events/src/modkit_events/adapters/pydantic.py": {
+      "sha256": "854e8ef9bc8cdfd0d4c0c8365b4f4df033d1a46f4ea3bb916b52c1cd5a9ffa6c",
+      "size": 2511
+    },
+    "/home/faris/modkit-events/src/modkit_events/adapters/redis.py": {
+      "sha256": "d3b3ca0c02b914eacc51598b55392532c4bd543d7f7509b06ac965699cfc00f0",
+      "size": 13679
+    },
+    "/home/faris/modkit-events/src/modkit_events/adapters/sqlalchemy.py": {
+      "sha256": "1b4f58a1f70e00eae6486008a867ad2bcf843b999ffdace250eeb86a29d1f7d3",
+      "size": 12768
+    },
+    "/home/faris/modkit-events/src/modkit_events/claims.py": {
+      "sha256": "90ba03915c9980a72e7c56a277f2546882f4e0ae1bc61cbf32ed3ee7b65c2aad",
+      "size": 2684
+    },
+    "/home/faris/modkit-events/src/modkit_events/codec.py": {
+      "sha256": "3cb1fd289f3bcde8bc61de9eb003d354a9b457832ea83f103640102425f9fc8c",
+      "size": 2462
+    },
+    "/home/faris/modkit-events/src/modkit_events/consumer.py": {
+      "sha256": "3b268748905cae44e0541d3527fb6fa9854f951ac4d6869a60d8f0a00c4b4de7",
+      "size": 1458
+    },
+    "/home/faris/modkit-events/src/modkit_events/contracts.py": {
+      "sha256": "8744801d6efa062527a4c100dc8f8c92dabdcab094380ed4299ea5f8659d177e",
+      "size": 5510
+    },
+    "/home/faris/modkit-events/src/modkit_events/delivery.py": {
+      "sha256": "47b1b709149cea217089dca8c57b09ad7cc37e2b68f8b32149e6a0534cc7fc0d",
+      "size": 4525
+    },
+    "/home/faris/modkit-events/src/modkit_events/dispatch.py": {
+      "sha256": "c3042c942c10137d95ffcc83aa4cd5a21f175080289d5a5c27cc71174d56e611",
+      "size": 874
+    },
+    "/home/faris/modkit-events/src/modkit_events/models.py": {
+      "sha256": "d8f614039c36bc15c2119e53b4f9f3237f8529b89329786ea45cfc242e032b26",
+      "size": 3186
+    },
+    "/home/faris/modkit-events/src/modkit_events/outbox.py": {
+      "sha256": "42d8ba5f04a82ee9b6bd257fdd7c26ed79450cf437a1a91d8998c20877c624e7",
+      "size": 3364
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/__init__.py": {
+      "sha256": "44cd628c93eb840eb5f23bc580c664035579a4cbec88ab6ad4a68b8522bd3161",
+      "size": 50
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/_resource_io.py": {
+      "sha256": "912e17afe3050defb173c5249708227a3aec9e6ff3a9445858f3db1ec80c6142",
+      "size": 18273
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/bindings.py": {
+      "sha256": "244a05131f2851e7ef2ca0b5c49bd6a31bb9d11b697c4a090fb194b18c83788a",
+      "size": 46608
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/catalog.py": {
+      "sha256": "bbf5788537bb3f920549f8dac6b9a556074c51c79cf44f0fe848dbce2aebb11b",
+      "size": 18997
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/errors.py": {
+      "sha256": "d40ca1c76fd4ce8ecbb7dca0fa2a1a8f99e33786c2374fb89a06fdf798d15bd8",
+      "size": 3100
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/ledger.py": {
+      "sha256": "3c1ff3c78bc66576f3e94308b27735a1bda10ca73810302a26e17196c328a364",
+      "size": 2373
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/managed_lifecycle.py": {
+      "sha256": "e044967fc2e279633660bda332ff8f614eebec1691c9c5c55438ce2d96b27627",
+      "size": 39289
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/migrations.py": {
+      "sha256": "2634e36e0a0dc2fe765f1eb9f1114a8071f1b28dbb67f00d348e5152a61a8e54",
+      "size": 7890
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/models.py": {
+      "sha256": "8ad9298204b67046e7a1a85fb3be34399566b4ec705ce9986ff804772876da82",
+      "size": 9005
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/native_codec.py": {
+      "sha256": "c2c374f3ad3fac1cad96dd906a6674eb0dd57fdac123521ff733b559a4c860eb",
+      "size": 9146
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/native_sync.py": {
+      "sha256": "63486acf3397688cdf529b7d624d08971174540cc2139eca1913dccd95e6dbe8",
+      "size": 13740
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/observations.py": {
+      "sha256": "726284ed5788dd99a88f09795bc57dbdbb7efca922afa1a8d2768f0b7964fd5f",
+      "size": 19138
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/resource_lifecycle.py": {
+      "sha256": "f340501328a3c13a8270736d8f8389bde05766cc7aef4deebdb76f413fbb096c",
+      "size": 12931
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/resource_registry.py": {
+      "sha256": "eab7b9a22589e2a97ff0c259741504c8cfc2db8114c6e391d31bd02dc5d3f893",
+      "size": 3260
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/rows.py": {
+      "sha256": "e76e5ec76c3f8d4bc6345721847102bc18e22fd377cf0ef2e062cfc09ef9ade7",
+      "size": 26532
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/scope.py": {
+      "sha256": "c10b14941dd5533c6fcccd48eb983624104f0361c227220021a83da32c4ff4a0",
+      "size": 5878
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/sql/0001_initial.sql": {
+      "sha256": "6cf0c7d1fb6baaccf98b5aaf0e3ed15c55c12941c4e73d45d083d948ec9a5534",
+      "size": 290583
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/sql/__init__.py": {
+      "sha256": "44cd628c93eb840eb5f23bc580c664035579a4cbec88ab6ad4a68b8522bd3161",
+      "size": 50
+    },
+    "/home/faris/modkit-events/src/modkit_events/persistence/transitions.py": {
+      "sha256": "f980ccf3d7c52f8c7d3aab0bead075e1c5a54d6e82bf6121e04cf45f7d54b34d",
+      "size": 7487
+    },
+    "/home/faris/modkit-events/src/modkit_events/protocols.py": {
+      "sha256": "4adaf5fc59b114c1615604a87dbeccc4ed2ffc9baa4875d3dc151142176871c1",
+      "size": 189
+    },
+    "/home/faris/modkit-events/src/modkit_events/retry.py": {
+      "sha256": "35d23b7515c73d366a006ff60fa72d4dc32f71c0e6e7a656b156aa849ee254b3",
+      "size": 1172
+    },
+    "/home/faris/modkit-events/src/modkit_events/subscriptions.py": {
+      "sha256": "83edfb5b523e46abfa444a299d3c7b94195a5e7c0a758ffae00cfc3d25c87f54",
+      "size": 4739
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/disposal.sql": {
+      "sha256": "1c035023fe35bdbf5ed1a835763789d0bf3c9effe7a143175675caa5d2027bf6",
+      "size": 566
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/lease_gate.py": {
+      "sha256": "711f305ad2c91822b789053f17982a04eb16f2809f190043da1125d430ac5c8d",
+      "size": 1410
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/namespace-regression.NOT_RUN.sql": {
+      "sha256": "39c55950fb3f03250ce06c8b71f49832746e2171134c53e06a4662c4a1acaded",
+      "size": 958
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/plan.md": {
+      "sha256": "126d553c477e5305c3e7e0e11169bc2a58423eeda695b87bfec5db4d720f7217",
+      "size": 2295
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/run_proposed.py": {
+      "sha256": "20c5cf0fe55120ce93646048c2b217a25b9d25ce8d2330b1a16ab38e2c2780c9",
+      "size": 6471
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/setup.sql": {
+      "sha256": "94973a5f0f03b1acab08fe60494dbfd3dac18fa667e604a3f71397cd52aef502",
+      "size": 671
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source-review.md": {
+      "sha256": "d756d21d283c940c3070105bb22fc0d5c1362fbf6d43a01e672018c8d4c0710d",
+      "size": 1497
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source_checks.py": {
+      "sha256": "3b414a918420d96e6c4d99d8bf44cb35098ae7fa58f9a9f825c25bd075511cf7",
+      "size": 1217
+    },
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/test_gate.py": {
+      "sha256": "ed9a55342ce8da7765694b92ceaab6f0bee1f19ddaac301ade74a9fca1a469b2",
+      "size": 1778
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/INSTALLER": {
+      "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508",
+      "size": 4
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/METADATA": {
+      "sha256": "c5038f79287c501d7d074b521ddfa71202461ab1bd8ade0f5dcb088ef17e76eb",
+      "size": 4369
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/RECORD": {
+      "sha256": "f0c19a4806dd37461ae4d272ca2495603bcc1bbef1d51a10392caf705ce1cb7e",
+      "size": 11514
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/REQUESTED": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/WHEEL": {
+      "sha256": "98e75747d0b7c0c568bfb71263c3d8f970b3a374a6996087bc642be5cb09a1aa",
+      "size": 91
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/licenses/LICENSE.txt": {
+      "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+      "size": 7652
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg-3.3.8.dist-info/top_level.txt": {
+      "sha256": "9e9b612b1dbf384a1a86db58a9db083e54548234bf6d00667e90c257141c3c6a",
+      "size": 8
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/__init__.py": {
+      "sha256": "5f1607a193cb63e60a0c5687209d2bd0e3029760b9559e9968f31d6b5d82c778",
+      "size": 3423
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_acompat.py": {
+      "sha256": "68e10b300b9182d2ee8cb9634e249efd0555c7784e2daafb4151b214ca38951e",
+      "size": 2238
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_adapters_map.py": {
+      "sha256": "590d3280c97a0158ae63abf50fd077029ef8a523fca19981daa03d1617c46dd9",
+      "size": 11008
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_capabilities.py": {
+      "sha256": "00dc9a63cc9ac76a20494f95f478b69c6aa775728b195574358bc634b7cb70c5",
+      "size": 5387
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_cmodule.py": {
+      "sha256": "d7bb5516799ff9ace28653ae3b4ff51dd3c3b578d435fedbf56a27cda7b40011",
+      "size": 872
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_column.py": {
+      "sha256": "9ba6a71e0b2bc220a1b7cc594b136d3d65a8024f03687839337632ca26c71571",
+      "size": 3004
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_compat.py": {
+      "sha256": "89e1b9447b88e4fcaf405971fa74ff597eb464809c234415d8ea4129e1d229f2",
+      "size": 1504
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_connection_base.py": {
+      "sha256": "14115b0bdcb81125b3c340340b4e8e674bb1ae03f4b320c94c2b93d30462f36e",
+      "size": 24343
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_connection_info.py": {
+      "sha256": "40bfda115d97ffaff560c8a0ce5426447f8b525f9bd241459c93cc2797546b83",
+      "size": 6680
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_conninfo_attempts.py": {
+      "sha256": "9e081d1fe49a639f4cf0f2d54bce359ac6b7524acc2ed9b170cc0dd004fec7d3",
+      "size": 3501
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_conninfo_attempts_async.py": {
+      "sha256": "7fe10d9b648df37f6f89689c7389cda6abac077eac5cfc58e5320c0c8002eb54",
+      "size": 3590
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_conninfo_utils.py": {
+      "sha256": "008bda02cdd0a7c7b029fcfced01ba9fdbbd67da0e862f1089306c799b013575",
+      "size": 3164
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_copy.py": {
+      "sha256": "63d3768d0b84fcc2b933e9ee9c9ed9ad1dc6a4b7ce9d49ff2d10b2637e2f70e2",
+      "size": 9735
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_copy_async.py": {
+      "sha256": "8cbdbf6f70a00eacefd1691695db72a087be0241b0a1c00f335f179b502b34ae",
+      "size": 9974
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_copy_base.py": {
+      "sha256": "bb69b06712ccac85830ef5a03b99dbfca12c6fd2d9498139d8f15ddfbe05a0d9",
+      "size": 14312
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_cursor_base.py": {
+      "sha256": "6aa7e17b57fe37f343809ead45ebba3764666afebfee1517fe930a9ea74186e7",
+      "size": 23103
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_dns.py": {
+      "sha256": "be0a343f13cc52b5c5dbaa486f3dc7b00d51916caf8d94ef2d503cf57dfabb0c",
+      "size": 8006
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_encodings.py": {
+      "sha256": "c1d38d5e91eb380f27e028ab170fbcf23d053afc2d7b53cd08e8f2f78a0ecc9c",
+      "size": 4599
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_enums.py": {
+      "sha256": "e6009e7ffb187bd51d684e27fd198359e1784df40ec1015e8a48eb933f588af2",
+      "size": 1691
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_oids.py": {
+      "sha256": "98923c1db46b4ec6cad0b2209e71b9c4f1fede1c4d51c968b6a52eae6ca8dacd",
+      "size": 1875
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_pipeline.py": {
+      "sha256": "1448864658cefa7aee20a61bb7255f6fc49b832c1c377b520789e46cb70e9f1a",
+      "size": 2165
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_pipeline_async.py": {
+      "sha256": "af9c9a8670382419329b1f5352ac1af75994959ca7c0b32a5385fdfa5037c25f",
+      "size": 2108
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_pipeline_base.py": {
+      "sha256": "29130f212fd29dbe20271f9f5aab031c21c0af3cb3d82c93e54d8dc86e1e4d48",
+      "size": 6669
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_preparing.py": {
+      "sha256": "6a0b8fd83c42d4a5abf0692d26a8522711cf0fedb2d2aa261e61b76344791fd2",
+      "size": 6398
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_py_transformer.py": {
+      "sha256": "71f3f2cf2a2ff289130111497bcc6d2a8fe7a5569d2214310d28dea4968f5902",
+      "size": 11919
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_queries.py": {
+      "sha256": "c217b09decc0c1ca1e6577847f029e8b96a99a5ac4315a81ba026121d4886410",
+      "size": 15724
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_server_cursor.py": {
+      "sha256": "d755e04f921482e123a25012c49df4d5d3ba3581d0b7f85307b6ea51aacfb82b",
+      "size": 4662
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_server_cursor_async.py": {
+      "sha256": "00aa44fa3b06443373730acefa3a43311babdd5c0858f36db11691fd864e3c24",
+      "size": 4711
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_server_cursor_base.py": {
+      "sha256": "6514d1e38e8899aaf52353949c8db2a43dccb0445d885986433d5ba0dce19cde",
+      "size": 7537
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_struct.py": {
+      "sha256": "c9adfa9064ebd2e1e55f2b53a3b427ff4732d0f951d89f8157ed27a8c51732b7",
+      "size": 2000
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_tpc.py": {
+      "sha256": "34b89f229756a6121bc1a04fbcb3d2699ffe0e8b5eebbc94ebb7bd53402891e4",
+      "size": 3529
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_transformer.py": {
+      "sha256": "9839012ee4b16d70c6d537243e0232649c74d329f951753c0e5b8e1a61d68c06",
+      "size": 451
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_tstrings.py": {
+      "sha256": "ef006e5f209dfbb131592ad1d84d67a9a9235372df8e2cc9c4422ca83a67b870",
+      "size": 5617
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_typeinfo.py": {
+      "sha256": "4d0379716cbf7afb8a65b2d9f73aec7a2262e287ff2876c35467ac8f824d3a75",
+      "size": 10644
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_typemod.py": {
+      "sha256": "db9b9a84d73fd56d404a4810d58d0886366dc84455625c6b744abb5dc083aed6",
+      "size": 3165
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_tz.py": {
+      "sha256": "ffe5b4233b3ce1462b6c06372350a2706524d2783e6e808c668e47e61d23f6e8",
+      "size": 1186
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/_wrappers.py": {
+      "sha256": "c0a66dfdaafc42e46010a0bab6ec1a9985c2c01d4fec8650b268187553a50215",
+      "size": 3126
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/abc.py": {
+      "sha256": "baf849305426e84fe07c9a9459b22aef402a3a5294458f461f3178836fb50e38",
+      "size": 7770
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/adapt.py": {
+      "sha256": "1081742de82d766c2a5b2544d569eb06b4c59dfba060227c7c57d8287f5308e6",
+      "size": 5437
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/client_cursor.py": {
+      "sha256": "9d1a376dc91c2a3de764601c5f3aec3cfe3984431f6b195e8159def7031d6b3f",
+      "size": 2681
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/connection.py": {
+      "sha256": "0095cbe8262b43645f54611b817226ecab68a24252a1d38afbdfdc6d72573ab4",
+      "size": 20665
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/connection_async.py": {
+      "sha256": "bd0ac75cb2404140265f31a630192fcbf5d4f5cc6f05290fc096fe78cd18a37b",
+      "size": 22963
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/conninfo.py": {
+      "sha256": "631ef5f5943996a67cabef87f6272a2c62763e35d70ee6db484e4c51b80c6f27",
+      "size": 4470
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/copy.py": {
+      "sha256": "fd5ef68e9d835ebd931ecaa8f52e9c6a1bde328d10b819777e78a0b74ac699b7",
+      "size": 806
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/crdb/__init__.py": {
+      "sha256": "674c11bec482fc2a5a38159f5828a5c0fd2c37a037f88561403e5c95d826fdd1",
+      "size": 439
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/crdb/_types.py": {
+      "sha256": "5a836d4f48e6eebbdb4c43ecac360241c0ae9565da901644918f36d9a32f23c1",
+      "size": 7296
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/crdb/connection.py": {
+      "sha256": "32cfafe6e10e7d23962af75c671edddd54d75df8b9a13cbf1a14c22350a0d704",
+      "size": 2758
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/cursor.py": {
+      "sha256": "9fedba5e8322628df838d749a7f48a7b9082601ab3b4d552ce594c5487f13e0f",
+      "size": 11116
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/cursor_async.py": {
+      "sha256": "871ee328c590531f6247031d5db0aa6080b0778c76bfe0665ee4816eebf9a300",
+      "size": 11426
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/dbapi20.py": {
+      "sha256": "650c28c7130ee0e1eeb8b674ea9d7d556809b6615b2d7e58b8b1dbca3345d982",
+      "size": 3309
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/errors.py": {
+      "sha256": "5eb9165a2a69c07a4c9b8f534382c10ec83e83f63e57c1854ee2ed950dd39a17",
+      "size": 46563
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/generators.py": {
+      "sha256": "ec93c6fe6cfec97bca8f56ef104d99849f19c90a933ccabf8426a3597fe31d6f",
+      "size": 12462
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/postgres.py": {
+      "sha256": "8352089a046488c9f2e4eade607666a27908fc254d8ce169518005996bc2a143",
+      "size": 6439
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/__init__.py": {
+      "sha256": "6d3f05b1b5a02896fb0a4fb690c8ae810928f459c355d70426ec1be7448f50e5",
+      "size": 3976
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/_debug.py": {
+      "sha256": "84c2ae1f125cf6bd6c0a30b168f2a5e5eddab65f1e7fa79d818d2490a98b63ff",
+      "size": 3098
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/_enums.py": {
+      "sha256": "fa1a16d893690911b3dfc89a2fd0f44eb740b541c869fb96170252b264722216",
+      "size": 6004
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/_pq_ctypes.py": {
+      "sha256": "4d69fb3e81431671a930e8193522b32c22fd8ea597da83961e577dbb7701f12f",
+      "size": 22497
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/_pq_ctypes.pyi": {
+      "sha256": "491623e63ab6804dedc2baabda09ec38bce0a1e92e0349a848a68356395e3baf",
+      "size": 10320
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/abc.py": {
+      "sha256": "55d9619e21dbc7d550f352290326633c38a6cd278f5c68c35022a2f2e979939b",
+      "size": 8095
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/misc.py": {
+      "sha256": "7feab07068b7853ae6f7890bfd2100c598fc9e7e42edb2571d2c413339a805f0",
+      "size": 6726
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/pq/pq_ctypes.py": {
+      "sha256": "c0698c4e9298fb8a5bc5eb340d6a061457d01fe657a63b1be4b67eb52de3ea72",
+      "size": 42415
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/raw_cursor.py": {
+      "sha256": "b647435931002abf5374de517078483dd01d62c9e0b39a199a642dfb6850c264",
+      "size": 1159
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/rows.py": {
+      "sha256": "335c03c4a58517c28cf5091e8e3ddafc97548418eebfeb959ab630e2f0465bdb",
+      "size": 7959
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/sql.py": {
+      "sha256": "ce7b5378d4a767aa6a04d602cbe9a1b2f5f17ab2a9e775ede0cde094535a6fe8",
+      "size": 19116
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/transaction.py": {
+      "sha256": "a01fab7d0008bacc04748e728a12149364de1213fdecff7cf0d2d2c73ffcb558",
+      "size": 10964
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/__init__.py": {
+      "sha256": "24f02457811f917c1db2befafd4d43b10575f5cf1a40d481ea482e7786e15de3",
+      "size": 181
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/array.py": {
+      "sha256": "ec9bbe1a69ae2a813695a3362955ccc5ab13a28290a56e325f0af565f130a865",
+      "size": 16668
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/bool.py": {
+      "sha256": "d062501be0a6e4fe4d807f137cb363f67fdee5c930e365e7b110629d7d24e39c",
+      "size": 1163
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/composite.py": {
+      "sha256": "bcc585107b579d1dc2cff33b9796a1561fe16b85fbb174f9f04816b9b5210d46",
+      "size": 18516
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/datetime.py": {
+      "sha256": "39899dda8f7adf9bb13eb277f57cf6c2a755f86739d9748431cec18044089a02",
+      "size": 25585
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/enum.py": {
+      "sha256": "8886f50774cc27175ba6da9a46fcdbf764b9214e5247463c76f54e922c2ca2e4",
+      "size": 7479
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/hstore.py": {
+      "sha256": "0ad1386aafc27396d5ce3411387ecd1d5e433b12bcf675d3559a253e646b2fb1",
+      "size": 7076
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/json.py": {
+      "sha256": "8893a0aba0d11aed207836cd4afc6d3f19eab20fc7bb25d37412385e859ef98f",
+      "size": 9713
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/multirange.py": {
+      "sha256": "213ba8130ef6938a0cfb77efea627b4dddffdf29c5daeff2db5f516d3fc4859a",
+      "size": 17862
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/net.py": {
+      "sha256": "875bc9f05a68e1e909a4c32288dca6d7a10c8949b2885b5a86ab1066e69945c3",
+      "size": 6732
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/none.py": {
+      "sha256": "832fce26a13562c949d91222c7412adf1d01f083dfa07f8671cdac40c20ed12c",
+      "size": 666
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/numeric.py": {
+      "sha256": "b79f750a10a34c5229b9562f570fb740a860f67a1f6ae82e8bb36fcdbb6151b2",
+      "size": 17320
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/numpy.py": {
+      "sha256": "34f2d46c31723632af3533fa761a14bb5abcd2ddde41d1ebae77ad28083c95b8",
+      "size": 3273
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/range.py": {
+      "sha256": "9f393c0e2e8b61340594134fa2cb6cad9707ecc5ab6440dd2379031b35e47bdd",
+      "size": 21447
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/shapely.py": {
+      "sha256": "9efde4ecd69211befd6937417d788d55195bae0a65721ba1b2100bd270a59d29",
+      "size": 2594
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/string.py": {
+      "sha256": "6dc91fd65d6abf45027e10c4b50392f1ee6c3a58059587bf1e7c6564d06545b9",
+      "size": 7547
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/types/uuid.py": {
+      "sha256": "4c341a03c5b116f55244e20b9dcdd2135199f12a4b34293f3ecd6e0ddfdcb718",
+      "size": 1589
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/version.py": {
+      "sha256": "24b5a8a6b22c0b91d5725ca19fb2f355f56936d65853e5282d0c0018c1019587",
+      "size": 232
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg/waiting.py": {
+      "sha256": "fba2719003f3871bf9587e8ad68b2cef2ecdc77e93323b0853507e081f385cbd",
+      "size": 18643
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/INSTALLER": {
+      "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508",
+      "size": 4
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/METADATA": {
+      "sha256": "25ec19bb0edee3b2916a327944d3522db55b74d9ae551edb929c4ac886b65064",
+      "size": 2709
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/RECORD": {
+      "sha256": "26830e322a86b4af5786b983f68a85573336117fd106aa881a70ec38e7fec333",
+      "size": 3370
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/REQUESTED": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/WHEEL": {
+      "sha256": "504ac80cc95190c99aea177550563d7939b8fca6b1431c01c0d435e74afbbd0e",
+      "size": 151
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/licenses/LICENSE.txt": {
+      "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+      "size": 7652
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/sboms/auditwheel.cdx.json": {
+      "sha256": "1ed3bc96e56769af31f86ef31924adb4f8f249df3ba19ef84d92eedb80393c72",
+      "size": 5183
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary-3.3.8.dist-info/top_level.txt": {
+      "sha256": "f0e33f3ec01ae682a4cd5bd1bbc9031128a1050a3f2d7ab01bf9eb95e72e6c89",
+      "size": 15
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libcom_err-2abe824b.so.2.1": {
+      "sha256": "5426dcb54dd01c9eedda05e2179f0e47114e8b48a534ffe9e94916e79471b257",
+      "size": 17497
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libcrypt-bc2db45e.so.1": {
+      "sha256": "e2a6f6ff300e287a60dfc0c6fdb76ee01e333068df7c60b4e87453d942ccda65",
+      "size": 221657
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libcrypto-e1ce7bf2.so.3": {
+      "sha256": "298b2a993ce4486459bcb758d78e5a7b950372f94bbc3e7defcd46e7ce4b7681",
+      "size": 6502249
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libgssapi_krb5-497db0c6.so.2.2": {
+      "sha256": "ef73998b86c24e54667a843be6d589442dd082e1b9fc605aa15bcc2293858806",
+      "size": 357505
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libk5crypto-b1f99d5c.so.3.1": {
+      "sha256": "bf04d7ebe3937aba3855c15acbd991482286a484aeea38bb9ced85e772ea2fb0",
+      "size": 224057
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libkeyutils-dfe70bd6.so.1.5": {
+      "sha256": "c29e41b03cf4b2dffbfb4960946e2b42f82c0ca5d53d231d3f0fc597ba274488",
+      "size": 17913
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libkrb5-fcafa220.so.3.3": {
+      "sha256": "94dc6413050486a6c8de4b6f3bfdd288390892b72bc68580c6c53929721fa07b",
+      "size": 1039441
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libkrb5support-d0bcff84.so.0.1": {
+      "sha256": "0eb5322b05ac46e4db7ddb779ee0269006dd01801aaa67b84f8e7f753bfdddf2",
+      "size": 80977
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/liblber-84b19c6b.so.2.0.200": {
+      "sha256": "58ac3832eb8da3026accddd536b438599f47272cbcf21d916f5aacafe017e3ec",
+      "size": 60977
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libldap-e4c00d62.so.2.0.200": {
+      "sha256": "2416c22943d8cdc0b0580cc981abae699e01c44739d1a3398337b01086ed8eec",
+      "size": 447321
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libpcre-9513aab5.so.1.2.0": {
+      "sha256": "02eda850e04931656d8af81f5171bff74d8bec1553d3d85c3d32d7fc5efe8864",
+      "size": 406817
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libpq-e9b5c9ac.so.5.18": {
+      "sha256": "c18e0848d39ac40fa70395c52f07792660cfca23ced0c7e448e8d32beb186c14",
+      "size": 420153
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libsasl2-84219a89.so.3.0.0": {
+      "sha256": "e84be55110f16f7ca930af373e9f41fa7f4ec60733c013d933d1443ae5056a98",
+      "size": 142953
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libselinux-0922c95c.so.1": {
+      "sha256": "99e60178aed625f6d2e2af58bccf605b13619b1544058e9f985a2772affb4a88",
+      "size": 186537
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary.libs/libssl-8bd944e8.so.3": {
+      "sha256": "bc5d065b34f8ae624c6b12224d7f8dd9cb40074be9b379a622f0fb73b4cab4b0",
+      "size": 1180057
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/__init__.py": {
+      "sha256": "e64c70f50767f2e6c88b88a4f769b164eb23af950ed2fc2ae53e52d018425868",
+      "size": 402
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/_psycopg.c": {
+      "sha256": "ed6c64ae70beeccf5ac3915c574be037fcc175cd0b240b343bd003ab7e896233",
+      "size": 5402178
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/_psycopg.cpython-312-x86_64-linux-gnu.so": {
+      "sha256": "d3dd5eccc9d72daac39d19fa56348973a0e2b41ecee9ef7384ac874801f491ee",
+      "size": 812681
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/_psycopg.pyi": {
+      "sha256": "e2908e24e7321a7b57c615669a81d3f4bf266c1a336d5260d2be6f2a1b528574",
+      "size": 3178
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/_uuid.py": {
+      "sha256": "617c42f49d21719156bc163962925fffb5a9b2d326950db574a320c065bdd5b5",
+      "size": 798
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/pq.c": {
+      "sha256": "17ab57c940a4b3b6ebcb34f0d87ab7be5340fcc73809d620fee91df901175c0d",
+      "size": 2037296
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/pq.cpython-312-x86_64-linux-gnu.so": {
+      "sha256": "16468c67fd85b13951d1b95ea0207ba693ec485bd840f67c200051fd8bd13882",
+      "size": 353985
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/types/numutils.c": {
+      "sha256": "29649e3489fd46dd585e1d1bd36b394211385f34e000c1b1f991b1f4012d43e2",
+      "size": 6034
+    },
+    "/home/faris/modkit-native-v2-venv/lib/python3.12/site-packages/psycopg_binary/version.py": {
+      "sha256": "01c85c2d67e86b2f74da6acfde3d50cb79d0d85e503b3348bfc632d0d77016b7",
+      "size": 246
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/__init__.py": {
+      "sha256": "a304dfd6786d07371238591aaf7a0672fd87610bd2ac1721e2ec0c7a73941c00",
+      "size": 925
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/adapters/__init__.py": {
+      "sha256": "44cd628c93eb840eb5f23bc580c664035579a4cbec88ab6ad4a68b8522bd3161",
+      "size": 50
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/context.py": {
+      "sha256": "1322e9aed81a37c3588feaeec496486a973456229e9194c702fafcebfe5839f6",
+      "size": 1920
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/handlers.py": {
+      "sha256": "3343101059b606ce601d818a7e6e8bb70f1e849baabb7a055e3a6c02cfeb2e49",
+      "size": 6958
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/__init__.py": {
+      "sha256": "44cd628c93eb840eb5f23bc580c664035579a4cbec88ab6ad4a68b8522bd3161",
+      "size": 50
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/_resource_io.py": {
+      "sha256": "f4039b5b86e7b06649f1ae6102ec14ff73aa5903b91bd1c2609cca833878d058",
+      "size": 17918
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/bindings.py": {
+      "sha256": "21436d98823320236e8b5d4694475c22ae6392b469f628fd95b1a1b259738ff7",
+      "size": 4618
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/catalog.py": {
+      "sha256": "3c8c6577a44570ac5a82ec877456065691db8fae1e0821ab92b39d550544ba20",
+      "size": 3478
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/migrations.py": {
+      "sha256": "3eab02bb9b0d9942bf06983f1e353f5352a589959b249457bfe1c2620dbdd40e",
+      "size": 7893
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/models.py": {
+      "sha256": "ba4f31cf81b30a5bd81b68310fa644d00667ec8a322ac892a1b34b717e4b6d62",
+      "size": 8319
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/observations.py": {
+      "sha256": "097b7782236c284d890b7b43956baf5b108eb8fcd040f857385ea77172e797c9",
+      "size": 8474
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/rows.py": {
+      "sha256": "b894531262bb9a43d06be5abe672f5eebf09121d648efde8b8e42675b57985d2",
+      "size": 11571
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/sql/0001_initial.sql": {
+      "sha256": "19d8af0bc4b881beccc7c68d5df185867d5e88e406bb81df5d266f1d6f228203",
+      "size": 43513
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/sql/__init__.py": {
+      "sha256": "44cd628c93eb840eb5f23bc580c664035579a4cbec88ab6ad4a68b8522bd3161",
+      "size": 50
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/persistence/transitions.py": {
+      "sha256": "c7be2b75ce4b24cec7aa7295786ab88cd589f0bcdcb21a2ea63228040ed2ab0f",
+      "size": 775
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/settings.py": {
+      "sha256": "c3fe44e0e4b5fc4c556253bf37bd1200f70e5e73cef49d68f5c1812dd06fa358",
+      "size": 706
+    },
+    "/home/faris/modkit-workers/src/modkit_workers/work_source.py": {
+      "sha256": "16e592322384a9bc0092dbce8cfe4af83f1316c3ae78087f44919f0f95cd3f4c",
+      "size": 2546
+    },
+    "/home/faris/modkit-workers/tests/sql_specs/w01_admission.sql": {
+      "sha256": "e2380ebf8a13c0a15321a4eb932e311f20426061dcdcc6c89b037210152a014e",
+      "size": 3222
+    },
+    "/home/faris/modkit-workers/tests/sql_specs/w01_admission_schedules.md": {
+      "sha256": "c748d207a693cea1b388f55a3de2d7cfb955501c9840b8210b5769516e2f8fd2",
+      "size": 12983
+    },
+    "/home/faris/modkit-workers/tests/w01_protocol_source.py": {
+      "sha256": "9ddd09fa7678e73bf2ff3c9d4165447092cfc99c5d5d4dedc3565303bb147f39",
+      "size": 28319
+    }
+  },
+  "preserved_packet": {
+    "path": "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/packet.json",
+    "sha256": "897fccd0a1bcc34756ad77b9cb9d0e61dccea3c683576e63ca00bb278b77563d",
+    "size": 39298
+  },
+  "status": "READ_ONLY_RECHECK_NOT_EXECUTABLE_PACKET",
+  "supporting_sources": {
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-pure-compatibility-20261107/review-summary.json": {
+      "sha256": "ba8379534b4775706afdc85b3040a623d859b57f6bfc4c87e0f765bf95a60738",
+      "size": 1091
+    },
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-pure-compatibility-20261107/run-02.json": {
+      "sha256": "a16e0cba783aada474cd560785cf68b65d3997f0e7d8161f0d447259623d3405",
+      "size": 1320
+    },
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-pure-compatibility-20261107/source-manifest.json": {
+      "sha256": "2d60de305534f359f6a0f838f6e3709ca0402d04bd73e6b804ecacbb3c6a38cc",
+      "size": 6613
+    },
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-reconciliation-20261107/observed-inputs.json": {
+      "sha256": "98579f99cadb94d87887a09d6c51b5e0d30152ce699026a4772ca13d706c97b5",
+      "size": 36929
+    },
+    "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers/docs/coordination/w01-reconciliation-20261107/reconciliation.json": {
+      "sha256": "b3b2a9edce6c213f18700b47b66cfca0768d7d3f73231c4e9bce60edbc272011",
+      "size": 12290
+    }
+  }
+}

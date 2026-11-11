@@ -5,6 +5,11 @@ from uuid import UUID
 
 LIST = """SELECT * FROM modkit_workers.w03(%(namespace)s::bytea,
  %(after_created_at)s::timestamptz,%(after_work_id)s::uuid,%(limit)s::int4)"""
+BOUNDED_LIST = """SELECT * FROM modkit_workers.w03(%(namespace)s::bytea,
+ %(after_created_at)s::timestamptz,%(after_work_id)s::uuid,%(limit)s::int4,
+ %(max_page_payload_bytes)s::int8)"""
+# Literal output positions; repeated BYTEA occurrences count separately.
+PAGE_PAYLOAD_POSITIONS = (13, 14, 15, 16, 30, 49, 52, 53, 60, 61, 63, 64, 68, 70)
 HELD = {
     "multi_row_timestamp_ties": "Native producers use immutable clock timestamps; pure tied-page controls only.",
     "concurrent_material_change": "Concurrent snapshot overlap is not exercised by this bounded fixture.",
@@ -101,5 +106,65 @@ def run_listing(connect, *, lease_reference, protocol):
                 other, {**sql, "submit": LIST}, prepared, "PZ005", raw=params(request())
             )
             other.rollback()
+
+    h.scenario(connect, lease_reference, scenario)
+
+
+def bounded_params(request, max_page_payload_bytes):
+    """Explicit private fifth parameter; never mutate the business request."""
+    return {**params(request), "max_page_payload_bytes": max_page_payload_bytes}
+
+
+def run_bounded_listing(connect, *, lease_reference, protocol):
+    """Inert until called with an authorized isolated rollback-only fixture."""
+    h = protocol
+    sql = h.statements()
+
+    def scenario(pool):
+        from modkit_workers.persistence import bindings, models, rows
+
+        c = pool.open()
+        baseline = h.footprint(c, sql)
+        request = bindings.list_jobs(models.JobListRequest(after=None, limit=256))
+
+        def listed(budget):
+            before = h.footprint(c, sql)
+            fetched = h.execute(c, BOUNDED_LIST, bounded_params(request, budget))
+            result = rows.decode_list(request, fetched)
+            h.no_write(before, h.footprint(c, sql))
+            return fetched, result
+
+        assert listed(1) == ([], ())
+        jobs = [h.job(protected=h.material(index == 1)) for index in range(3)]
+        for value in jobs:
+            assert h.submit(c, sql, h.prepared(value)) == (value.work_id, True)
+        fetched, expected = listed(16777216)
+        exact = sum(
+            0 if row[index] is None else len(row[index])
+            for row in fetched
+            for index in PAGE_PAYLOAD_POSITIONS
+        )
+        assert exact > 1 and len(expected) == 3
+        for budget in (exact, 16777216, 2**31, 3758096384):
+            assert listed(budget)[1] == expected
+        primary = h.expected_error(
+            c,
+            {**sql, "submit": BOUNDED_LIST},
+            h.prepared(jobs[0]),
+            "PZ013",
+            raw=bounded_params(request, exact - 1),
+        )
+        assert primary.diag.message_primary == "W03 page payload budget exceeded"
+        for budget in (None, 0, -1, 3758096385):
+            h.expected_error(
+                c,
+                {**sql, "submit": BOUNDED_LIST},
+                h.prepared(jobs[0]),
+                "PZ006",
+                raw=bounded_params(request, budget),
+            )
+        c.rollback()
+        assert h.footprint(c, sql).rows == baseline.rows, "Bounded listing fixture leaked rows"
+        c.rollback()
 
     h.scenario(connect, lease_reference, scenario)

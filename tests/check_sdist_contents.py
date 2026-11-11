@@ -22,25 +22,35 @@ def main() -> None:
     config = tomllib.loads((source / "pyproject.toml").read_text(encoding="utf-8"))
     prefix = "modkit_workers-" + config["project"]["version"]
     private = (
+        ".github/private-sentinel.txt",
+        ".github/workflows/private-sentinel.yml",
+        ".github/actions/private-sentinel/action.yml",
         "docs/handoffs/private-sentinel.md",
         "docs/coordination/nested/private-sentinel.json",
         "docs/plans/private-sentinel.md",
+        "docs/shutdown-checkpoint-20261107.md",
+        "docs/shutdown-checkpoint-20991231.md",
     )
     public = (
         "docs/public/plans/guide.md",
         "docs/plans-help.md",
         "docs/handoffs-guide.md",
         "docs/coordination-guide.md",
+        "docs/shutdown-checkpoint-guide.md",
+        "docs/public/shutdown-checkpoint-20261107.md",
     )
     with tempfile.TemporaryDirectory(prefix="modkit-workers-sdist-") as directory:
         project = Path(directory) / "project"
         project.mkdir()
-        for name in ("src", "tests", "docs"):
+        for name in ("src", "tests", "docs", "scripts"):
             shutil.copytree(
                 source / name,
                 project / name,
                 ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"),
             )
+        workflow = project / ".github/workflows/ci.yml"
+        workflow.parent.mkdir(parents=True)
+        shutil.copyfile(source / ".github/workflows/ci.yml", workflow)
         for name in (
             "pyproject.toml",
             "README.md",
@@ -70,7 +80,16 @@ def main() -> None:
             "docs/job-persistence.md",
             "docs/worker-contracts.md",
             "tests/check_sdist_contents.py",
+            "scripts/check_wheel.py",
+            "scripts/check_installation.py",
+            "scripts/check_source.py",
+            "scripts/ci_dependency.json",
+            ".github/workflows/ci.yml",
             "src/modkit_workers/py.typed",
+            "tests/_resource_fixtures.py",
+            "src/modkit_workers/persistence/sql/0001_initial.sql",
+            "src/modkit_workers/persistence/sql/grants_runtime.sql",
+            "src/modkit_workers/persistence/sql/manifest.json",
             "LICENSE",
         )
         missing = [name for name in required if prefix + "/" + name not in names]

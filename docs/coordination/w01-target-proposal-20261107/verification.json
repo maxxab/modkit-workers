@@ -1,0 +1,23 @@
+{
+  "accepted_target_manifest_matched": true,
+  "all_190_observed_inputs_unchanged": true,
+  "application_or_deployment_edits": 0,
+  "checks": "stdlib JSON/AST/regex/hash only; no fixture or comparator execution",
+  "commits": 0,
+  "leases_or_attempt_markers_created": 0,
+  "native_actions": 0,
+  "original_packet_unchanged": true,
+  "product_or_driver_imports": 0,
+  "proposal_files": [
+    "README.md",
+    "execution-trace.md",
+    "target-evidence.json",
+    "source-inventory.json",
+    "sql-surface.json",
+    "verification.json",
+    "artifact-pins.json"
+  ],
+  "sql_executions": 0,
+  "status": "SOURCE_ONLY_PINS_STABLE",
+  "target_probes": 0
+}

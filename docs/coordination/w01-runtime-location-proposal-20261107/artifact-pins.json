@@ -1,0 +1,10 @@
+{
+  "proposal.json": {
+    "size": 5641,
+    "sha256": "6862bd5edfe0073ac34ba8f6bdaf76c1a248565053e7fe1b877924efe57a10c8"
+  },
+  "README.md": {
+    "size": 4023,
+    "sha256": "2c7d933bbeda696b11bf0198e3feab3ed0aabea41a727a2ead95ce0290289df6"
+  }
+}

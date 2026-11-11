@@ -285,6 +285,34 @@ class Source4(unittest.TestCase):
         except ModuleNotFoundError:
             self.fail("released anchored POSIX/Z1 backend is missing")
 
+    def test_owned_sandbox_accepts_temporary_base_alias(self):
+        import os
+        from unittest.mock import patch
+
+        from _resource_fixtures import Sandbox
+
+        real = self.sandbox.base / "alias-target"
+        real.mkdir()
+        alias = self.sandbox.base / "temp-alias"
+        alias.symlink_to(real, target_is_directory=True)
+        with patch.dict(os.environ, MODKIT_RESOURCE_TEST_BASE=str(alias)):
+            nested = Sandbox(COMPONENT)
+        try:
+            self.assertEqual(nested.base, nested.base.resolve())
+            self.assertTrue(nested.base.is_relative_to(real))
+            self.assertEqual((nested.base / "root-link").resolve(), nested.root)
+        finally:
+            nested.close()
+        self.assertTrue(real.is_dir())
+        self.assertEqual(list(real.iterdir()), [])
+
+    def test_owned_sandbox_rejects_target_escape(self):
+        for target in ("../outside", str(self.sandbox.base.parent)):
+            with self.subTest(target=target):
+                with self.assertRaisesRegex(ValueError, "fixture target must remain in sandbox"):
+                    self.sandbox.link("escape", target)
+        self.assertFalse((self.sandbox.base / "escape").exists())
+
     def test_posix_locator_and_leaf_policy(self):
         if self.sandbox.link_error is not None:
             self.skipTest("BLOCKED link fixture: " + str(self.sandbox.link_error))
@@ -397,7 +425,26 @@ class Source4(unittest.TestCase):
             self.sandbox.move_root()
             self.assertEqual(lease.read("manifest.json"), self.sandbox.files["manifest.json"])
 
-    def test_checkout_origin_missing_production_is_honest(self):
+    def test_checkout_origin_real_candidate_resources_are_verified(self):
+        # IC-REG-1: candidate-only transition, not installed-artifact qualification.
+        from pathlib import Path
+
+        (item,) = self.m.manifest()
+        self.assertEqual(item.component, COMPONENT)
+        root = Path(self.m.__file__).parent / "sql"
+        for resource in item.resources:
+            raw = (root / resource.path.split("/")[1]).read_bytes()
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), resource.sha256)
+            self.assertEqual(self.m.read_sql(item, resource).encode("utf-8"), raw)
+
+    def test_missing_manifest_still_fails_through_public_api(self):
+        missing = self.sandbox.directory(
+            "missing-manifest",
+            {name: raw for name, raw in self.sandbox.files.items() if name != "manifest.json"},
+        )
+        original = self.backend.open_lease
+        self.addCleanup(setattr, self.backend, "open_lease", original)
+        self.backend.open_lease = lambda anchor: self.backend.PosixLease(missing)
         with self.assertRaises(FileNotFoundError):
             self.m.manifest()
 

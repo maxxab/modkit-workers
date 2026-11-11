@@ -1,27 +1,199 @@
-# Package layout and readiness
+# modkit-workers package layout and readiness
 
-**Status: NOT_READY for production or package release.**
+## Cloud qualification checkpoint: 2026-11-10
 
-Typed source lives in `src/modkit_workers`. The `py.typed` marker does not certify completed type checking. Root and namespace initializers do not load optional adapters or apply migrations. Workers depends on Events; Events remains independent of Workers.
+The current source wheel was freshly built from Workers
+`44b144b93c0127a7c3a171a3d5b56bd7499e93b7` and paired with Events
+`43f89e34896b4a0e7441b0a6002f370fd3575ade` on Linux CPython 3.12.14.
+The Workers wheel SHA256 is
+`2d1090533cde9de45bb7ad570b6067a253f440e7736136dce6b66fce171dea0f`.
+The Events wheel SHA256 is
+`d51055f0a51c0740c206ff583ff4458e2736730f0a6a044f2745c5b31a26eb70`.
+The Workers source archive SHA256 is
+`f0e87c9a98f2b8293e8453a0eee10a699cbc3793218451269ed1e01b3ae513a3`.
+These identify the tested snapshot, not a published release or subsequent documentation.
 
-## Migration resources
+Strict physical archive and inventory checks matched all 38 wheel members and
+100 source-archive members to the tracked source and declared package metadata.
+Private document trees were excluded; RECORD hashes and Twine checks passed.
+The declared Events dependency resolved from the two local wheels into a fresh,
+outside-checkout environment, and `pip check` passed. Actual installed module
+origins, resource bytes, migration digests and the exact Events dependency were
+verified before and after behavioral tests.
 
-`modkit_workers.persistence.migrations` exposes immutable `SQLResource`, `MigrationDependency`, `Migration`, `manifest()` and `read_sql(migration, resource)`. These APIs only validate and read bytes. They never connect to a service, apply SQL, create roles or own transactions.
+Thirty installed behavior modules passed 702 tests plus 96 subtests, with no
+failures or skips. Seven separate source-oracle modules passed 38 checks against
+explicit installed Events SQL. The source-only lane emitted two harmless async
+configuration warnings because the async plugin was not loaded for those checks.
+Test copies came from the audited source archive; no checkout package source was
+available in the installed lane. The parent test interpreter had a live-effect
+audit guard; six finite Python child-script sites were reviewed separately. The
+hook is not inherited by children and is not an all-process sandbox. In-process
+doubles and owned temporary resource fixtures were used. No database or Redis
+service was contacted and no native fixture was created. The receipt includes the exact
+artifact, test, tooling and guard hashes; independent result review is accepted.
 
-Reviewed W01 admission and W02/W03/W04 read, list and find SQL source is present in `0001_initial.sql`, but it is **NOT_READY**. Production `manifest.json` and `grants_runtime.sql` are deliberately absent. `manifest()` raises `FileNotFoundError` until these resources are supplied and qualified. The SQL requires Events-owned functions and the `work_jobs_created_page` index, which are not yet integrated into the public Events migration resources. Test-only resource bytes are temporary fixtures, not production SQL. Workers component version 1 requires the exact Events component version 1 resource aggregate, not merely a matching Python dependency version. See [reader qualification](reader-qualification.md) and [job listing](job-listing.md) for bounded source/native evidence and the remaining gates.
+The wheel is byte-identical to the earlier artifact with the same hash, but this
+is a fresh installation receipt, not a relabeling of historical source evidence.
+An independently reviewed LF checkout fix at `91b1adb0272848f6113f87e91466c4f323676714`
+prevents Git CRLF conversion from invalidating SQL digest checks. Its isolated Git
+regression reproduced the corrupt checkout before the fix and exact original
+bytes afterward. The product Python and SQL bytes are unchanged.
 
-Manifest resource digests use SHA-256. Aggregate framing is ASCII MKMF, byte 0x01, a big-endian uint32 resource count, followed by sorted component-prefixed UTF-8 paths. Each frame is a uint32 path-byte length, path bytes and the raw 32-byte resource digest. Initial and grants SQL participate; the manifest and separate receipt SQL do not.
+Remaining gates include other required interpreters/platforms, genuine optional
+driver and service behavior, PostgreSQL installation/least-privilege/native
+transport, remaining recovery faults and downstream ERP integration. The finite
+recovery-profile acceptance gates remain unchanged. A cloud checkout and copied
+historical evidence do not establish native runtime authority, current absence,
+identical host capability or route. Old uncertain outcomes remain UNKNOWN and
+consumed grants remain consumed. Flutter readiness is not yet claimed.
 
-Known initialized filesystem and zip import locators are supported on POSIX. Unknown providers and unsupported archive layouts fail closed. A single root lease covers manifest, resource hashes and selected read. Direct resource leaves must be regular files and cannot be symlinks. ZIP validation uses a bounded snapshot without extraction and checks local/central metadata, ranges, complete deflate output, size and CRC before resource digest and UTF-8 checks. ZIP64, executable prefixes, trailing or concatenated archives and unsupported descriptors/methods are not supported.
+## Historical preparation notes
 
-Limits: manifest 64 KiB; SQL resource 16 MiB; archive 256 MiB; central directory 16 MiB; 65,534 archive entries; name/extra/comment 4,096 bytes each. Oversize inputs are rejected, never truncated. These limits do not certify peak memory, concurrency, latency or distribution authenticity. Windows resource loading is not implemented and fails closed.
+This is NEW unpublished source preparation, not a qualified distribution.
+Typed source lives under src/modkit_workers; py.typed marks annotations, not completed type checking.
+Root and namespace initializers do not load optional adapters or apply migrations.
+Events preserves all14 legacy objects and appends the accepted23 pure contract definitions.
+Workers has no released root runtime exports. Events never imports workers.
 
-Missing resources raise `FileNotFoundError`. Invalid descriptors, manifests, hashes, encoding, containment, backends, archives and excessive sizes produce fixed `ValueError` messages. Unrelated OS errors propagate. Cleanup attempts each owned resource once; uncertain close outcomes are not retried. Applications must preserve uncertainty rather than infer successful release.
+## Inert resources
 
-## Development tests and open gates
+The public resource API is modkit_workers.persistence.migrations: SQLResource,
+MigrationDependency, Migration, manifest(), read_sql(migration, resource).
+Records require exact built-in scalar types and immutable tuples, reject bool versions,
+and use fixed initial component version1. read_sql validates before membership equality.
+It returns SQL text only; applications own target, authority, transactions and unknown outcomes.
 
-Source tests are in `tests/`. Resource fixtures use helper-owned temporary directories. `MODKIT_RESOURCE_TEST_BASE` can select a parent directory. Link-creation limitations must be reported rather than bypassed through permission changes. Tests exercise pure contracts and bounded resource controls, not a complete worker runtime or real services.
+This isolated closure candidate contains persistence/sql/0001_initial.sql and grants_runtime.sql,
+with a strict manifest.json (maximum64KiB), per-file SHA256 and MKMF aggregate.
+The initial W01/W02/W03/W04/W05 SQL, exact grants and dependent manifest form a
+source candidate, not installation-ready evidence. Canonical production release remains gated.
+Missing resources still raise FileNotFoundError; no empty result, fake digest or automatic creation occurs.
+Test-only bytes are generated by tests/_resource_fixtures.py inside owned temporary sandboxes; none are production resources.
 
-Python 3.12-3.15, Linux/Windows/macOS, optional dependency bounds, produced wheel/sdist installation, native libpq, PostgreSQL and Redis remain qualification targets. The declared dependency ranges and development pins are not installation or compatibility guarantees. Current production resources and `JobWorker`/`EventWorker` execution loops are absent.
+Aggregate bytes are ASCII MKMF + 0x01 + uint32 big-endian resource count, then frames sorted
+by logical component-prefixed UTF-8 path: uint32 path-byte length + path + raw32 resource digest.
+Initial and grants both participate. Manifest, aggregate field and separate owner receipt SQL
+are excluded from aggregate inputs; external immutable closure covers them separately.
+Workers component1 requires the exact events component1 aggregate, not just Python version.
 
-Applications own authorization, transaction boundaries, durable outcomes, backup/recovery and reconciliation. Downgrading a package does not undo schema changes, external effects or uncertain commits. No destructive cleanup or down migration is supplied.
+See [Explicit installation](installation.md) for the trusted-role, full Events-before-Workers
+sequence, dependency verification and remaining source/artifact/native gates.
+Caller applies initial then grants, then separate owner-only six-parameter receipt insertion
+in the same caller transaction. Parameters: component,version,raw32 digest,catalog ID,scope ID,
+intent ID; database supplies applied_at. No package apply API or hidden role creation.
+Single events-schema E33 accepts events (one row) or workers (events then workers, two rows).
+Expected IDs are modkit-pg-ab-2, MKSC-1, MKPF-1. Missing receipt=PZ011; caller installed
+constant mismatch=SCHEMA_MISMATCH. Receipt is not proof a privileged actor never changed DDL.
+
+## Qualification and rollback
+
+CPython3.12–3.15 on Linux/Windows/macOS remain targets, not passed coverage.
+Optional bounds and native libpq prerequisites require later resolution/driver tests.
+Actual wheel/sdist metadata, SQL/manifest inclusion, rebuilt-sdist and clean installation outside
+checkout remain unrun. pytest source pythonpath must not shadow installed artifacts.
+Preserve all8 original events tests and real SQLite baseline separately from PostgreSQL84/Redis.
+Real services, lower/current dependencies, performance, docs/examples and release gates remain open.
+Existing workflows/scripts remain preserved and unmodified, including version-specific assumptions.
+
+Rollback selects a complete compatible reviewed closure. A package downgrade does not undo schema,
+external effects or uncertain commits. No down migration or destructive cleanup is supplied.
+Operators need explicit reviewed backup/recovery and reconciliation; never reapply on uncertainty.
+
+## Source4 finite resource transport (unpublished, not matrix qualification)
+
+Known initialized SourceFileLoader or zipimporter metadata chooses the installation locator.
+Unknown/custom/namespace/sourceless providers fail closed before invoking their readers.
+Root/ancestor locator links may select the acquired object. This is the explicitly approved
+change from frozen source3's blanket root-link rejection, not a relaxation for resource leaves.
+A public manifest/read_sql call holds one root lease through manifest, every resource hash
+and final selected read. POSIX direct leaves use descriptor-relative no-follow/nonblocking
+opens, regular-file checks and same-fd bounded reads. Root rename cannot switch the lease;
+leaf links fail even when their target bytes match. No distribution authenticity, protection
+against malicious process metadata or multi-file transactional snapshot is claimed.
+
+The private _resource_io module implements finite classic single-disk Z1 stored/raw-deflated
+ZIP validation against an owned bounded snapshot. No extraction. Raw local/central headers,
+canonical names, finite extras/flags/attributes, exact ranges and signed descriptors must
+agree; preflight bounds precede ZipInfo allocation. ZipFile is an additional metadata oracle.
+Selected deflate output independently requires true EOF, exact compressed interval exhaustion,
+actual output length and CRC before package digest/UTF8 checks. Prefix-only declared size/CRC
+cannot substitute for complete output. ZIP64, SFX/trailing/concatenated archives, unsupported
+extras/descriptors/methods and unverifiable origins remain explicitly unsupported until a
+reviewed profile change. Ordinary produced archives must later be measured against Z1;
+these failures do not waive required compatibility targets.
+
+Ceilings: manifest64KiB, SQL16MiB each, archive256MiB, central directory16MiB, classic65534
+entries, name/extra/comment4096 bytes each. Oversize is rejected, never truncated.
+The archive cap is not a peak-memory cap. Allocation/concurrency/performance are unqualified.
+Missing valid resources raise FileNotFoundError; fixed ValueError texts distinguish invalid
+migration descriptor/manifest, digest mismatch, SQL encoding, containment failure, unsupported
+backend, invalid migration resource archive and migration resource too large. Manifest cap
+retains migration manifest too large. Unrelated OS errors propagate.
+
+Windows has no implementation in this wave and fails closed; NATIVE-U1 is still held.
+Other required Python3.12–3.15, Linux/macOS/Windows, installed filesystem/archive and rebuilt
+sdist/wheel lanes remain unfinished, not removed targets. Current evidence is focused source
+controls, including real local tiny POSIX/ZIP fixtures and explicitly labeled origin/cleanup
+doubles. It is not actual installed-provider, produced archive or OS matrix evidence.
+
+## Self-contained fixture delivery and ownership
+
+Normal test code uses a helper-owned TemporaryDirectory, no private evidence path or prebuilt
+fixture tree. Optional MODKIT_RESOURCE_TEST_BASE chooses only its parent. Every hostile target
+stays inside the sandbox; cleanup unlinks symlink entries without traversing their targets.
+Unavailable link setup is reported BLOCKED, without privilege/settings changes. Checkout test
+source is present; sdist inclusion and installed artifact tests remain separate unrun gates.
+
+Descriptors/streams are registered immediately and detached before close. Each independent
+owner gets one attempt; uncertain closes never retry. Primary BaseException identity/category
+wins, with the fixed note Migration resource cleanup failed; close outcome is uncertain.
+Without a primary, cleanup failure prevents successful return; later independent cleanup is
+still attempted. Physical release after an OS close failure is unknown. Frozen source2/source3
+containment/cleanup evidence remains historical; source4 re-expresses those invariants at the
+single-root lease boundary with focused fault doubles, not real close-failure experiments.
+
+## Source4 round1 EOCD precision
+
+EOCD candidates are validated for single-disk scalar/count/ranges and a complete
+bounded central-record walk before end-aligned ambiguity is counted. More than
+one valid candidate central directory rejects; invalid signature-like opaque
+comment bytes do not veto a unique valid candidate. Full original local/central
+agreement still follows selection before metadata objects are allocated.
+
+ZipFile receives an immutable metadata-only projection ending at the selected
+EOCD, with only its two-byte comment length set to zero. The original prefix,
+all member/local/central bytes and offsets are unchanged. ZipInfo comparison is
+still mandatory, and original snapshot bytes supply every actual resource read.
+This reconciles stdlib's last-signature interpretation with opaque comments;
+it does not permit normalization of malformed or unsupported records.
+The projection adds up to256MiB of live copied bytes beyond the prior multi-copy
+model. Its prefix is joined from a memoryview, avoiding a separate sliced-prefix
+copy. BytesIO may retain/copy projection bytes as well; conservative prior3A
+planning becomes4A plus metadata/output/runtime overhead, not an RSS guarantee.
+
+Unsupported-layout recognition is deliberately finite: search only the final
+65557-byte EOCD window; an earlier declared complete archive end with fully valid
+supported local/central records positively recognizes trailing data. Complete
+adjusted-offset local records contiguous from a positive initial origin to the
+central directory recognize SFX/concatenated profiles. Unadjusted offsets,
+contradictions or truncation remain invalid-archive, not guessed unsupported.
+Signed descriptors with exact central-equal local fields and unsigned classic
+12-byte descriptors with exact CRC/size triples are recognized unsupported only
+after all local record boundaries agree. A CRC equal to the signature marker
+does not choose a signed interpretation: complete signed16 and unsigned12 triples
+are checked independently, then the next actual local/central boundary selects
+the length, regardless of central listing order. If no length matches, the archive
+is malformed;
+unsigned remains unsupported, never accepted. No general ZIP64 descriptor or archive
+forensics detector is supplied. Combined profiles outside these recognizers are
+not claimed recognized; rejection never becomes acceptance.
+
+Candidate scanning is fixed-window; each central walk is bounded by16MiB and65534
+entries before ZipInfo allocation. Candidate tuples are bounded by signatures
+in that window, with at most one selected tuple. Invalid candidates may entail
+repeated bounded central walks: worst-case work can be the product of window
+candidate count and directory cap. No latency/performance qualification follows.
+The extra projection never hides a valid alternative candidate, trailing bytes,
+or inconsistent original records. Targeted tiny controls are not exhaustive
+parser fuzzing, installed artifact, full resource-budget or peak-memory evidence.

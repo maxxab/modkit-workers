@@ -45,7 +45,7 @@ def _identity(admission) -> tuple:
 
 
 @_boundary
-def submit(request: JobSubmitRequest, /):
+def submit(request: JobSubmitRequest, /) -> common.FrozenRequest:
     if type(request) is not JobSubmitRequest:
         raise ValueError
     job = replace(request.job)
@@ -82,7 +82,7 @@ def submit(request: JobSubmitRequest, /):
 
 
 @_boundary
-def read_job(request: JobReadRequest, /):
+def read_job(request: JobReadRequest, /) -> common.FrozenRequest:
     if type(request) is not JobReadRequest:
         raise ValueError
     return _freeze("W02", (_work_id(request.work_id),))
@@ -90,8 +90,8 @@ def read_job(request: JobReadRequest, /):
 
 @dataclass(frozen=True, slots=True, kw_only=True, repr=False)
 class PreparedJobFind:
-    lookup: object
-    expected_submission: object
+    lookup: common.FrozenRequest
+    expected_submission: common.FrozenRequest
 
     @_boundary
     def __post_init__(self) -> None:
@@ -128,7 +128,7 @@ def find_jobs(request: JobFindRequest, /) -> PreparedJobFind:
 
 
 @_boundary
-def acquire(request: JobAcquireRequest, /):
+def acquire(request: JobAcquireRequest, /) -> common.FrozenRequest:
     if type(request) is not JobAcquireRequest:
         raise ValueError
     snapshot = replace(request)
@@ -147,7 +147,7 @@ def acquire(request: JobAcquireRequest, /):
 
 
 @_boundary
-def list_jobs(request: JobListRequest, /):
+def list_jobs(request: JobListRequest, /) -> common.FrozenRequest:
     if type(request) is not JobListRequest:
         raise ValueError
     snapshot = replace(request)
@@ -159,4 +159,247 @@ def list_jobs(request: JobListRequest, /):
             None if snapshot.after is None else snapshot.after.work_id,
             snapshot.limit,
         ),
+    )
+
+
+def _job_admission_raw(job: JobInput, /) -> tuple[common.AdmissionInput, tuple[object, ...]]:
+    """Trusted native builder; caller reserves D/A before entering this function."""
+    from collections.abc import Mapping
+    from datetime import datetime, timezone
+
+    from modkit_events.persistence import models as shared
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.scope import (
+        Scope,
+        _canonical_scope_raw,
+        _encode_scope_fields_raw,
+    )
+
+    from .models import _work_id_raw
+
+    if type(job) is not JobInput:
+        _reject_validation()
+    # Fixed references only. Never replace/copy JobInput or traverse payload here.
+    (
+        work_id,
+        command,
+        version,
+        scope,
+        payload,
+        protected,
+        original,
+        deadline,
+        key,
+        policy,
+        attempts,
+    ) = (
+        job.work_id,
+        job.command_type,
+        job.schema_version,
+        job.scope,
+        job.payload,
+        job.protected,
+        job.original_available_at,
+        job.deadline,
+        job.idempotency_key,
+        job.replay_policy,
+        job.max_attempts,
+    )
+    uuid = _work_id_raw(work_id)
+    command_bytes = common._identifier_raw(command)
+    version_bytes = common._version_to_decimal_raw(version)
+    key_bytes = None if key is None else common._identifier_raw(key)
+    if type(scope) is not Scope or type(protected) is not shared.ProtectedBindingInput:
+        _reject_validation()
+    if type(policy) is not shared.ReplayPolicy:
+        _reject_validation()
+    common._integer_raw(attempts, 1, 1000)
+    if type(original) is not datetime or original.tzinfo is not timezone.utc:
+        _reject_validation()
+    if deadline is not None and (
+        type(deadline) is not datetime or deadline.tzinfo is not timezone.utc
+    ):
+        _reject_validation()
+    if not isinstance(payload, Mapping):
+        _reject_validation()
+    application, tenant, owner = _encode_scope_fields_raw(scope)
+    canonical_scope = _canonical_scope_raw(scope)
+    # The shared managed budget is the FIRST payload traversal. Replay uses only
+    # its accepted immutable snapshot, never a second read of caller payload.
+    semantic = common._canonical_json_raw(payload)
+    bounded = common._parse_canonical_json_raw(semantic)
+    replay = common._emit_raw(bounded)
+    binding = common._canonical_protected_binding_raw(protected).content
+    material = common._decode_protected_binding_raw(binding)
+    scope_evidence = shared._scope_evidence_raw(
+        canonical_version=1,
+        canonical=canonical_scope,
+        application=application,
+        tenant=tenant,
+        owner=owner,
+    )
+    identity = shared._work_identity_raw(
+        work_id=uuid,
+        kind=shared.WorkKind.JOB,
+        subscription_id=None,
+        namespace="jobs",
+        command_type=command,
+        scope=scope_evidence,
+        idempotency_key=key,
+    )
+    admission = shared._admission_input_raw(
+        identity=identity,
+        schema_version=version,
+        semantic_input=semantic,
+        replay_input=replay,
+        protected_binding=binding,
+        replay_policy=policy,
+        max_attempts=attempts,
+        deadline=deadline,
+        original_available_at=original,
+    )
+    parameters = (
+        uuid,
+        "job",
+        None,
+        b"jobs",
+        command_bytes,
+        canonical_scope,
+        key_bytes,
+        1,
+        version_bytes,
+        application,
+        tenant,
+        owner,
+        common._canonical_intent_raw(admission).content,
+        semantic,
+        replay,
+        binding,
+        policy.value,
+        attempts,
+        deadline,
+        original,
+        material.material_state.value,
+        material.sidecar,
+        material.reference,
+        None if material.codec is None else common._identifier_raw(material.codec),
+        None if material.key_version is None else common._identifier_raw(material.key_version),
+        material.expires_at,
+        material.recovery_metadata,
+        material.cleanup_policy.value,
+        material.projection_metadata,
+    )
+    return admission, parameters
+
+
+def _submit_raw(request: JobSubmitRequest, /) -> common.FrozenRequest:
+    """Trusted native builder; caller reserves D/A before entering this function."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    if type(request) is not JobSubmitRequest:
+        _reject_validation()
+    admission, parameters = _job_admission_raw(request.job)
+    return native_profile.freeze_request(
+        _statement("W01"),
+        parameters,
+        context=common._return_context_raw(expected=(admission,), readiness=None),
+    )
+
+
+def _read_job_raw(request: JobReadRequest, /) -> common.FrozenRequest:
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .models import _work_id_raw
+
+    if type(request) is not JobReadRequest:
+        _reject_validation()
+    return native_profile.freeze_request(
+        _statement("W02"),
+        (_work_id_raw(request.work_id),),
+        context=common._return_context_raw(),
+    )
+
+
+def _list_jobs_raw(request: JobListRequest, /) -> common.FrozenRequest:
+    """Freeze W03 under the caller's paid preparation without logical copies."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import WorkCursor
+
+    if type(request) is not JobListRequest:
+        _reject_validation()
+    limit = common._integer_raw(request.limit, 1, 256)
+    after = request.after
+    if after is None:
+        created_at, work_id = None, None
+    else:
+        if type(after) is not WorkCursor:
+            _reject_validation()
+        created_at = common._instant_raw(after.created_at)
+        work_id = common._uuid_raw(after.work_id)
+    return native_profile.freeze_request(
+        _statement("W03"),
+        (b"jobs", created_at, work_id, limit),
+        context=common._return_context_raw(),
+    )
+
+
+def _find_jobs_raw(request: JobFindRequest, /) -> common.FrozenRequest:
+    """Build one comparison-only W04 request under the caller's paid D/A."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    if type(request) is not JobFindRequest:
+        _reject_validation()
+    admission, submission_parameters = _job_admission_raw(request.job)
+    parameters = submission_parameters[:7]
+    del submission_parameters
+    return native_profile.freeze_request(
+        _statement("W04"),
+        parameters,
+        context=common._return_context_raw(expected=(admission,), readiness=None),
+    )
+
+
+def _acquire_raw(request: JobAcquireRequest, /) -> common.FrozenRequest:
+    """Snapshot exact capability pairs without public exception sanitization."""
+    from math import isfinite
+
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import Capability
+
+    if type(request) is not JobAcquireRequest:
+        _reject_validation()
+    capabilities = request.capabilities
+    if type(capabilities) is not tuple or not 1 <= len(capabilities) <= 256:
+        _reject_validation()
+    commands, versions = [], []
+    previous = None
+    for item in capabilities:
+        if type(item) is not Capability:
+            _reject_validation()
+        command = common._identifier_raw(item.command_type)
+        version = common._integer_raw(item.schema_version, 1, 2147483647)
+        pair = (command, version)
+        if previous is not None and pair <= previous:
+            _reject_validation()
+        previous = pair
+        commands.append(command)
+        versions.append(version)
+    limit = common._integer_raw(request.limit, 1, 256)
+    budget = common._integer_raw(request.discovery_budget, limit, 4096)
+    lease = request.lease_seconds
+    if type(lease) not in (int, float) or not 0 < lease <= 3600:
+        _reject_validation()
+    lease = float(lease)
+    if not isfinite(lease):
+        _reject_validation()
+    cursor = None if request.scan_after is None else common._uuid_raw(request.scan_after)
+    return native_profile.freeze_request(
+        _statement("W05"),
+        (b"jobs", tuple(commands), tuple(versions), limit, lease, cursor, budget),
+        context=common._return_context_raw(),
     )

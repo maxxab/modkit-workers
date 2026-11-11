@@ -1,0 +1,858 @@
+{
+  "acceptance_record": {
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-claimed-fence-fixture-v61/v60-review-reported.json",
+    "sha256": "3c52093716b588344542f10c2ac9c3d489e3d2ec11bf5f4836a61cd2dc18df79",
+    "size": 1315
+  },
+  "accepted_files": {
+    "catalog.json": {
+      "sha256": "87857db93abbbf2f59f9e525874027faf261672d3bc21ec90e5f3d4dee97e419",
+      "size": 59978
+    },
+    "container.stdout": {
+      "sha256": "c6e81bcd521bf5af66a885944f7f880fa9b5c885369ae2171017020098b2b000",
+      "size": 865
+    }
+  },
+  "accepted_source_directory": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v59-fix1-e12-queued-terminal-execution/v59-fix1-e12-queued-terminal-once/after",
+  "captured_session_summary": {
+    "background_backend_types": [
+      "autovacuum launcher",
+      "background writer",
+      "checkpointer",
+      "io worker",
+      "logical replication launcher",
+      "walwriter"
+    ],
+    "capture_backend": 252,
+    "client_backends": [
+      {
+        "backend_started": "2026-11-07T20:38:26.64564+00:00",
+        "backend_type": "client backend",
+        "backend_xid": null,
+        "backend_xmin": "755",
+        "client_address": "127.0.0.1",
+        "client_port": 55664,
+        "database": "modkit_qualification",
+        "pid": 252,
+        "query_started": "2026-11-07T20:38:26.650152+00:00",
+        "state": "active",
+        "state_changed": "2026-11-07T20:38:26.650154+00:00",
+        "transaction_started": "2026-11-07T20:38:26.648967+00:00",
+        "user": "postgres",
+        "wait_event": null,
+        "wait_type": null
+      }
+    ]
+  },
+  "catalog_selected": {
+    "build": "PostgreSQL 18.1 (Debian 18.1-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "control_system": {
+      "catalog_version_no": 202506291,
+      "pg_control_last_modified": "2026-11-07T20:11:44+00:00",
+      "pg_control_version": 1800,
+      "system_identifier": 7705523520844832822
+    },
+    "current_user": "postgres",
+    "database": "modkit_qualification",
+    "database_catalog": {
+      "datacl": null,
+      "datallowconn": true,
+      "datcollate": "en_US.utf8",
+      "datcollversion": "2.41",
+      "datconnlimit": -1,
+      "datctype": "en_US.utf8",
+      "datdba": "10",
+      "datfrozenxid": "745",
+      "dathasloginevt": false,
+      "daticurules": null,
+      "datistemplate": false,
+      "datlocale": null,
+      "datlocprovider": "c",
+      "datminmxid": "1",
+      "datname": "modkit_qualification",
+      "dattablespace": "1663",
+      "encoding": 6,
+      "oid": "16384"
+    },
+    "database_role_setting_names": [],
+    "default_acls": [],
+    "effective_profile": [
+      {
+        "context": "user",
+        "name": "DateStyle",
+        "pending_restart": false,
+        "reset_value": "ISO, MDY",
+        "source": "configuration file",
+        "unit": null,
+        "value": "ISO, MDY"
+      },
+      {
+        "context": "user",
+        "name": "IntervalStyle",
+        "pending_restart": false,
+        "reset_value": "postgres",
+        "source": "default",
+        "unit": null,
+        "value": "postgres"
+      },
+      {
+        "context": "user",
+        "name": "TimeZone",
+        "pending_restart": false,
+        "reset_value": "Etc/UTC",
+        "source": "configuration file",
+        "unit": null,
+        "value": "Etc/UTC"
+      },
+      {
+        "context": "user",
+        "name": "check_function_bodies",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "user",
+        "name": "client_encoding",
+        "pending_restart": false,
+        "reset_value": "UTF8",
+        "source": "default",
+        "unit": null,
+        "value": "UTF8"
+      },
+      {
+        "context": "postmaster",
+        "name": "config_file",
+        "pending_restart": false,
+        "reset_value": "/var/lib/postgresql/18/docker/postgresql.conf",
+        "source": "override",
+        "unit": null,
+        "value": "/var/lib/postgresql/18/docker/postgresql.conf"
+      },
+      {
+        "context": "postmaster",
+        "name": "data_directory",
+        "pending_restart": false,
+        "reset_value": "/var/lib/postgresql/18/docker",
+        "source": "override",
+        "unit": null,
+        "value": "/var/lib/postgresql/18/docker"
+      },
+      {
+        "context": "user",
+        "name": "default_transaction_deferrable",
+        "pending_restart": false,
+        "reset_value": "off",
+        "source": "default",
+        "unit": null,
+        "value": "off"
+      },
+      {
+        "context": "user",
+        "name": "default_transaction_isolation",
+        "pending_restart": false,
+        "reset_value": "read committed",
+        "source": "default",
+        "unit": null,
+        "value": "read committed"
+      },
+      {
+        "context": "user",
+        "name": "default_transaction_read_only",
+        "pending_restart": false,
+        "reset_value": "off",
+        "source": "default",
+        "unit": null,
+        "value": "off"
+      },
+      {
+        "context": "sighup",
+        "name": "fsync",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "sighup",
+        "name": "full_page_writes",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "postmaster",
+        "name": "hba_file",
+        "pending_restart": false,
+        "reset_value": "/var/lib/postgresql/18/docker/pg_hba.conf",
+        "source": "override",
+        "unit": null,
+        "value": "/var/lib/postgresql/18/docker/pg_hba.conf"
+      },
+      {
+        "context": "postmaster",
+        "name": "ident_file",
+        "pending_restart": false,
+        "reset_value": "/var/lib/postgresql/18/docker/pg_ident.conf",
+        "source": "override",
+        "unit": null,
+        "value": "/var/lib/postgresql/18/docker/pg_ident.conf"
+      },
+      {
+        "context": "user",
+        "name": "idle_in_transaction_session_timeout",
+        "pending_restart": false,
+        "reset_value": "0",
+        "source": "default",
+        "unit": "ms",
+        "value": "0"
+      },
+      {
+        "context": "postmaster",
+        "name": "listen_addresses",
+        "pending_restart": false,
+        "reset_value": "*",
+        "source": "configuration file",
+        "unit": null,
+        "value": "*"
+      },
+      {
+        "context": "user",
+        "name": "local_preload_libraries",
+        "pending_restart": false,
+        "reset_value": "",
+        "source": "default",
+        "unit": null,
+        "value": ""
+      },
+      {
+        "context": "user",
+        "name": "lock_timeout",
+        "pending_restart": false,
+        "reset_value": "0",
+        "source": "default",
+        "unit": "ms",
+        "value": "0"
+      },
+      {
+        "context": "postmaster",
+        "name": "max_connections",
+        "pending_restart": false,
+        "reset_value": "12",
+        "source": "command line",
+        "unit": null,
+        "value": "12"
+      },
+      {
+        "context": "postmaster",
+        "name": "max_prepared_transactions",
+        "pending_restart": false,
+        "reset_value": "0",
+        "source": "default",
+        "unit": null,
+        "value": "0"
+      },
+      {
+        "context": "postmaster",
+        "name": "port",
+        "pending_restart": false,
+        "reset_value": "5432",
+        "source": "default",
+        "unit": null,
+        "value": "5432"
+      },
+      {
+        "context": "user",
+        "name": "row_security",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "user",
+        "name": "search_path",
+        "pending_restart": false,
+        "reset_value": "\"$user\", public",
+        "source": "default",
+        "unit": null,
+        "value": "\"$user\", public"
+      },
+      {
+        "context": "internal",
+        "name": "server_encoding",
+        "pending_restart": false,
+        "reset_value": "UTF8",
+        "source": "default",
+        "unit": null,
+        "value": "UTF8"
+      },
+      {
+        "context": "superuser",
+        "name": "session_preload_libraries",
+        "pending_restart": false,
+        "reset_value": "",
+        "source": "default",
+        "unit": null,
+        "value": ""
+      },
+      {
+        "context": "postmaster",
+        "name": "shared_buffers",
+        "pending_restart": false,
+        "reset_value": "2048",
+        "source": "command line",
+        "unit": "8kB",
+        "value": "2048"
+      },
+      {
+        "context": "postmaster",
+        "name": "shared_preload_libraries",
+        "pending_restart": false,
+        "reset_value": "",
+        "source": "default",
+        "unit": null,
+        "value": ""
+      },
+      {
+        "context": "user",
+        "name": "standard_conforming_strings",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "user",
+        "name": "statement_timeout",
+        "pending_restart": false,
+        "reset_value": "0",
+        "source": "session",
+        "unit": "ms",
+        "value": "8000"
+      },
+      {
+        "context": "user",
+        "name": "synchronous_commit",
+        "pending_restart": false,
+        "reset_value": "on",
+        "source": "default",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "user",
+        "name": "transaction_deferrable",
+        "pending_restart": false,
+        "reset_value": "off",
+        "source": "override",
+        "unit": null,
+        "value": "off"
+      },
+      {
+        "context": "user",
+        "name": "transaction_isolation",
+        "pending_restart": false,
+        "reset_value": "read committed",
+        "source": "session",
+        "unit": null,
+        "value": "read committed"
+      },
+      {
+        "context": "user",
+        "name": "transaction_read_only",
+        "pending_restart": false,
+        "reset_value": "off",
+        "source": "session",
+        "unit": null,
+        "value": "on"
+      },
+      {
+        "context": "postmaster",
+        "name": "unix_socket_directories",
+        "pending_restart": false,
+        "reset_value": "/var/run/postgresql",
+        "source": "default",
+        "unit": null,
+        "value": "/var/run/postgresql"
+      },
+      {
+        "context": "postmaster",
+        "name": "wal_level",
+        "pending_restart": false,
+        "reset_value": "replica",
+        "source": "default",
+        "unit": null,
+        "value": "replica"
+      }
+    ],
+    "event_trigger_count": 0,
+    "extensions": [
+      {
+        "condition_count": null,
+        "configuration_relations": null,
+        "name": "plpgsql",
+        "namespace": "11",
+        "owner": "10",
+        "relocatable": false,
+        "version": "1.0"
+      }
+    ],
+    "foreign_server_count": 0,
+    "foreign_wrapper_count": 0,
+    "non_system_functions": [],
+    "non_system_relations": [],
+    "postmaster_started_at": "2026-11-07T20:06:44.138392+00:00",
+    "prepared_transaction_count": 0,
+    "publication_count": 0,
+    "role_memberships": [
+      {
+        "admin_option": false,
+        "grantor": "10",
+        "inherit_option": true,
+        "member": "3373",
+        "oid": "10308",
+        "roleid": "3374",
+        "set_option": true
+      },
+      {
+        "admin_option": false,
+        "grantor": "10",
+        "inherit_option": true,
+        "member": "3373",
+        "oid": "10309",
+        "roleid": "3375",
+        "set_option": true
+      },
+      {
+        "admin_option": false,
+        "grantor": "10",
+        "inherit_option": true,
+        "member": "3373",
+        "oid": "10310",
+        "roleid": "3377",
+        "set_option": true
+      }
+    ],
+    "roles": [
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_checkpoint",
+        "oid": "4544",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_create_subscription",
+        "oid": "6304",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_database_owner",
+        "oid": "6171",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_execute_server_program",
+        "oid": "4571",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_maintain",
+        "oid": "6337",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_monitor",
+        "oid": "3373",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_read_all_data",
+        "oid": "6181",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_read_all_settings",
+        "oid": "3374",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_read_all_stats",
+        "oid": "3375",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_read_server_files",
+        "oid": "4569",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_signal_autovacuum_worker",
+        "oid": "6392",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_signal_backend",
+        "oid": "4200",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_stat_scan_tables",
+        "oid": "3377",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_use_reserved_connections",
+        "oid": "4550",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_write_all_data",
+        "oid": "6182",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": false,
+        "connection_limit": -1,
+        "create_database": false,
+        "create_role": false,
+        "inherit": true,
+        "login": false,
+        "name": "pg_write_server_files",
+        "oid": "4570",
+        "replication": false,
+        "setting_names": [],
+        "superuser": false,
+        "valid_until": null
+      },
+      {
+        "bypass_rls": true,
+        "connection_limit": -1,
+        "create_database": true,
+        "create_role": true,
+        "inherit": true,
+        "login": true,
+        "name": "postgres",
+        "oid": "10",
+        "replication": true,
+        "setting_names": [],
+        "superuser": true,
+        "valid_until": null
+      }
+    ],
+    "schemas": [
+      {
+        "nspacl": [
+          "postgres=UC/postgres",
+          "=U/postgres"
+        ],
+        "nspname": "information_schema",
+        "nspowner": "10",
+        "oid": "13293"
+      },
+      {
+        "nspacl": [
+          "postgres=UC/postgres",
+          "=U/postgres"
+        ],
+        "nspname": "pg_catalog",
+        "nspowner": "10",
+        "oid": "11"
+      },
+      {
+        "nspacl": null,
+        "nspname": "pg_toast",
+        "nspowner": "10",
+        "oid": "99"
+      },
+      {
+        "nspacl": [
+          "pg_database_owner=UC/pg_database_owner",
+          "=U/pg_database_owner"
+        ],
+        "nspname": "public",
+        "nspowner": "6171",
+        "oid": "2200"
+      }
+    ],
+    "scope": "read-only qualification-target reconciliation, not candidate QA",
+    "server_address": "127.0.0.1",
+    "server_port": 5432,
+    "server_version": "18.1 (Debian 18.1-1.pgdg13+2)",
+    "server_version_num": "180001",
+    "session_user": "postgres",
+    "standalone_non_system_objects": [],
+    "subscription_count": 0,
+    "user_mapping_count": 0
+  },
+  "container_selected": {
+    "Cmd": [
+      "-c",
+      "shared_buffers=16MB",
+      "-c",
+      "max_connections=12"
+    ],
+    "Entrypoint": [
+      "docker-entrypoint.sh"
+    ],
+    "HostConfig": {
+      "Binds": null,
+      "Memory": 402653184,
+      "NanoCpus": 500000000,
+      "NetworkMode": "none",
+      "PidsLimit": 128,
+      "PortBindings": {},
+      "Tmpfs": {
+        "/var/lib/postgresql": "rw,nosuid,nodev,size=256m"
+      }
+    },
+    "Id": "51a93b781c024f29372e44643db26447d4d367fa4a1aa255abd8e665c90270f3",
+    "Image": "sha256:1090bc3a8ccfb0b55f78a494d76f8d603434f7e4553543d6e807bc7bd6bbd17f",
+    "Mounts": [],
+    "networks": {
+      "none": {
+        "Aliases": null,
+        "DNSNames": null,
+        "DriverOpts": null,
+        "EndpointID": "0828434f1a1032d699144f64085f50afa3ffe70cd974ad9e31ab4572e5ab6372",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "GwPriority": 0,
+        "IPAMConfig": null,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "Links": null,
+        "MacAddress": "",
+        "NetworkID": "a4c00069a537a9eabc4aeeea8a47d970dd32874f8c2edfb8d8b35bd8f44d5f81"
+      }
+    },
+    "running": true
+  },
+  "latest_accepted_aftermath": {
+    "acceptance_record": {
+      "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-running-held-fixture-v64/v63-review-reported.json",
+      "sha256": "0a707f3157efbc4e9a929fb39b3c4fcb683f671f55081b758da949ddcdbb5e10",
+      "size": 1716
+    },
+    "artifact_manifest": {
+      "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-claimed-fence-runtime-v63/artifact-pins.json",
+      "sha256": "be8e14b99a8cff76794cb1886c6b1ea3499ebdadc30b3e66f28066ed67c3cf3e",
+      "size": 922
+    },
+    "comparison_to_v60": {
+      "all_other_catalog_keys_equal": true,
+      "catalog_changed_keys": [
+        "backend_pid",
+        "control_system",
+        "locks",
+        "sessions"
+      ],
+      "container_bytes_identical": true,
+      "control_system_changes": {
+        "pg_control_last_modified": {
+          "v60": "2026-11-07T20:11:44+00:00",
+          "v63": "2026-11-07T20:42:03+00:00"
+        }
+      }
+    },
+    "file_pins": {
+      "catalog.json": {
+        "sha256": "4c3f71dcdf7508d010801b1c776848308308c066dab8cec278e22a5213459662",
+        "size": 59976
+      },
+      "container.stdout": {
+        "sha256": "c6e81bcd521bf5af66a885944f7f880fa9b5c885369ae2171017020098b2b000",
+        "size": 865
+      }
+    },
+    "limits": [
+      "Preserved acceptance is author-reported inline independent review, not reviewer-authored file.",
+      "Captured aftermath is not current exclusivity or authority.",
+      "Consumed Events grant cannot authorize Workers or replay.",
+      "No native psycopg transport established."
+    ],
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v62-e12-claimed-fence-execution/v62-e12-claimed-fence-once/after",
+    "runtime_manifest": {
+      "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-claimed-fence-runtime-v63/runtime-pins.json",
+      "sha256": "544028b256b6476e811f7cedf03472b8d16b36f7d2433251a1fddaa1e72d56a5",
+      "size": 5218
+    },
+    "status": "BOUNDED_V63_ACCEPTED_HISTORICAL_CAPTURE_NOT_CURRENT_AUTHORITY"
+  },
+  "newer_pending_aftermath": {
+    "available_file_pins": {
+      "catalog.json": {
+        "sha256": "4c3f71dcdf7508d010801b1c776848308308c066dab8cec278e22a5213459662",
+        "size": 59976
+      },
+      "container.stdout": {
+        "sha256": "c6e81bcd521bf5af66a885944f7f880fa9b5c885369ae2171017020098b2b000",
+        "size": 865
+      }
+    },
+    "interpretation": "Initial pending status is historical; latest_accepted_aftermath records subsequent bounded V63 acceptance without replacing V60.",
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/v62-e12-claimed-fence-execution/v62-e12-claimed-fence-once/after",
+    "status": "PENDING_AT_PREPARATION_SUBSEQUENTLY_ACCEPTED_V63"
+  },
+  "runtime_manifest": {
+    "path": "/home/faris/modkit-local-20261106/foundation/continuation-v3/dot-events-review-20261107/e12-queued-terminal-runtime-v60/runtime-pins.json",
+    "sha256": "c877823dd9290a3e178c8839fe02735b4a3a89ef7daa1c4812b6bcac263463f4",
+    "size": 5218
+  },
+  "status": "HISTORICAL_ACCEPTED_CAPTURE_NOT_CURRENT_AUTHORITY",
+  "transport": {
+    "not_authorized": [
+      "probe",
+      "native_import",
+      "network_change",
+      "runtime_copy_or_install",
+      "new_container"
+    ],
+    "owner_report": "Only docker exec psql/libpq/timeout route qualified; no accepted native psycopg route evidence.",
+    "status": "UNRESOLVED"
+  }
+}

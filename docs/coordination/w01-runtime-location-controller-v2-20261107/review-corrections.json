@@ -1,0 +1,56 @@
+{
+  "status": "SOURCE_ONLY_CHANGES_PREPARED_REVIEW_PENDING",
+  "source_review": "/root/resume_workers_package/review_workers_location_probe",
+  "v1_manifest_sha256": "37d3781e845b5a890dfd332c7b93a9341e5c48177e4e30a2b46311fd8a9de7c3",
+  "findings": [
+    {
+      "severity": "high",
+      "issue": "direct child reaping cleared group cleanup despite lingering inherited pipes",
+      "correction": "separate host_group_kill_required outcome retained for failed or incomplete capture and propagated by sequence"
+    },
+    {
+      "severity": "medium",
+      "issue": "WSL -- can involve default shell before outer timeout",
+      "correction": "frozen Windows argv uses --exec and v2 paths"
+    },
+    {
+      "severity": "hardening",
+      "issue": "matching controller/parent PGIDs need not be timeout-led",
+      "correction": "both PGIDs must equal stable timeout parent PID"
+    }
+  ],
+  "red_run": {
+    "failed": 8,
+    "passed": 63,
+    "failures": [
+      "test_reaped_client_does_not_settle_descendant_cleanup[lingering_pipe]",
+      "test_reaped_client_does_not_settle_descendant_cleanup[overflow]",
+      "test_reaped_client_does_not_settle_descendant_cleanup[io_error]",
+      "test_sequence_retains_cleanup_after_direct_client_reaped[lingering_pipe]",
+      "test_sequence_retains_cleanup_after_direct_client_reaped[overflow]",
+      "test_sequence_retains_cleanup_after_direct_client_reaped[io_error]",
+      "test_future_invocation_uses_direct_wsl_exec",
+      "test_launcher_requires_timeout_parent_group_leader[111-111]"
+    ]
+  },
+  "incremental_green": [
+    {
+      "selection": "reaped or cleanup",
+      "passed": 10,
+      "deselected": 61
+    },
+    {
+      "selection": "future_invocation",
+      "passed": 1,
+      "deselected": 70
+    },
+    {
+      "selection": "launcher",
+      "passed": 4,
+      "deselected": 67
+    }
+  ],
+  "real_process_launch_or_signal_test": false,
+  "target_commands": 0,
+  "grants_leases_attempts_created": 0
+}

@@ -1,0 +1,88 @@
+{
+  "status": "SOURCE_ONLY_V2_OFFLINE_PASS_INDEPENDENT_FOLLOWUP_REVIEW_PENDING",
+  "verified_utc": "2026-11-07T22:27:50.182060+00:00",
+  "workers_base_commit": "81136786d471e4217e8252ebd5cc7a61409c47c6",
+  "tests": {
+    "command": "wsl.exe -d Ubuntu-24.04 --cd /home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers --exec /usr/bin/env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:../events/src /home/faris/modkit-local-20261106/.test-venv/bin/python -m pytest -q -p no:cacheprovider tests docs/coordination/w01-runtime-location-controller-v2-20261107/test_controller.py",
+    "exit_code": 0,
+    "passed": 203,
+    "existing_pure_tests": 132,
+    "controller_tests": 71,
+    "new_review_tests": 11,
+    "subtests": 96,
+    "seconds": 1.88
+  },
+  "static_checks": {
+    "ruff_check_exit": 0,
+    "ruff_format_check_exit": 0,
+    "git_diff_check_exit": 0
+  },
+  "red_green": {
+    "red": "8 failed, 63 passed",
+    "details": "review-corrections.json",
+    "green": "203 passed, 96 subtests passed"
+  },
+  "v1_preserved": {
+    "manifest_sha256": "37d3781e845b5a890dfd332c7b93a9341e5c48177e4e30a2b46311fd8a9de7c3",
+    "all_six_files_match": true
+  },
+  "proposal_manifest_sha256": "6f55397f3042bc333ad1d8354e2b42f772ecaa3bba875e327978ca7853fe1a61",
+  "events_runtime_manifest_sha256": "18a103aa6e9d67277a71bab61c1f511b8fd01405dad126190e0cfbbab532c52b",
+  "events_runtime_files_verified": 39,
+  "old_fixture_packet_sha256": "897fccd0a1bcc34756ad77b9cb9d0e61dccea3c683576e63ca00bb278b77563d",
+  "original_fixture_sources_verified": [
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/disposal.sql",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/lease_gate.py",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/namespace-regression.NOT_RUN.sql",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/plan.md",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/run_proposed.py",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/setup.sql",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source-review.md",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/source_checks.py",
+    "/home/faris/modkit-local-20261106/workers-continuation/w01-fixture-v3/test_gate.py"
+  ],
+  "v1_and_v2_authority_and_attempt_paths_absent": true,
+  "target_argv_or_profile_changes": false,
+  "limits": {
+    "output_lines": 17,
+    "bytes_per_stream": 4096,
+    "host_seconds_per_process": 7,
+    "inner_timeout_seconds": 4,
+    "outer_seconds": 25
+  },
+  "not_performed": [
+    "Docker or target command",
+    "database connection",
+    "SQL",
+    "target interpreter/driver execution",
+    "real child-process timing or signal test",
+    "network change",
+    "install",
+    "service start",
+    "grant",
+    "lease",
+    "attempt marker",
+    "commit",
+    "publication"
+  ],
+  "unqualified": [
+    "installed executable identity/provenance",
+    "real host cancellation",
+    "target state",
+    "native interpreter/driver route"
+  ],
+  "independent_review": "PENDING",
+  "diff_packaging_correction": {
+    "scope": "lossless JSON storage and packaging documentation only",
+    "prior_manifest_sha256": "fa8e822033c009a89fccea65d8baec40adee4a6815d1ae8f4185dc76aba3e733",
+    "prior_packet_preserved_outside_repo": "/home/faris/modkit-local-20261106/baseline-plan-20261107-standalone-only/commits-v3/workers-controller-v2-diff-preservation-20261107",
+    "representation": "controller-v1-to-v2.diff.json",
+    "decoded_bytes": 2292,
+    "decoded_sha256": "35d6c75c8ef37926a837c95ad5af5e138fb1c00d82685b95a316c1b9ce928f8a",
+    "decoded_equals_accepted_raw_diff": true,
+    "decoded_equals_fresh_v1_to_v2_diff": true,
+    "controller_tests_invocation_and_input_pins_unchanged": true,
+    "staged_whitespace_failure_reproduced_before_correction": true,
+    "independent_followup_review": "PENDING"
+  }
+}

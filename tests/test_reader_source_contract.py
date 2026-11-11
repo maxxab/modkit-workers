@@ -36,7 +36,7 @@ def test_reader_source_matches_ordered_canonical_abi(key):
     assert re.findall(r"item\.(\w+)", projection.group(1)) == [n for n, _ in expected_columns]
 
 
-def test_reader_installation_keeps_private_boundary_and_not_ready_resources():
+def test_reader_installation_keeps_private_boundary_before_explicit_grants():
     assert SQL.is_file(), "Reviewed Workers SQL resource is missing"
     source = SQL.read_text()
     assert "DO $workers_readers_private_boundary$" in source
@@ -47,5 +47,21 @@ def test_reader_installation_keeps_private_boundary_and_not_ready_resources():
         in boundary
     )
     assert "acl.grantee<>p.proowner" in boundary
-    assert not SQL.with_name("manifest.json").exists()
-    assert not SQL.with_name("grants_runtime.sql").exists()
+    # Initial SQL stays private; only the separate reviewed grants resource
+    # exposes the closed read matrix. Presence does not attest an installed DB.
+    from modkit_workers.persistence.migrations import manifest, read_sql
+
+    (migration,) = manifest()
+    assert migration.component == "workers"
+    resources = {resource.path: resource for resource in migration.resources}
+    assert read_sql(migration, resources["workers/0001_initial.sql"]) == source
+    grants = read_sql(migration, resources["workers/grants_runtime.sql"])
+    assert (
+        "GRANT EXECUTE ON FUNCTION modkit_workers.w02(uuid) "
+        "TO modkit_runtime,modkit_reconciler,modkit_operator;"
+    ) in grants
+    assert (
+        "GRANT EXECUTE ON FUNCTION "
+        "modkit_workers.w04(uuid,text,bytea,bytea,bytea,bytea,bytea) "
+        "TO modkit_runtime,modkit_reconciler,modkit_operator;"
+    ) in grants

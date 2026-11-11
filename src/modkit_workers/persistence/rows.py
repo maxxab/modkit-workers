@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from dataclasses import replace
 from hashlib import sha256
-from typing import cast
 from uuid import UUID
 
 from modkit_events.persistence import bindings as common
@@ -37,7 +36,7 @@ from .observations import (
 )
 
 
-def _request(request: object, key: str) -> dict:
+def _request(request: common.FrozenRequest, key: str) -> dict:
     # Neutral factory/scalar helpers are not descriptor execution authority.
     if type(request) is not common.FrozenRequest or request.statement is not get_statement(key):
         raise ValueError
@@ -47,33 +46,55 @@ def _request(request: object, key: str) -> dict:
     )
 
 
-def _validated_parts(work, details, payload):
+def _validated_parts(work, details, payload, *, _raw=False):
+    from .observations import _invalid
+
     if (
         type(work) is not WorkObservation
         or type(details) is not JobDetails
         or type(payload) is not JobPayload
     ):
-        raise ValueError
-    work, details, payload = replace(work), replace(details), replace(payload)
+        _invalid(_raw)
+    if _raw:
+        from modkit_events.persistence.observations import _validate_work_observation_raw
+        from modkit_events.persistence.scope import (
+            _canonical_scope_raw,
+            _encode_scope_fields_raw,
+            _scope_raw,
+        )
+
+        from .models import _work_id_raw
+        from .observations import _validate_job_details_raw, _validate_job_payload_raw
+
+        _validate_work_observation_raw(work)
+        _validate_job_details_raw(details)
+        _validate_job_payload_raw(payload)
+        uuid = _work_id_raw(details.work_id)
+        logical = _scope_raw(details.application, details.tenant, details.owner)
+        scope_fields = _encode_scope_fields_raw(logical)
+        scope_bytes = _canonical_scope_raw(logical)
+        decode_binding = common._decode_protected_binding_raw
+    else:
+        work, details, payload = replace(work), replace(details), replace(payload)
+        uuid = _work_id(details.work_id)
+        logical = Scope(details.application, details.tenant, details.owner)
+        scope_fields = encode_scope_fields(logical)
+        scope_bytes = canonical_scope(logical)
+        decode_binding = common.decode_protected_binding
     if work.kind != "job" or work.subscription_id is not None or work.namespace != b"jobs":
-        raise ValueError
-    if _work_id(details.work_id) != work.work_id:
-        raise ValueError
-    logical = Scope(details.application, details.tenant, details.owner)
-    if encode_scope_fields(logical) != (
-        work.scope_application,
-        work.scope_tenant,
-        work.scope_owner,
-    ):
-        raise ValueError
-    if canonical_scope(logical) != work.scope_evidence:
-        raise ValueError
+        _invalid(_raw)
+    if uuid != work.work_id:
+        _invalid(_raw)
+    if scope_fields != (work.scope_application, work.scope_tenant, work.scope_owner):
+        _invalid(_raw)
+    if scope_bytes != work.scope_evidence:
+        _invalid(_raw)
     if (
         details.protected_binding != work.protected_binding
         or payload.semantic_input != work.semantic_input
     ):
-        raise ValueError
-    original = common.decode_protected_binding(details.protected_binding)
+        _invalid(_raw)
+    original = decode_binding(details.protected_binding)
     names = (
         "codec",
         "key_version",
@@ -83,23 +104,20 @@ def _validated_parts(work, details, payload):
         "projection_metadata",
     )
     if any(getattr(payload, name) != getattr(original, name) for name in names):
-        raise ValueError
+        _invalid(_raw)
     if payload.material_state is MaterialState.ERASED:
         if (
             original.material_state is not MaterialState.PRESENT
             or payload.sidecar is not None
             or payload.reference is not None
         ):
-            raise ValueError
-        # Do not restore original embedded material into live payload fields.
+            _invalid(_raw)
     elif (payload.material_state, payload.sidecar, payload.reference) != (
         original.material_state,
         original.sidecar,
         original.reference,
     ):
-        raise ValueError
-    # Shared WorkObservation verifies canonical intent, replay/semantic equality,
-    # original schedule, state/fence and full resolution provenance. No clone codec.
+        _invalid(_raw)
     return work, details, payload
 
 
@@ -294,9 +312,12 @@ def decode_acquire(
         work = record.work
         if (work.command_type, work.runnable_version) not in pairs:
             raise ValueError
+        # Snapshot fields are nullable in other states; a claim requires a token.
+        if work.token is None:
+            raise ValueError
         fence = Fence(
             work_id=work.work_id,
-            token=cast(UUID, work.token),
+            token=work.token,
             ownership_revision=work.ownership_revision,
             cycle=work.cycle,
             expected_attempt=work.attempt_count,
@@ -323,3 +344,367 @@ def observe_dispatch(
     return DispatchedJobObservation(
         claim=claim, fence=fence, dispatch_id=dispatch_id, attempt=returned_attempt
     )
+
+
+def _native_request(request, key):
+    from modkit_events.persistence import native_profile
+
+    native_profile.validate_request(request, get_statement(key))
+
+
+def _native_rows(values, *, exact):
+    from modkit_events.persistence.errors import _reject_validation
+
+    if type(values) is not tuple or len(values) > 1 or (exact and len(values) != 1):
+        _reject_validation()
+    if values and type(values[0]) is not tuple:
+        _reject_validation()
+
+
+def _decode_submit_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_admission_raw
+
+    _native_request(request, "W01")
+    _native_rows(rows, exact=True)
+    work_id, inserted = native_profile.decode_columns(get_statement("W01"), rows[0])
+    if inserted and work_id != request.parameters[0]:
+        _reject_validation()
+    return _job_admission_raw(work_id=str(work_id), inserted=inserted)
+
+
+def _validate_submit_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .models import _work_id_raw
+    from .observations import _validate_job_admission_raw
+
+    _native_request(request, "W01")
+    _validate_job_admission_raw(value)
+    if value.inserted and _work_id_raw(value.work_id) != request.parameters[0]:
+        _reject_validation()
+
+
+def _identifier_text_raw(value):
+    from modkit_events.persistence.errors import _reject_validation
+
+    value = common._bytes_raw(value, 256)
+    text = common._decode_utf8(value, _reject=_reject_validation)
+    common._identifier_raw(text)
+    return text
+
+
+def _decode_read_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    _native_request(request, "W02")
+    _native_rows(rows, exact=False)
+    if not rows:
+        return None
+    values = native_profile.decode_columns(get_statement("W02"), rows[0])
+    work = common_rows._decode_work_observation_raw(values[:56])
+    if work.work_id != request.parameters[0]:
+        _reject_validation()
+    return _decode_job_half_raw(work, values[56:])
+
+
+def _decode_job_half_raw(work, values):
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.scope import _decode_scope_fields_raw
+
+    from .observations import _job_details_raw, _job_payload_raw, _job_record_raw
+
+    (
+        job_id,
+        app,
+        tenant,
+        owner,
+        binding,
+        semantic,
+        state,
+        sidecar,
+        reference,
+        codec,
+        key,
+        expiry,
+        recovery,
+        cleanup,
+        projection,
+    ) = values
+    scope = _decode_scope_fields_raw(app, tenant, owner)
+    states = {
+        "absent": MaterialState.ABSENT,
+        "present": MaterialState.PRESENT,
+        "erased": MaterialState.ERASED,
+    }
+    cleanups = {
+        "retain": CleanupPolicy.RETAIN,
+        "erase_after_terminal": CleanupPolicy.ERASE_AFTER_TERMINAL,
+    }
+    if state not in states or cleanup not in cleanups:
+        _reject_validation()
+    details = _job_details_raw(str(job_id), scope.application, scope.tenant, scope.owner, binding)
+    payload = _job_payload_raw(
+        semantic_input=semantic,
+        material_state=states[state],
+        sidecar=sidecar,
+        reference=reference,
+        codec=None if codec is None else _identifier_text_raw(codec),
+        key_version=None if key is None else _identifier_text_raw(key),
+        expires_at=expiry,
+        recovery_metadata=recovery,
+        cleanup_policy=cleanups[cleanup],
+        projection_metadata=projection,
+    )
+    return _job_record_raw(work=work, details=details, payload=payload)
+
+
+def _validate_read_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_record_raw
+
+    _native_request(request, "W02")
+    if value is None:
+        return
+    _validate_job_record_raw(value)
+    if value.work.work_id != request.parameters[0]:
+        _reject_validation()
+
+
+def _decode_list_raw(request, rows, /):
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    _native_request(request, "W03")
+    if type(rows) is not tuple or len(rows) > request.parameters[3]:
+        _reject_validation()
+    # Preflight the complete page before constructing any record.
+    for row in rows:
+        if type(row) is not tuple or len(row) != 71:
+            _reject_validation()
+    records = [None] * len(rows)
+    for index, row in enumerate(rows):
+        values = native_profile.decode_columns(get_statement("W03"), row)
+        work = common_rows._decode_work_observation_raw(values[:56])
+        records[index] = _decode_job_half_raw(work, values[56:])
+    result = tuple(records)
+    del records
+    # All complete records precede page-order checks, as in the public decoder.
+    _validate_list_result_raw(request, result)
+    return result
+
+
+def _validate_list_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_record_raw
+
+    _native_request(request, "W03")
+    if type(value) is not tuple or len(value) > request.parameters[3]:
+        _reject_validation()
+    namespace, created_at, work_id, _ = request.parameters
+    prior = None if created_at is None else (created_at, work_id)
+    for record in value:
+        _validate_job_record_raw(record)
+        current = (record.work.created_at, record.work.work_id)
+        if record.work.namespace != namespace or prior is not None and current <= prior:
+            _reject_validation()
+        prior = current
+
+
+def _decode_candidate_raw(values: tuple, /) -> JobCandidate:
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_candidate_raw
+
+    values = native_profile.decode_columns(get_statement("W04"), values)
+    work = common_rows._decode_work_observation_raw(values[:56])
+    present, half = values[56], values[57:]
+    if work.kind == "job":
+        if present is not True:
+            _reject_validation()
+        record = _decode_job_half_raw(work, half)
+    else:
+        if work.kind != "inbox" or present is not False or any(value is not None for value in half):
+            _reject_validation()
+        record = None
+    return _job_candidate_raw(work=work, job=record)
+
+
+_FIND_COMPARISON_FIELDS = (
+    "kind",
+    "subscription_id",
+    "namespace",
+    "command_type",
+    "scope_evidence",
+    "idempotency_key",
+    "canonical_version",
+    "schema_version_decimal",
+    "scope_application",
+    "scope_tenant",
+    "scope_owner",
+    "intent_evidence",
+    "semantic_input",
+    "protected_binding",
+    "replay_policy",
+    "max_attempts",
+    "deadline",
+    "original_available_at",
+)
+
+
+def _classify_find_raw(expected, candidates, /):
+    """Validate every candidate before context-dependent classification."""
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_candidate_raw
+
+    if type(candidates) is not tuple or len(candidates) > 2:
+        _reject_validation()
+    for candidate in candidates:
+        _validate_job_candidate_raw(candidate)
+    prior = None
+    for candidate in candidates:
+        work = candidate.work
+        if prior is not None and work.work_id <= prior:
+            _reject_validation()
+        prior = work.work_id
+        if work.work_id != expected["work_id"] and not _key_bucket(work, expected):
+            _reject_validation()
+    if not candidates:
+        return JobIdentityDecision.NEW, None
+    if len(candidates) == 1 and candidates[0].job is not None:
+        work = candidates[0].work
+        if all(getattr(work, name) == expected[name] for name in _FIND_COMPARISON_FIELDS):
+            return JobIdentityDecision.MATCH, str(work.work_id)
+    return JobIdentityDecision.CONFLICT, None
+
+
+def _decode_find_raw(request, rows, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _job_identity_observation_raw
+
+    _native_request(request, "W04")
+    if type(rows) is not tuple or len(rows) > 2:
+        _reject_validation()
+    for row in rows:
+        if type(row) is not tuple or len(row) != 72:
+            _reject_validation()
+    candidates = tuple(_decode_candidate_raw(row) for row in rows)
+    expected = common._admission_values_raw(request.context.expected[0])
+    decision, original = _classify_find_raw(expected, candidates)
+    return _job_identity_observation_raw(
+        decision=decision,
+        candidates=candidates,
+        original_work_id=original,
+    )
+
+
+def _validate_find_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+
+    from .observations import _validate_job_identity_observation_raw
+
+    _native_request(request, "W04")
+    _validate_job_identity_observation_raw(value)
+    expected = common._admission_values_raw(request.context.expected[0])
+    decision, original = _classify_find_raw(expected, value.candidates)
+    if value.decision is not decision or value.original_work_id != original:
+        _reject_validation()
+
+
+def _decode_acquire_raw(request, rows, /):
+    """Decode a complete W05 page; never expose a validated prefix."""
+    from modkit_events.persistence import native_profile
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.models import _fence_raw
+    from modkit_events.persistence.observations import _scan_page_raw
+
+    from .observations import _job_claim_raw
+
+    _native_request(request, "W05")
+    if type(rows) is not tuple or not 1 <= len(rows) <= request.parameters[3] + 1:
+        _reject_validation()
+    # Frame and required-null provenance preflight precede any typed graph.
+    for index, row in enumerate(rows):
+        if type(row) is not tuple or len(row) != 75:
+            _reject_validation()
+        if index == 0:
+            if row[0] != "header" or any(value is not None for value in row[4:]):
+                _reject_validation()
+        elif (
+            row[0] != "item"
+            or any(value is not None for value in row[1:4])
+            or row[43] is not False
+            or any(value is not None for value in row[44:60])
+            or any(row[position] is not None for position in (33, 34, 37, 38, 39, 40, 41, 42))
+        ):
+            _reject_validation()
+    header = native_profile.decode_columns(get_statement("W05"), rows[0])
+    claims = [None] * (len(rows) - 1)
+    for index in range(1, len(rows)):
+        values = native_profile.decode_columns(get_statement("W05"), rows[index])
+        work = common_rows._decode_work_observation_raw(values[4:60])
+        record = _decode_job_half_raw(work, values[60:])
+        fence = _fence_raw(
+            work_id=work.work_id,
+            token=work.token,
+            ownership_revision=work.ownership_revision,
+            cycle=work.cycle,
+            expected_attempt=work.attempt_count,
+        )
+        claims[index - 1] = _job_claim_raw(record=record, fence=fence)
+    result = _scan_page_raw(
+        items=tuple(claims), visited=header[1], next_cursor=header[2], pass_exhausted=header[3]
+    )
+    del claims
+    _validate_acquire_result_raw(request, result)
+    return result
+
+
+def _validate_acquire_result_raw(request, value, /):
+    from modkit_events.persistence.errors import _reject_validation
+    from modkit_events.persistence.observations import _validate_scan_page_raw
+
+    from .observations import _validate_job_claim_raw
+
+    _native_request(request, "W05")
+    _validate_scan_page_raw(value)
+    namespace, commands, versions, limit, _, incoming, budget = request.parameters
+    count, visited, cursor = len(value.items), value.visited, value.next_cursor
+    if (
+        count > limit
+        or visited > budget
+        or cursor is not None
+        and type(cursor) is not UUID
+        or visited == 0
+        and (count != 0 or cursor != incoming)
+        or visited > 0
+        and (cursor is None or incoming is not None and cursor <= incoming)
+        or value.pass_exhausted
+        and (visited >= budget or count >= limit)
+    ):
+        _reject_validation()
+    pairs = tuple(zip(commands, versions))
+    prior = incoming
+    for claim in value.items:
+        _validate_job_claim_raw(claim)
+        work = claim.record.work
+        if (
+            work.kind != "job"
+            or work.namespace != namespace
+            or (work.command_type, work.runnable_version) not in pairs
+            or prior is not None
+            and work.work_id <= prior
+            or cursor is None
+            or work.work_id > cursor
+            or work.resolution is not None
+        ):
+            _reject_validation()
+        prior = work.work_id

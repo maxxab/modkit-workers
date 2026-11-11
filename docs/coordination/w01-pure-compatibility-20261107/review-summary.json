@@ -1,0 +1,19 @@
+{
+  "status": "INDEPENDENT_SOURCE_AND_SCOPE_REVIEW_ACCEPTED",
+  "scope": "Only the documented bounded offline comparison, with exactly two sequential isolated children and outer resource limits.",
+  "accepted_pins": {
+    "pure_payload.py": "bc36d25100816153a016b5e327f5a95a9754bd3b9f10d2f48c9625875ec53ee2",
+    "compare_pure.py": "920b66822afb711b1a943c57e603debccb3425c5c39aec97f53a436d33e3d42f",
+    "source-manifest.json": "2d60de305534f359f6a0f838f6e3709ca0402d04bd73e6b804ecacbb3c6a38cc",
+    "README.md": "fae86c3e5629923dcde239c5d60ddc7951556d2d89f8bf313ab1190f2caf469e"
+  },
+  "findings_resolved": [
+    "Preserved concrete container types and compared canonical JSON to avoid bool/int and mutability false passes.",
+    "Corrected UUID-string oracle: canonical strings are public accepted values; malformed and braced spellings reject."
+  ],
+  "limits": [
+    "Not an adversarial operating-system sandbox.",
+    "Six negative controls validate comparator sensitivity, not production mutations.",
+    "Native runtime, database target, fixture and SQL execution remain held."
+  ]
+}

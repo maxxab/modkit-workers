@@ -1,0 +1,66 @@
+{
+  "README.md": {
+    "size": 6022,
+    "sha256": "33e97701bb929c2e5c60363343076d2bb79e377993e8bf4657aeaec7aa24dfe3"
+  },
+  "independent-review.txt": {
+    "size": 2933,
+    "sha256": "db502d021e3b5c5527e7de688be6faed639219a8407a51eb1e3d4fbb3e10c920"
+  },
+  "input-comparison.json": {
+    "size": 80273,
+    "sha256": "45795f0e8169e4483c18b0884a79ff3fea55ff1684d79a669417035cdec9d0b0"
+  },
+  "observed-inputs.json": {
+    "size": 36929,
+    "sha256": "98579f99cadb94d87887a09d6c51b5e0d30152ce699026a4772ca13d706c97b5"
+  },
+  "reconciliation.json": {
+    "size": 12290,
+    "sha256": "b3b2a9edce6c213f18700b47b66cfca0768d7d3f73231c4e9bce60edbc272011"
+  },
+  "src__modkit_events__models.py.diff.json": {
+    "size": 5438,
+    "sha256": "fe99ec86342eaf80f95a3a41d182688af90b7d7b11bd4d63f1a8babbbcd2cc8c"
+  },
+  "src__modkit_events__persistence__bindings.py.diff.json": {
+    "size": 64910,
+    "sha256": "06da4d17d2a3f0155fb05754d2ebef4d518da7a786cd36ef101d8ba6ba448942"
+  },
+  "src__modkit_events__persistence__catalog.py.diff.json": {
+    "size": 6680,
+    "sha256": "7db52264ff0ad40a6d75d6cf4b8f32b1ef28a9fe54eda5d89e05e4b324fe8860"
+  },
+  "src__modkit_events__persistence__errors.py.diff.json": {
+    "size": 885,
+    "sha256": "c5ef1a8b3c92f2ddb798d41dc1bd1c87606ffad17ac9a27b777dd520ae020e2c"
+  },
+  "src__modkit_events__persistence__models.py.diff.json": {
+    "size": 2878,
+    "sha256": "1489ac8791761ec53aaab244803a663a1e33689b1e4addd8340020f42f2dda3e"
+  },
+  "src__modkit_events__persistence__native_codec.py.diff.json": {
+    "size": 11985,
+    "sha256": "03a49564c5da5feba8196e93851f1a074f1e9236e25fac6551876e48bb7dfd2d"
+  },
+  "src__modkit_events__persistence__rows.py.diff.json": {
+    "size": 24163,
+    "sha256": "fecd9add6fb7056fe0435b4839df45a52f99f04336bceea28dd58394ac96c23b"
+  },
+  "src__modkit_events__persistence__scope.py.diff.json": {
+    "size": 2140,
+    "sha256": "630fe3a1c0a52172cc71cb3051462c22d188d2bba72c3160029417f7bc38a914"
+  },
+  "src__modkit_events__persistence__sql__0001_initial.sql.diff.json": {
+    "size": 58912,
+    "sha256": "19f081fb19c961a1b3869147334420e3308494978fac6e60becd603b0e992a0e"
+  },
+  "target-reference.json": {
+    "size": 2651,
+    "sha256": "26244456488ae9715b25dafcc1b70f61d61184111f233fd20060e3d24db53d73"
+  },
+  "verification.json": {
+    "size": 367,
+    "sha256": "a419fe965b19f83eec58384a5c0ceb836fdf5d9c6be97f2a576e767d97342938"
+  }
+}

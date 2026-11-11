@@ -22,13 +22,14 @@ _ADMISSION_RULES = (
     ),
 )
 # W05 executes the neutral claim requirements in the same SQL statement as the
-# full job-half observation; it does not create a second execution state machine.
+# full job-half observation. Retained E04 postimages are composed with a fresh
+# material snapshot under held locks, not an E15 reread or another state machine.
 _ACQUIRE_RULE = _rule(
     "acquire_jobs",
     "W05",
     "queued|retry_waiting",
     "claimed",
-    "neutral_claim_and_complete_consistent_job_half_single_snapshot",
+    "neutral_claim_retained_postimage_and_locked_consistent_job_half",
     "null",
 )
 

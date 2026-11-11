@@ -1,10 +1,10 @@
 # Built-in job persistence
 
-The built-in store participates in an application's existing PostgreSQL transaction. These pure models, parameter builders and row decoders do not connect, begin, commit, roll back, dispatch a handler, resolve a credential or run a worker. This development source has not been qualified against PostgreSQL or Redis. Application-owned job stores need not create duplicate built-in records.
+The built-in store participates in an application's existing PostgreSQL transaction. These pure models, parameter builders and row decoders do not connect, begin, commit, roll back, dispatch a handler, resolve a credential or run a worker. Bounded PostgreSQL SQL checks are recorded in the reader and acquisition guides; full store/runtime conformance and Redis qualification remain open. Application-owned job stores need not create duplicate built-in records.
 
 ## Logical input and storage profile
 
-JobInput takes work_id, command_type, schema_version, scope and payload, with keyword-only original_available_at and protected. Optional keyword arguments are deadline, idempotency_key, replay_policy (disabled by default) and max_attempts (one by default). The supported signature is documented here; legacy positional datetime and protected_binding keyword signatures are not supported.
+JobInput takes work_id, command_type, schema_version, scope and payload, with keyword-only original_available_at and protected. Optional keyword arguments are deadline, idempotency_key, replay_policy (disabled by default) and max_attempts (one by default). This is a NEW interface: unavailable historical sixth-positional datetime and old protected_binding keyword signatures are not supported compatibility claims.
 
 Supply a canonical lowercase hyphenated UUID string for work_id, an application Scope, a strict JSON mapping payload, and an explicit ProtectedBindingInput even when no protected material is needed. Original availability and deadline are different: original_available_at is immutable admission identity; a retry's mutable available_at cannot change it. All timestamps must be aware. Logical positive Python schema versions are retained without narrowing to int4; managed admission separately limits their decimal representation to4096 digits, and only an actually supported positive int4 version is runnable. A wide well-formed version is not silently truncated or called a malformed logical input.
 
@@ -16,9 +16,18 @@ Scope remains logical Scope(application,tenant=None,owner=None). Its sole shared
 
 submit, read_job, acquire and list_jobs produce shared immutable FrozenRequest values using schema-owned catalog descriptors and the one shared freeze_request implementation. find_jobs produces PreparedJobFind with a W04 lookup and a comparison-only frozen W01 expected submission. NEVER execute expected_submission as part of a find. Only its complete immutable admission/material evidence is used to compare returned candidates. Builders freeze every buffer, capability pair, bound and cursor before a driver gate/await; decoders use that exact request, never the caller's mutable original.
 
+The builder return annotations expose those existing shared FrozenRequest values.
+PreparedJobFind.lookup and expected_submission are both typed FrozenRequest fields;
+the second remains comparison-only. Static callers also need the matching Events
+boundary decorators to preserve callable signatures. This is a binding-type contract,
+not whole-package typing, driver execution or store/runtime qualification.
+The focused static regression is tests/typecheck_job_bindings.py. Run it with
+mypy --strict --follow-imports=silent and both compatible package sources available
+to the checker. It checks exact results, input types and positional-only calls.
+
 Job identity includes kind job, namespace jobs, command/version, exact scope, optional scoped key and all immutable semantic/binding/policy/scheduling fields. Proposed work ID is the direct-ID collision index, excluded from canonical intent so an identical scoped-key request can return an existing original ID. Changed key/scope/input/protected bytes or split direct/key winners conflict; digest equality alone never proves identity. W01's ID/inserted result is STAGED, not a commit acknowledgement or complete reconciliation evidence.
 
-W02 read, W03 list, W04 find and W05 acquire return complete joined work/provenance/job evidence in a single statement snapshot. A second later read cannot repair the snapshot of a missing half. Work-only/job-only/mismatched halves must fail, not disappear through an inner join. W04 can legitimately return an inbox record occupying the requested direct ID: absent job half then means identity conflict, not corruption. Actual job kind with missing half, or a job half attached to nonjob, is corruption. Every repeated ID/scope/binding/semantic field is checked.
+W02 read, W03 list and W04 find return complete joined work/provenance/job evidence in one invoking-query snapshot. A later read cannot repair a missing half in those readers. W05 is a single mutating call with two internal phases: it retains the actual E04 claim postimages, then captures all matching job material in one fresh command snapshot under E04's held Work locks and the immutable/no-delete subtype contract. It never rereads Work through E15/W02 or joins material using E04's older invoking snapshot. See docs/job-acquisition.md for the exact boundary and qualification limits. Work-only/job-only/mismatched halves must fail, not disappear through an inner join. W04 can legitimately return an inbox record occupying the requested direct ID: absent job half then means identity conflict, not corruption. Actual job kind with missing half, or a job half attached to nonjob, is corruption. Every repeated ID/scope/binding/semantic field is checked.
 
 JobDetails preserves its five logical fields: work_id, application, tenant, owner, protected_binding. Richer JobPayload and JobRecord are separate. These are protected internal records, not a public API status response. Application authorization and explicit allowlist projection remain mandatory. Never fall back to a protected record when a public projection is missing or has the wrong work ID/revision. Raw result bytes, scope, tokens, payloads, references and key metadata must not leak through automatic serialization.
 
@@ -50,4 +59,8 @@ There is no standalone mutation-operation reader in the39-key catalog. Repeating
 
 ## Qualification boundaries
 
-Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. PostgreSQL and Redis fixture execution is blocked and must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.
+Current source-control evidence can establish pure mapping/validation only. Real psycopg and both supported SQLAlchemy PostgreSQL drivers must separately prove the full built-in job unit, same-transaction business/outbox/job atomicity, collision races, protected snapshots, guarded completion, failure/new-root behavior, grants and wire-loss reconciliation. The bounded job-only PostgreSQL checks do not close the broader PostgreSQL/Redis fixture and runtime gates; missing coverage must not be replaced by SQLite, mocks or skipped tests. Package exports/resources/install and driver/staging runtime gates remain separate. No startup DDL, automatic destructive cleanup or external execution is supplied by these modules.
+
+## Native operation preparation
+
+The optional fixed W01/W02 preparation API is described in [Native job preparations](native-job-store.md). It uses Events' existing caller-owned native lifecycle and paid result borrowing. This source integration does not qualify the full native store, ORM recipes, installed resources or worker runtime.

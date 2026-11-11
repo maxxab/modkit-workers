@@ -1,0 +1,26 @@
+{
+  "PLAN.md": {
+    "bytes": 1887,
+    "sha256": "9f6ba810e6344dc73b99a88550d728678c87f8593aedb086db5aac4d44eac811"
+  },
+  "README.md": {
+    "bytes": 6945,
+    "sha256": "bcd9fbd427be9bb0f4ae6efae3f9f6a11dbde2b9dd2999fcf1b013df0d66510c"
+  },
+  "controller.py": {
+    "bytes": 24532,
+    "sha256": "f020e01c0068cbad949bc97a97e54c0f8bfa98ab16dd263fb6ab29ad673dffe1"
+  },
+  "host-invocation.json": {
+    "bytes": 1522,
+    "sha256": "ad8a942c2467d9b739f0fe02cbf225173fab20dca83dd34f3bfde23fd5a6aba9"
+  },
+  "test_controller.py": {
+    "bytes": 17698,
+    "sha256": "4713dfbf14ad4e3ec8da43ef332b80fe108d34d53ffbc6c24426612b7bc2d57d"
+  },
+  "verification.json": {
+    "bytes": 4194,
+    "sha256": "7da4bc720bfff6a651c225ff6af8d61a08315611c7036f7771cb7afc67db2434"
+  }
+}
