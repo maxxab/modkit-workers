@@ -5,6 +5,9 @@ import csv
 import hashlib
 import importlib.util
 import io
+import json
+import os
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -173,3 +176,82 @@ def test_regular_and_unspecified_member_modes_are_supported(tmp_path, kind):
     root, artifact = wheel(tmp_path)
     mode_wheel(artifact, kind)
     checker().audit_wheel(root, artifact, "0.1.0")
+
+
+@pytest.fixture
+def dependency_checkout(tmp_path, monkeypatch):
+    """Use a real, isolated local Git repository, not an assumed status response."""
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    spec = importlib.util.spec_from_file_location(
+        "workers_ci_check_source", SCRIPTS / "check_source.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    root, events = tmp_path / "workers", tmp_path / "events"
+    sql = events / "src/modkit_events/persistence/sql"
+    sql.mkdir(parents=True)
+    digest = "a" * 64
+    (sql / "manifest.json").write_text(json.dumps({"migrations": [{"migration_digest": digest}]}))
+    (events / ".gitignore").write_text("dist/\n__pycache__/\n")
+
+    def git(*args):
+        return subprocess.check_output(["git", "-C", str(events), *args], text=True).strip()
+
+    git("init", "--quiet")
+    git("add", ".gitignore", "src")
+    git(
+        "-c",
+        "user.name=CI fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "test: create dependency fixture",
+    )
+    pin = {"commit": git("rev-parse", "HEAD"), "migration_digest": digest, "version": "0.2.0"}
+    (root / "scripts").mkdir(parents=True)
+    (root / "scripts/ci_dependency.json").write_text(json.dumps(pin))
+    own = root / "src/modkit_workers/persistence/sql"
+    own.mkdir(parents=True)
+    (own / "manifest.json").write_text(
+        json.dumps(
+            {
+                "migrations": [
+                    {
+                        "depends_on": [
+                            {"component": "events", "version": 1, "migration_digest": digest}
+                        ]
+                    }
+                ]
+            }
+        )
+    )
+    return module, root, events, pin, git
+
+
+def test_clean_pinned_dependency_allows_ignored_build_and_cache_files(dependency_checkout):
+    module, root, events, pin, _ = dependency_checkout
+    assert module.verify_dependency(root, events) == pin
+    for name in ("dist/built.whl", "src/modkit_events/__pycache__/cached.pyc"):
+        path = events / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"generated fixture")
+    assert module.verify_dependency(root, events) == pin
+
+
+@pytest.mark.parametrize("change", ["untracked", "staged", "modified"])
+def test_pinned_dependency_rejects_local_source_changes(dependency_checkout, change):
+    module, root, events, _, git = dependency_checkout
+    if change == "modified":
+        path = events / "src/modkit_events/persistence/sql/manifest.json"
+        path.write_text(path.read_text() + "\n")
+    else:
+        path = events / "src/modkit_events/unreviewed.py"
+        path.write_text("VALUE = 1\n")
+        if change == "staged":
+            git("add", str(path))
+    with pytest.raises(ValueError, match="dirty"):
+        module.verify_dependency(root, events)

@@ -4,8 +4,10 @@
 
 Use conventional GitHub Actions with immutable action and dependency source pins.
 The Events checkout is verified before building; its exact migration dependency is
-checked against Workers before tests. CI installs local wheels in a new environment
-outside both checkouts, then checks origins, metadata, package bytes, resources and
+checked against Workers before tests. Tracked changes and ordinary untracked files
+are rejected; Git-ignored build and cache outputs remain allowed. CI installs local
+wheels in a new environment outside both checkouts, then checks origins, metadata,
+package bytes, resources and
 portable behavior. These package lanes do not start databases or run recovery.
 A separate [synthetic PostgreSQL composition lane](postgresql-ci.md) has its own
 fixed fixture, authorization and qualification scope.

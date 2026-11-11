@@ -16,9 +16,9 @@ def verify_dependency(root, events):
     require(head == pin["commit"], "Events checkout does not match CI commit")
     require(
         not subprocess.check_output(
-            ["git", "status", "--porcelain", "--untracked-files=no"], cwd=events
+            ["git", "status", "--porcelain", "--untracked-files=all"], cwd=events
         ),
-        "Events tracked source is dirty",
+        "Events source checkout is dirty",
     )
     (row,) = json.loads((events / "src/modkit_events/persistence/sql/manifest.json").read_text())[
         "migrations"
