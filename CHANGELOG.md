@@ -40,6 +40,7 @@
 - **workers:** refuse incomplete transport inventories ([096bb31c4e20](https://github.com/maxxab/modkit-workers/commit/096bb31c4e20dd12ba7c35e0ab16e69dd70e31d1))
 - **workers:** preserve failure snapshots when thread startup fails ([7da99b41f3ab](https://github.com/maxxab/modkit-workers/commit/7da99b41f3abfdce1f58153542b3e84917730b8a))
 - **ci:** reject untracked dependency source files ([44f859a53563](https://github.com/maxxab/modkit-workers/commit/44f859a5356357eb10d527bf88a8f59bc23fd929))
+- **workers:** reject deferred application binding callbacks ([e530e6494bae](https://github.com/maxxab/modkit-workers/commit/e530e6494baec075fa54ab82f53dbc4ae6df496b))
 
 ### Documentation
 
