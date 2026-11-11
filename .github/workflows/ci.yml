@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: maxxab/modkit-events
-          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
+          ref: 8597f764e46898616abad39f3c6a2aaafb9b8709
           path: .ci-standards
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$HEAD"
-          test "$(git -C .ci-standards rev-parse HEAD)" = 9362f0d318c762283f70b18c4f2907f1fda39f8b
+          test "$(git -C .ci-standards rev-parse HEAD)" = 8597f764e46898616abad39f3c6a2aaafb9b8709
           if [ "$EVENT_NAME" = pull_request ]; then
             BASE=$(git merge-base "$PR_BASE" "$HEAD")
           elif [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: maxxab/modkit-events
-          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
+          ref: 8597f764e46898616abad39f3c6a2aaafb9b8709
           path: .ci-events
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -130,7 +130,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: maxxab/modkit-events
-          ref: 9362f0d318c762283f70b18c4f2907f1fda39f8b
+          ref: 8597f764e46898616abad39f3c6a2aaafb9b8709
           path: .ci-events
           persist-credentials: false
       - name: Build and audit the exact installed pair

@@ -127,3 +127,14 @@ This closes only the stated installed-pair installation, receipt and ACL gate.
 Managed native transport, job execution/recovery/fault cases, optional service
 combinations, deployment, ERP integration and release readiness remain unqualified
 by this lane. The older operational packets and grants are not reused.
+
+## Current package dependency qualification
+
+Package and disposable PostgreSQL composition CI now pin Events
+`8597f764e46898616abad39f3c6a2aaafb9b8709`, which includes the bounded retry-delay correction.
+The production-source difference from the earlier `9362f0d318c762283f70b18c4f2907f1fda39f8b`
+is limited to `retry.py`; packaged SQL and its migration digest are unchanged.
+The standards-checker checkout follows the same current CI pin; its source is
+unchanged. Historical references above and the manual native transport harness
+retain their original pins. This update does not requalify native transport,
+resolve historical UNKNOWN outcomes, or establish ERP/Flutter readiness.
