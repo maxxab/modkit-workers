@@ -1,0 +1,4 @@
+{
+  "baseline": "e960986c160ca639406188cca46d56c4d1a715b2",
+  "reason": "Reviewed two-history reconciliation adoption. Preserve historical commit messages without rewriting; validate all commits after this baseline."
+}
