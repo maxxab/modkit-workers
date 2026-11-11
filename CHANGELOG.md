@@ -41,6 +41,7 @@
 - **workers:** preserve failure snapshots when thread startup fails ([7da99b41f3ab](https://github.com/maxxab/modkit-workers/commit/7da99b41f3abfdce1f58153542b3e84917730b8a))
 - **ci:** reject untracked dependency source files ([44f859a53563](https://github.com/maxxab/modkit-workers/commit/44f859a5356357eb10d527bf88a8f59bc23fd929))
 - **workers:** reject deferred application binding callbacks ([e530e6494bae](https://github.com/maxxab/modkit-workers/commit/e530e6494baec075fa54ab82f53dbc4ae6df496b))
+- **workers:** finalize coordinator allocation failures ([00cd5ae7368e](https://github.com/maxxab/modkit-workers/commit/00cd5ae7368e271acadf402c1fd2eadc510a7913))
 
 ### Documentation
 
