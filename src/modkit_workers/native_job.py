@@ -128,6 +128,25 @@ def _validate_application_profile(application, request) -> None:
         raise ValueError("Application profile assertion rejected")
 
 
+def _require_bound_job(value) -> None:
+    import inspect
+
+    if (
+        inspect.isawaitable(value)
+        or inspect.isgenerator(value)
+        or inspect.isasyncgen(value)
+        or not callable(getattr(value, "result", None))
+    ):
+        _require_none(value)  # Dispose an unstarted coroutine/generator before refusal.
+        raise ValueError("Expected synchronous bound job")
+
+
+def _unbind_application(binding, *exc) -> None:
+    result = binding.__exit__(*exc)
+    if type(result) is not bool:
+        _require_none(result)
+
+
 def _invoke_application(application, handler, connection, root_xid, context, lease):
     import sys
 
@@ -141,17 +160,22 @@ def _invoke_application(application, handler, connection, root_xid, context, lea
             binding = application.bind(root, context)
             bound = binding.__enter__()
             try:
+                _require_bound_job(bound)
                 _require_none(handler(context))
                 result = _accept_result(bound.result(), lease)
             except BaseException as application_error:
                 failed = True
                 # Application owns its own diagnostic callback. Suppression
                 # never converts a failed handler into successful completion.
-                binding.__exit__(*sys.exc_info())
-                if not isinstance(application_error, Exception):
-                    raise
+                try:
+                    _unbind_application(binding, *sys.exc_info())
+                finally:
+                    if not isinstance(application_error, Exception):
+                        # Cleanup failure cannot downgrade interruption into
+                        # an ordinary business-failure settlement.
+                        raise application_error from None
             else:
-                binding.__exit__(None, None, None)
+                _unbind_application(binding, None, None, None)
         except Exception:
             failed = True
     finally:

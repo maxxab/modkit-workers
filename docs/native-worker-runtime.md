@@ -59,6 +59,14 @@ contract, and project a bounded exact bytes result. JobContext is observational;
 neither it nor a ledger grants scope/transaction authority. Multiple actual job
 Scopes may use the same fixed ledgers under those explicit authorization rules.
 
+The binding entry must synchronously return an object with a callable result
+method. Awaitable/generator or malformed entry results reject before handler
+invocation. Binding exit must synchronously return None or an exact bool;
+unsupported exit results prevent application success. Suppression never turns a
+failed handler into success. A handler interruption remains unresolved even when
+unbinding also fails. Accidentally returned unstarted Python coroutines
+and generators are closed, not awaited; this does not cancel running async work.
+
 Only MaterialState.ABSENT with the exact accepted absent-material shape is
 supported. PRESENT, ERASED and required sidecar/reference retrieval fail closed
 before E06/handler. Full-family transport capacity is not permission to execute

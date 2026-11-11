@@ -251,3 +251,194 @@ def test_async_result_is_closed_and_never_becomes_success():
         assert coroutine.cr_frame is None
     finally:
         coroutine.close()
+
+
+def invalid_binding_result(kind, trace):
+    if kind == "coroutine":
+
+        async def operation():
+            trace.append("async operation")
+
+        return operation()
+    if kind == "generator":
+
+        def operation():
+            trace.append("generator operation")
+            yield None
+
+        return operation()
+    if kind == "awaitable":
+
+        class Pending:
+            def __await__(self):
+                trace.append("awaitable operation")
+                yield None
+
+            def result(self):
+                raise AssertionError("pending binding must not be used")
+
+        return Pending()
+    return 1
+
+
+@pytest.mark.parametrize("stage", ["enter", "exit"])
+@pytest.mark.parametrize("kind", ["coroutine", "generator", "awaitable", "invalid"])
+def test_nonsynchronous_binding_rejects_before_handler_or_success(stage, kind):
+    m = module()
+    from modkit_workers import _native_job_lifecycle as life
+
+    lease = life._MaterialLease(
+        capacity=1073741824, payload_limit=1048576, result_limit=1048576, depth_limit=32
+    )
+    lease.reserve()
+    trace, roots = [], []
+    invalid = invalid_binding_result(kind, trace)
+
+    class Binding:
+        def __enter__(self):
+            return invalid if stage == "enter" else self
+
+        def result(self):
+            return b"done"
+
+        def __exit__(self, *exc):
+            trace.append("exit")
+            return invalid if stage == "exit" else None
+
+    class App:
+        def bind(self, root, context):
+            roots.append(root)
+            return Binding()
+
+    try:
+        assert m._invoke_application(
+            App(), lambda context: trace.append("handler"), object(), 42, object(), lease
+        ) == (False, None)
+        assert trace == (["exit"] if stage == "enter" else ["handler", "exit"])
+        if kind == "coroutine":
+            assert invalid.cr_frame is None
+        elif kind == "generator":
+            assert invalid.gi_frame is None
+        with pytest.raises(RuntimeError):
+            _ = roots[0].connection
+    finally:
+        if kind in ("coroutine", "generator"):
+            invalid.close()
+
+
+@pytest.mark.parametrize("kind", ["coroutine", "generator"])
+def test_nonsynchronous_unbind_is_disposed_after_handler_failure(kind):
+    m = module()
+    from modkit_workers import _native_job_lifecycle as life
+
+    lease = life._MaterialLease(
+        capacity=1073741824, payload_limit=1048576, result_limit=1048576, depth_limit=32
+    )
+    lease.reserve()
+    trace = []
+    invalid = invalid_binding_result(kind, trace)
+
+    class Binding:
+        def __enter__(self):
+            return self
+
+        def result(self):
+            raise AssertionError("failed handler must not project a result")
+
+        def __exit__(self, *exc):
+            trace.append(exc[0])
+            return invalid
+
+    class App:
+        def bind(self, root, context):
+            return Binding()
+
+    def failed(context):
+        raise RuntimeError("application failure")
+
+    try:
+        assert m._invoke_application(App(), failed, object(), 42, object(), lease) == (False, None)
+        assert trace == [RuntimeError]
+        assert (invalid.cr_frame if kind == "coroutine" else invalid.gi_frame) is None
+    finally:
+        invalid.close()
+
+
+@pytest.mark.parametrize("exit_result", [None, False, True])
+def test_synchronous_binding_accepts_boolean_or_none_exit_result(exit_result):
+    m = module()
+    from modkit_workers import _native_job_lifecycle as life
+
+    lease = life._MaterialLease(
+        capacity=1073741824, payload_limit=1048576, result_limit=1048576, depth_limit=32
+    )
+    lease.reserve()
+
+    class Binding:
+        def __enter__(self):
+            return self
+
+        def result(self):
+            return b"done"
+
+        def __exit__(self, *exc):
+            return exit_result
+
+    class App:
+        def bind(self, root, context):
+            return Binding()
+
+    assert m._invoke_application(App(), lambda context: None, object(), 42, object(), lease) == (
+        True,
+        b"done",
+    )
+
+
+@pytest.mark.parametrize("interruption", [KeyboardInterrupt, SystemExit])
+@pytest.mark.parametrize("cleanup", ["exception", "coroutine"])
+def test_binding_cleanup_failure_does_not_turn_interruption_into_business_failure(
+    interruption, cleanup
+):
+    m = module()
+    from modkit_workers import _native_job_lifecycle as life
+
+    lease = life._MaterialLease(
+        capacity=1073741824, payload_limit=1048576, result_limit=1048576, depth_limit=32
+    )
+    lease.reserve()
+    error = interruption("synthetic interruption")
+    trace, roots = [], []
+    invalid = invalid_binding_result("coroutine", trace)
+
+    class Binding:
+        def __enter__(self):
+            return self
+
+        def result(self):
+            raise AssertionError("interrupted handler must not project a result")
+
+        def __exit__(self, *exc):
+            trace.append(exc[1])
+            if cleanup == "exception":
+                raise RuntimeError("synthetic cleanup failure")
+            return invalid
+
+    class App:
+        def bind(self, root, context):
+            roots.append(root)
+            return Binding()
+
+    def interrupted(context):
+        raise error
+
+    try:
+        with pytest.raises(interruption) as caught:
+            m._invoke_application(App(), interrupted, object(), 42, object(), lease)
+        assert caught.value is error
+        assert trace == [error]
+        if cleanup == "coroutine":
+            assert invalid.cr_frame is None
+        with pytest.raises(RuntimeError):
+            _ = roots[0].connection
+    finally:
+        invalid.close()
