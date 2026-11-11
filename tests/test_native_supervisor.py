@@ -237,24 +237,31 @@ def test_startup_failure_never_claims_and_is_not_clean_success():
         cleanup(worker, source)
 
 
+@pytest.mark.parametrize("boundary", ["construction", "start"])
 @pytest.mark.parametrize("lane", ["coordinator", "renewal", "data"])
-def test_thread_start_failure_preserves_observable_failed_stop(monkeypatch, lane):
+def test_thread_start_failure_preserves_observable_failed_stop(monkeypatch, lane, boundary):
     supervisor, control_module, c = modules()
     worker, source, control, _ = build()
-    failure = RuntimeError("synthetic thread resource exhaustion")
+    failure_type = MemoryError if boundary == "construction" else RuntimeError
+    failure = failure_type("synthetic thread resource exhaustion")
     thread_type = supervisor.Thread
 
     class RefusedStart(thread_type):
+        def __init__(self, *args, **kwargs):
+            if boundary == "construction" and kwargs.get("name") == "modkit-" + lane:
+                raise failure
+            super().__init__(*args, **kwargs)
+
         def start(self):
-            if self.name == "modkit-" + lane:
+            if boundary == "start" and self.name == "modkit-" + lane:
                 raise failure
             super().start()
 
-    # Refuse the OS-thread boundary only; keep real lifecycle and join behavior.
+    # Refuse allocation or OS-thread startup; keep real lifecycle and join behavior.
     monkeypatch.setattr(supervisor, "Thread", RefusedStart)
     monkeypatch.setattr(control_module, "Thread", RefusedStart)
     if lane == "coordinator":
-        with pytest.raises(RuntimeError) as raised:
+        with pytest.raises(failure_type) as raised:
             worker.start()
         assert raised.value is failure
     else:

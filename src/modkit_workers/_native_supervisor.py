@@ -61,11 +61,13 @@ class _SupervisorCore:
                 raise RuntimeError("Supervisor start is one-shot")
             self._state = WorkerState.STARTING
             self._startup_in_flight = True
-            self._coordinator = Thread(
-                target=self._coordinate, name="modkit-coordinator", daemon=False
-            )
-            thread = self._coordinator
         try:
+            # Allocation can fail before a joinable coordinator exists too.
+            with self._lock:
+                self._coordinator = Thread(
+                    target=self._coordinate, name="modkit-coordinator", daemon=False
+                )
+                thread = self._coordinator
             thread.start()
         except BaseException:
             self._record_failure(WorkerReason.CONTROL_FAILED)
