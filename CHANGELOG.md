@@ -4,6 +4,8 @@
 
 ### Features
 
+- publish reviewed Workers source baseline ([d1cce4a59305](https://github.com/maxxab/modkit-workers/commit/d1cce4a593051519e683db7a9be56b444b3e25f1))
+- publish reviewed Workers admission and reader SQL ([44bd6880ced4](https://github.com/maxxab/modkit-workers/commit/44bd6880ced41c237cd0d079e3bd08cec0c83872))
 - **workers:** import reviewed root contracts and startup preflight ([ad029d82f6b6](https://github.com/maxxab/modkit-workers/commit/ad029d82f6b67414693c41bf0c2723cda3cad7fb))
 - **workers:** add private read and find SQL ([96369ef84f5e](https://github.com/maxxab/modkit-workers/commit/96369ef84f5eccaad9e01aad7907f87580d859c6))
 - **workers:** add private job listing SQL ([ef52987feb30](https://github.com/maxxab/modkit-workers/commit/ef52987feb309daa15570632af79e748a97994d3))
@@ -18,6 +20,7 @@
 
 ### Bug Fixes
 
+- clarify strict validator type flow ([0602114e60d1](https://github.com/maxxab/modkit-workers/commit/0602114e60d165b6c04eae9c8faaf459307d2ab6))
 - isolate historical Workers export assertions ([03afef494c0a](https://github.com/maxxab/modkit-workers/commit/03afef494c0a72994309ce76503f9dfa0e91c35a))
 - **workers:** validate partial callable entrypoints ([d6e3e83dbd54](https://github.com/maxxab/modkit-workers/commit/d6e3e83dbd542b3bd7428347d2735503e64bd882))
 - **workers:** bound partial-backed handler inspection ([936c25352bd4](https://github.com/maxxab/modkit-workers/commit/936c25352bd469d402e23a1352b8c5da18a8177a))
@@ -45,6 +48,7 @@
 
 ### Documentation
 
+- initialize reviewed Workers package ([5c687077b0e9](https://github.com/maxxab/modkit-workers/commit/5c687077b0e9af95ddf0802f00a6cfcc3da25d1d))
 - **workers:** checkpoint reviewed work before shutdown ([a3dc030f97be](https://github.com/maxxab/modkit-workers/commit/a3dc030f97bee0d142d28832d46087ec83fbb2e5))
 - **workers:** record resume checks and integration blockers ([fe1662a04fb9](https://github.com/maxxab/modkit-workers/commit/fe1662a04fb93e9d7d4b92ddf689905968cdd044))
 - **workers:** refresh shared SQL prerequisite evidence ([7ee054bd91e6](https://github.com/maxxab/modkit-workers/commit/7ee054bd91e65c40829ad8fb207e0c9b8b59a710))
@@ -87,15 +91,19 @@
 
 ### CI/CD
 
+- add dependency-independent source checks ([5c784d10da66](https://github.com/maxxab/modkit-workers/commit/5c784d10da66931a898f5aceec6963632799497e))
 - **packaging:** verify pinned source and installed package pairs ([e1378564188f](https://github.com/maxxab/modkit-workers/commit/e1378564188fd18c6c171f2caf8e84c1d2da234f))
 - **postgres:** verify fresh Workers composition on PostgreSQL 17 ([88742661572a](https://github.com/maxxab/modkit-workers/commit/88742661572a9bcb0e2316d58b5565c2f5f0e90f))
 - **workers:** qualify current Events retry correction ([e66c72cdfb09](https://github.com/maxxab/modkit-workers/commit/e66c72cdfb0918ba846681a38b85f77ea450170d))
 
 ### Maintenance
 
+- enforce consistent Workers source formatting ([97b3ac06bf83](https://github.com/maxxab/modkit-workers/commit/97b3ac06bf8359d1c26b907f5f4929cf28733743))
 - import unqualified Workers scaffold baseline ([340fa57dbbda](https://github.com/maxxab/modkit-workers/commit/340fa57dbbda1e1d58da73431daa54fb85a9bde3))
 - **workers:** clear baseline lint without changing contracts ([c35f20f68d70](https://github.com/maxxab/modkit-workers/commit/c35f20f68d7076846d0e1b2587997e4491126327))
 - checkpoint reviewed native recovery ([89dad081294e](https://github.com/maxxab/modkit-workers/commit/89dad081294e36cd6f072312f2b76386ce7f0cf2))
 - preserve installation closure checkpoint ([6f8f9d56ef90](https://github.com/maxxab/modkit-workers/commit/6f8f9d56ef90b6a72ebe62158c9715fc487321a2))
 - **tests:** normalize native job-find import layout ([cdbb7480fb72](https://github.com/maxxab/modkit-workers/commit/cdbb7480fb722c4b88eb62a46bb505bbc5a59b48))
 - apply canonical Python formatting ([9a7f9d0ba466](https://github.com/maxxab/modkit-workers/commit/9a7f9d0ba46647a8caaeb44d8c1b9c21895eb4c2))
+- **workers:** reconcile reviewed implementation with main history ([e960986c160c](https://github.com/maxxab/modkit-workers/commit/e960986c160ca639406188cca46d56c4d1a715b2))
+- **standards:** record reviewed history adoption baseline ([5d31f783bc22](https://github.com/maxxab/modkit-workers/commit/5d31f783bc22282f826f44292d4ce3f97165abd1))
