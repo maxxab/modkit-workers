@@ -107,6 +107,10 @@ class _SupervisorCore:
         thread = self._coordinator
         if thread is None:
             return True
+        if thread.ident is None:
+            # Failed or pending start has no joinable thread. Keep the owner
+            # and failure snapshot without claiming confirmed thread exit.
+            return False
         if thread is current_thread():
             raise RuntimeError("Cannot join own coordinator")
         thread.join(wait)

@@ -237,6 +237,46 @@ def test_startup_failure_never_claims_and_is_not_clean_success():
         cleanup(worker, source)
 
 
+@pytest.mark.parametrize("lane", ["coordinator", "renewal", "data"])
+def test_thread_start_failure_preserves_observable_failed_stop(monkeypatch, lane):
+    supervisor, control_module, c = modules()
+    worker, source, control, _ = build()
+    failure = RuntimeError("synthetic thread resource exhaustion")
+    thread_type = supervisor.Thread
+
+    class RefusedStart(thread_type):
+        def start(self):
+            if self.name == "modkit-" + lane:
+                raise failure
+            super().start()
+
+    # Refuse the OS-thread boundary only; keep real lifecycle and join behavior.
+    monkeypatch.setattr(supervisor, "Thread", RefusedStart)
+    monkeypatch.setattr(control_module, "Thread", RefusedStart)
+    if lane == "coordinator":
+        with pytest.raises(RuntimeError) as raised:
+            worker.start()
+        assert raised.value is failure
+    else:
+        worker.start()
+    assert worker._finished.wait(3), "failed startup never published its final snapshot"
+    for _ in range(2):
+        snapshot = worker.stop(timeout=1)
+        assert snapshot.state is c.WorkerState.FAILED
+        assert snapshot.reason is c.WorkerReason.CONTROL_FAILED
+        assert not snapshot.ready and not snapshot.clean_stop
+        assert not snapshot.startup_in_flight and not snapshot.execution_in_flight
+        assert not snapshot.source.resources_adopted
+    assert not source.start_entered.is_set() and not source.calls
+    assert control.current_work is None and not control.acquisition_in_flight
+    for thread in (worker._coordinator, worker._data, control._renewal_thread):
+        if thread is not None and thread.ident is not None:
+            thread.join(3)
+            assert not thread.is_alive(), "startup failure leaked a thread"
+    with pytest.raises(RuntimeError, match="one-shot"):
+        worker.start()
+
+
 def test_uncertain_execution_retains_slot_and_zero_success_without_restart():
     worker, source, control, c = build((object(),))
     source.fail_execute = True

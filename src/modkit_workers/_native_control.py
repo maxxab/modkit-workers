@@ -332,12 +332,17 @@ class _SourceControl:
             self._cv.notify_all()
 
     def join_renewal(self, timeout: float | None = None) -> bool:
+        wait = None if timeout is None else _seconds(timeout, zero=True)
         thread = self._renewal_thread
         if thread is None:
             return True
+        if thread.ident is None:
+            # A failed start must not mask CONTROL_FAILED during teardown.
+            # Absence of an identity is not confirmation that a lane exited.
+            return False
         if thread is current_thread():
             raise RuntimeError("Cannot join own renewal lane")
-        thread.join(None if timeout is None else _seconds(timeout, zero=True))
+        thread.join(wait)
         return not thread.is_alive()
 
     def _renewal_loop(self) -> None:
