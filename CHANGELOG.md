@@ -89,6 +89,7 @@
 
 - **packaging:** verify pinned source and installed package pairs ([e1378564188f](https://github.com/maxxab/modkit-workers/commit/e1378564188fd18c6c171f2caf8e84c1d2da234f))
 - **postgres:** verify fresh Workers composition on PostgreSQL 17 ([88742661572a](https://github.com/maxxab/modkit-workers/commit/88742661572a9bcb0e2316d58b5565c2f5f0e90f))
+- **workers:** qualify current Events retry correction ([e66c72cdfb09](https://github.com/maxxab/modkit-workers/commit/e66c72cdfb0918ba846681a38b85f77ea450170d))
 
 ### Maintenance
 
